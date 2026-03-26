@@ -1,1 +1,53 @@
-<p>matching-resultat works!</p>
+<div *ngIf="lot">
+  <div class="row mb-3">
+    <div class="col-md-8">
+      <h2><i class="bi bi-check-circle me-2 text-success"></i>Résultat — Lot #{{ lot.idLot }}</h2>
+    </div>
+    <div class="col-md-4 text-end">
+      <a routerLink="../../matching/lancer" class="btn btn-outline-danger me-2">
+        <i class="bi bi-cpu me-1"></i>Nouveau matching
+      </a>
+      <a routerLink="../../matchs" class="btn btn-secondary">
+        <i class="bi bi-list me-1"></i>Tous les matchs
+      </a>
+    </div>
+  </div>
+
+  <div class="alert alert-success">
+    <i class="bi bi-check-circle me-2"></i>
+    <strong>Matching terminé !</strong>
+    Lot #{{ lot.idLot }} — Statut :
+    <span class="badge bg-warning text-dark">{{ lot.statut }}</span>
+    — {{ matchs.length }} match(s) créé(s)
+  </div>
+
+  <div class="card">
+    <div class="card-header bg-success text-white">
+      <h5 class="mb-0"><i class="bi bi-link-45deg me-2"></i>Matchs créés en base</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0">
+          <thead class="table-dark">
+            <tr><th>ID</th><th>Receveur</th><th>Quantité</th><th>Score</th><th>Date</th><th>Statut</th><th>Détail</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of matchs">
+              <td>{{ m.idMatch }}</td>
+              <td>Receveur #{{ m.idReceveur }}</td>
+              <td>{{ m.quantiteAllouee }}</td>
+              <td><span class="badge bg-primary fs-6">{{ m.scoreMatching }}</span></td>
+              <td>{{ m.dateMatch | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td><span class="badge" [ngClass]="getStatutBadge(m.statutMatch)">{{ m.statutMatch }}</span></td>
+              <td>
+                <a [routerLink]="['../../matchs', m.idMatch]" class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

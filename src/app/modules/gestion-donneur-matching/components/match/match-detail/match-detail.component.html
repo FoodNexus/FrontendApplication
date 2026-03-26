@@ -1,1 +1,26 @@
-<p>match-detail works!</p>
+<div *ngIf="match">
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0"><i class="bi bi-link-45deg me-2"></i>Match #{{ match.idMatch }}</h4>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <tr><th class="w-25">ID Match</th><td>{{ match.idMatch }}</td></tr>
+            <tr><th>Lot</th><td><a [routerLink]="['../../lots', match.lotId]">Lot #{{ match.lotId }}</a></td></tr>
+            <tr><th>Receveur</th><td>Receveur #{{ match.idReceveur }}</td></tr>
+            <tr><th>Partenaire</th><td>{{ match.idPartenaireCirculaire || 'N/A' }}</td></tr>
+            <tr><th>Quantité</th><td>{{ match.quantiteAllouee }}</td></tr>
+            <tr><th>Score</th><td><span class="badge bg-primary fs-6">{{ match.scoreMatching }}</span></td></tr>
+            <tr><th>Date</th><td>{{ match.dateMatch | date:'dd/MM/yyyy HH:mm' }}</td></tr>
+            <tr><th>Statut</th><td><span class="badge bg-info fs-6">{{ match.statutMatch }}</span></td></tr>
+          </table>
+          <a routerLink="../../matchs" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Retour
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

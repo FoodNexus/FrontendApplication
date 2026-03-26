@@ -1,1 +1,57 @@
-<p>produit-form works!</p>
+<div class="row">
+  <div class="col-md-8 mx-auto">
+    <div class="card">
+      <div class="card-header bg-success text-white">
+        <h4 class="mb-0">
+          <i class="bi me-2" [ngClass]="isEditMode ? 'bi-pencil' : 'bi-plus-circle'"></i>
+          {{ isEditMode ? 'Modifier le produit' : 'Ajouter un produit' }}
+        </h4>
+      </div>
+      <div class="card-body">
+
+        <div class="alert alert-danger" *ngIf="errorMessage">
+          <i class="bi bi-exclamation-triangle me-2"></i>{{ errorMessage }}
+        </div>
+
+        <form (ngSubmit)="onSubmit()" #f="ngForm">
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Code-barre *</label>
+            <input type="text" class="form-control" [(ngModel)]="produit.codeBarre"
+                   name="codeBarre" required placeholder="Ex: 3017620422003">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Libellé *</label>
+            <input type="text" class="form-control" [(ngModel)]="produit.libelle"
+                   name="libelle" required placeholder="Ex: Tomates fraîches 1kg">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Catégorie *</label>
+            <select class="form-select" [(ngModel)]="produit.categorie" name="categorie" required>
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Poids unitaire (kg) *</label>
+            <input type="number" class="form-control" [(ngModel)]="produit.poidsUnitaire"
+                   name="poidsUnitaire" required min="0.01" step="0.01">
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success" [disabled]="!f.valid">
+              <i class="bi me-1" [ngClass]="isEditMode ? 'bi-check-lg' : 'bi-plus-circle'"></i>
+              {{ isEditMode ? 'Modifier' : 'Créer' }}
+            </button>
+            <a routerLink="../../produits" class="btn btn-secondary">
+              <i class="bi bi-arrow-left me-1"></i>Annuler
+            </a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>

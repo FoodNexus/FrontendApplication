@@ -1,1 +1,38 @@
-<p>lot-form works!</p>
+<div class="row">
+  <div class="col-md-8 mx-auto">
+    <div class="card">
+      <div class="card-header bg-success text-white">
+        <h4 class="mb-0">
+          <i class="bi me-2" [ngClass]="isEditMode ? 'bi-pencil' : 'bi-plus-circle'"></i>
+          {{ isEditMode ? 'Modifier le lot' : 'Nouveau lot' }}
+        </h4>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-danger" *ngIf="errorMessage">
+          <i class="bi bi-exclamation-triangle me-2"></i>{{ errorMessage }}
+        </div>
+        <form (ngSubmit)="onSubmit()" #f="ngForm">
+          <div class="mb-3">
+            <label class="form-label fw-bold">ID du Donneur *</label>
+            <input type="number" class="form-control" [(ngModel)]="lot.donneurId" name="donneurId" required min="1">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Niveau d'urgence *</label>
+            <select class="form-select" [(ngModel)]="lot.niveauUrgence" name="niveauUrgence" required>
+              <option *ngFor="let u of urgences" [value]="u">{{ u }}</option>
+            </select>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success" [disabled]="!f.valid">
+              <i class="bi me-1" [ngClass]="isEditMode ? 'bi-check-lg' : 'bi-plus-circle'"></i>
+              {{ isEditMode ? 'Modifier' : 'Créer' }}
+            </button>
+            <a routerLink="../../lots" class="btn btn-secondary">
+              <i class="bi bi-arrow-left me-1"></i>Annuler
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

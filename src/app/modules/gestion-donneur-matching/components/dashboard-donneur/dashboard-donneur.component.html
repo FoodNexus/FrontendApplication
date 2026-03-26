@@ -1,1 +1,186 @@
-<p>dashboard-donneur works!</p>
+<div class="row mb-4">
+  <div class="col-12">
+    <h2><i class="bi bi-speedometer2 me-2"></i>Dashboard — Gestion Donneur & Matching</h2>
+    <hr>
+  </div>
+</div>
+
+<!-- Cartes statistiques -->
+<div class="row mb-4">
+  <div class="col-md-3 mb-3">
+    <div class="card text-white bg-primary h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="card-title">Produits</h6>
+            <h2>{{ produits.length }}</h2>
+          </div>
+          <i class="bi bi-basket display-4 opacity-50"></i>
+        </div>
+        <a routerLink="../produits" class="text-white text-decoration-none">Voir tout →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-3">
+    <div class="card text-white bg-success h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="card-title">Lots</h6>
+            <h2>{{ lots.length }}</h2>
+          </div>
+          <i class="bi bi-archive display-4 opacity-50"></i>
+        </div>
+        <a routerLink="../lots" class="text-white text-decoration-none">Voir tout →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-3">
+    <div class="card text-white bg-info h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="card-title">Matchs</h6>
+            <h2>{{ matchs.length }}</h2>
+          </div>
+          <i class="bi bi-link-45deg display-4 opacity-50"></i>
+        </div>
+        <a routerLink="../matchs" class="text-white text-decoration-none">Voir tout →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-3">
+    <div class="card text-white bg-danger h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="card-title">Alertes péremption</h6>
+            <h2>{{ alertes.length }}</h2>
+          </div>
+          <i class="bi bi-exclamation-triangle display-4 opacity-50"></i>
+        </div>
+        <a routerLink="../historiques" class="text-white text-decoration-none">Voir tout →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sous-cartes -->
+<div class="row mb-4">
+  <div class="col-md-4 mb-3">
+    <div class="card border-primary h-100">
+      <div class="card-body text-center">
+        <i class="bi bi-hourglass-split display-4 text-primary"></i>
+        <h4 class="mt-2">{{ lotsDisponibles.length }}</h4>
+        <p class="text-muted">Lots en attente de matching</p>
+        <a routerLink="../matching/lancer" class="btn btn-outline-primary">
+          <i class="bi bi-cpu me-1"></i>Lancer matching
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card border-warning h-100">
+      <div class="card-body text-center">
+        <i class="bi bi-clock-history display-4 text-warning"></i>
+        <h4 class="mt-2">{{ matchsEnAttente.length }}</h4>
+        <p class="text-muted">Matchs en attente logistique</p>
+        <a routerLink="../matchs" class="btn btn-outline-warning">
+          <i class="bi bi-list me-1"></i>Gérer les matchs
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card border-success h-100">
+      <div class="card-body text-center">
+        <i class="bi bi-check-circle display-4 text-success"></i>
+        <h4 class="mt-2">{{ lotsValides.length }}</h4>
+        <p class="text-muted">Lots validés</p>
+        <a routerLink="../lots" class="btn btn-outline-success">
+          <i class="bi bi-archive me-1"></i>Voir les lots
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lots critiques -->
+<div class="row mb-4" *ngIf="lotsCritiques.length > 0">
+  <div class="col-12">
+    <div class="card border-danger">
+      <div class="card-header bg-danger text-white">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        Lots CRITIQUES non traités ({{ lotsCritiques.length }})
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Donneur</th>
+              <th>Date création</th>
+              <th>Produits</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let lot of lotsCritiques">
+              <td>{{ lot.idLot }}</td>
+              <td>Donneur #{{ lot.donneurId }}</td>
+              <td>{{ lot.dateCreation | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ lot.nombreProduits }}</td>
+              <td>
+                <a routerLink="../matching/lancer"
+                   [queryParams]="{lotId: lot.idLot}"
+                   class="btn btn-sm btn-danger">
+                  <i class="bi bi-cpu me-1"></i>Matcher
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Alertes péremption -->
+<div class="row" *ngIf="alertes.length > 0">
+  <div class="col-12">
+    <div class="card border-warning">
+      <div class="card-header bg-warning">
+        <i class="bi bi-clock me-2"></i>Produits qui périment dans 24h
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th>Code-barre</th>
+              <th>Quantité</th>
+              <th>Péremption</th>
+              <th>Lot</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let h of alertes">
+              <td>{{ h.libelleProduit }}</td>
+              <td><code>{{ h.codeBarre }}</code></td>
+              <td>{{ h.quantite }}</td>
+              <td class="text-danger fw-bold">
+                {{ h.datePeremptionExacte | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+              <td>
+                <a [routerLink]="['../lots', h.lotId]">Lot #{{ h.lotId }}</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
