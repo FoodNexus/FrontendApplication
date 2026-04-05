@@ -6,7 +6,7 @@
         <div class="card-header bg-success text-white">
           <h5 class="mb-0">
             <i class="bi bi-recycle me-2"></i>
-            Compléter les informations de recyclage
+            {{ isEdit ? 'Modifier' : 'Ajouter' }} Informations de recyclage
           </h5>
         </div>
 
@@ -17,6 +17,19 @@
           </div>
 
           <form [formGroup]="form" (ngSubmit)="submit()">
+
+            <div class="mb-3" *ngIf="!isEdit">
+              <label class="form-label fw-bold">ID Dossier d'Inspection (caseId) *</label>
+              <input type="number"
+                     formControlName="caseId"
+                     class="form-control"
+                     placeholder="Ex: 1"/>
+              <div *ngIf="form.get('caseId')?.invalid &&
+                          form.get('caseId')?.touched"
+                   class="text-danger small">
+                ID Dossier obligatoire
+              </div>
+            </div>
 
             <div class="mb-3">
               <label class="form-label fw-bold">Poids (kg) *</label>

@@ -27,6 +27,11 @@ const routes: Routes = [
       .then(m => m.RecyclingProductsListComponent)
   },
   {
+    path: 'recycling-products/add',
+    loadComponent: () => import('./components/recycling-products/recycling-products-form/recycling-products-form.component')
+      .then(m => m.RecyclingProductsFormComponent)
+  },
+  {
     path: 'recycling-products/edit/:id',
     loadComponent: () => import('./components/recycling-products/recycling-products-form/recycling-products-form.component')
       .then(m => m.RecyclingProductsFormComponent)

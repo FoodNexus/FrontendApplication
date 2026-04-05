@@ -1,0 +1,19 @@
+.card {
+  border-radius: 15px;
+  background-color: #f8f9fa;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+h1 {
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+.btn-lg {
+  border-radius: 12px;
+  font-weight: 600;
+}

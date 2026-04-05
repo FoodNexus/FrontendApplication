@@ -6,5 +6,10 @@ export const routes: Routes = [
     loadChildren: () => import('./modules/audit-conformite-contrat-numerique/audit-conformite-contrat-numerique.module')
       .then(m => m.AuditConformiteContratNumeriqueModule)
   },
-  { path: '', redirectTo: 'audit', pathMatch: 'full' }
+  {
+    path: 'user',
+    loadChildren: () => import('./modules/gestion-user/gestion-user.module')
+      .then(m => m.GestionUserModule)
+  },
+  { path: '', redirectTo: 'user/home', pathMatch: 'full' }
 ];

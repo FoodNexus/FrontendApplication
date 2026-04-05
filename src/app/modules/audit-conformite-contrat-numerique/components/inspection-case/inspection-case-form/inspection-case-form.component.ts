@@ -5,6 +5,8 @@ import { ReactiveFormsModule, FormBuilder,
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { InspectionCaseService }
   from '../../../services/inspection-case.service';
+import { AuthService }
+  from '../../../../gestion-user/services/auth.service';
 import { ResolutionStatus, SanitaryVerdict }
   from '../../../models/inspection-case.model';
 
@@ -29,6 +31,7 @@ export class InspectionCaseFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private service: InspectionCaseService,
+    private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -50,13 +53,23 @@ export class InspectionCaseFormComponent implements OnInit {
         error: () => this.errorMessage = 'Erreur de chargement'
       });
     }
+
+    // Ensure we have the DB ID for the auditor
+    if (!this.authService.getCurrentUser() && this.authService.isLoggedIn()) {
+      this.authService.fetchUserProfile().subscribe();
+    }
   }
 
   submit(): void {
     if (this.form.invalid) return;
     this.loading = true;
 
-    const data = this.form.value;
+    const currentUser = this.authService.getCurrentUser();
+    const data = {
+      ...this.form.value,
+      auditorId: currentUser?.idUser,
+      deliveryId: null // Laisser vide selon la requête
+    };
 
     if (this.isEdit) {
       this.service.update(this.caseId, data).subscribe({

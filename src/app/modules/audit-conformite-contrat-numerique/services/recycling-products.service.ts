@@ -19,6 +19,13 @@ export class RecyclingProductsService {
     return this.http.get<RecyclingProducts>(`${this.apiUrl}/${id}`);
   }
 
+  create(caseId: number, data: RecyclingProducts): Observable<RecyclingProducts> {
+    return this.http.post<RecyclingProducts>(
+      `${this.apiUrl}/inspection-case/${caseId}`,
+      data
+    );
+  }
+
   getByInspectionCase(caseId: number): Observable<RecyclingProducts[]> {
     return this.http.get<RecyclingProducts[]>(
       `${this.apiUrl}/inspection-case/${caseId}`

@@ -18,6 +18,7 @@ export class RecyclingProductsFormComponent implements OnInit {
 
   form!: FormGroup;
   productId!: number;
+  isEdit = false;
   loading = false;
   errorMessage = '';
   destinations = Object.values(Destination);
@@ -31,29 +32,50 @@ export class RecyclingProductsFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
+      caseId:      [''],
       weight:      ['', [Validators.required, Validators.min(0.1)]],
       destination: ['', Validators.required]
     });
 
     this.productId = this.route.snapshot.params['id'];
+    if (this.productId) {
+      this.isEdit = true;
+      this.service.getById(this.productId).subscribe({
+        next: (data) => this.form.patchValue(data),
+        error: () => this.errorMessage = 'Erreur de chargement'
+      });
+    } else {
+      this.form.get('caseId')?.setValidators(Validators.required);
+      this.form.get('caseId')?.updateValueAndValidity();
+    }
   }
 
   submit(): void {
     if (this.form.invalid) return;
     this.loading = true;
 
-    const { weight, destination } = this.form.value;
+    const data = this.form.value;
 
-    this.service.updateDetails(this.productId, weight, destination).subscribe({
-      next: () => this.router.navigate(['../recycling-products']),
-      error: () => {
-        this.errorMessage = 'Erreur de mise à jour';
-        this.loading = false;
-      }
-    });
+    if (this.isEdit) {
+      this.service.updateDetails(this.productId, data.weight, data.destination).subscribe({
+        next: () => this.router.navigate(['/audit/recycling-products']),
+        error: () => {
+          this.errorMessage = 'Erreur de mise à jour';
+          this.loading = false;
+        }
+      });
+    } else {
+      this.service.create(data.caseId, data).subscribe({
+        next: () => this.router.navigate(['/audit/recycling-products']),
+        error: () => {
+          this.errorMessage = 'Erreur de création';
+          this.loading = false;
+        }
+      });
+    }
   }
 
   cancel(): void {
-    this.router.navigate(['../recycling-products']);
+    this.router.navigate(['/audit/recycling-products']);
   }
 }
