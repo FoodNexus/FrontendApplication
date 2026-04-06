@@ -1,0 +1,155 @@
+<div class="container-fluid p-4">
+
+  <!-- Retour -->
+  <div class="mb-3">
+    <a routerLink="../" class="btn btn-outline-secondary btn-sm">← Retour au centre IA</a>
+  </div>
+
+  <div class="card shadow-sm border-info">
+    <div class="card-header bg-info text-white">
+      <h5 class="mb-0">🧠 Apprentissage — Profils Receveurs</h5>
+    </div>
+    <div class="card-body">
+
+      <!-- Recherche -->
+      <div class="row mb-4 align-items-center">
+        <div class="col-auto">
+          <label class="form-label fw-bold mb-0">ID Receveur</label>
+        </div>
+        <div class="col-md-3">
+          <input type="number" class="form-control" [(ngModel)]="receveurId" min="1">
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-info text-white" (click)="chargerProfil()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            Charger le profil
+          </button>
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-outline-info" (click)="chargerTous()" [disabled]="loadingAll">
+            <span *ngIf="loadingAll" class="spinner-border spinner-border-sm me-2"></span>
+            Charger tous
+          </button>
+        </div>
+      </div>
+
+      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+
+      <!-- Profil unique -->
+      <div *ngIf="selectedProfil" class="card mb-4 border-light shadow-sm">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">Profil du Receveur #{{ selectedProfil.receveurId }}</h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <table class="table table-bordered table-sm">
+                <tbody>
+                  <tr>
+                    <th class="bg-light">Taux de succès</th>
+                    <td>
+                      <div class="progress" style="height: 20px;">
+                        <div class="progress-bar" [ngClass]="{
+                          'bg-success': selectedProfil.tauxSucces >= 0.7,
+                          'bg-warning': selectedProfil.tauxSucces >= 0.4 && selectedProfil.tauxSucces < 0.7,
+                          'bg-danger': selectedProfil.tauxSucces < 0.4
+                        }" [style.width.%]="selectedProfil.tauxSucces * 100">
+                          {{ (selectedProfil.tauxSucces * 100).toFixed(0) }}%
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th class="bg-light">Total matchs</th>
+                    <td>{{ selectedProfil.totalMatchs }}</td>
+                  </tr>
+                  <tr>
+                    <th class="bg-light">Livrés</th>
+                    <td class="text-success fw-bold">{{ selectedProfil.totalLivres }}</td>
+                  </tr>
+                  <tr>
+                    <th class="bg-light">Refusés</th>
+                    <td class="text-danger">{{ selectedProfil.totalRefuses }}</td>
+                  </tr>
+                  <tr>
+                    <th class="bg-light">Distance moy. acceptée</th>
+                    <td>{{ selectedProfil.distanceMoyenneAcceptee.toFixed(1) }} km</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <table class="table table-bordered table-sm">
+                <tbody>
+                  <tr>
+                    <th class="bg-light">Catégories préférées</th>
+                    <td>
+                      <span *ngFor="let cat of selectedProfil.categoriesPreferees" class="badge bg-info me-1">{{ cat }}</span>
+                      <span *ngIf="!selectedProfil.categoriesPreferees?.length" class="text-muted">Aucune</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th class="bg-light">Bonus/Malus</th>
+                    <td [ngClass]="selectedProfil.bonusMalus >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold'">
+                      {{ selectedProfil.bonusMalus >= 0 ? '+' : '' }}{{ selectedProfil.bonusMalus.toFixed(3) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Liste tous les profils -->
+      <div *ngIf="tousLesProfils && tousLesProfils.length > 0">
+        <h6>Tous les profils ({{ tousLesProfils.length }})</h6>
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover table-striped">
+            <thead class="table-dark">
+              <tr>
+                <th>Receveur</th>
+                <th>Taux succès</th>
+                <th>Total</th>
+                <th>Livrés</th>
+                <th>Refusés</th>
+                <th>Distance moy.</th>
+                <th>Bonus/Malus</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of tousLesProfils">
+                <td>#{{ p.receveurId }}</td>
+                <td>
+                  <div class="progress" style="height: 18px;">
+                    <div class="progress-bar" [ngClass]="{
+                      'bg-success': p.tauxSucces >= 0.7,
+                      'bg-warning': p.tauxSucces >= 0.4 && p.tauxSucces < 0.7,
+                      'bg-danger': p.tauxSucces < 0.4
+                    }" [style.width.%]="p.tauxSucces * 100">
+                      {{ (p.tauxSucces * 100).toFixed(0) }}%
+                    </div>
+                  </div>
+                </td>
+                <td>{{ p.totalMatchs }}</td>
+                <td class="text-success">{{ p.totalLivres }}</td>
+                <td class="text-danger">{{ p.totalRefuses }}</td>
+                <td>{{ p.distanceMoyenneAcceptee.toFixed(1) }} km</td>
+                <td [ngClass]="p.bonusMalus >= 0 ? 'text-success' : 'text-danger'">
+                  {{ p.bonusMalus >= 0 ? '+' : '' }}{{ p.bonusMalus.toFixed(3) }}
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-info" (click)="receveurId = p.receveurId; chargerProfil()">
+                    Détail
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

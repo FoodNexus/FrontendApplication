@@ -18,6 +18,12 @@ import { MatchDetailComponent } from './components/match/match-detail/match-deta
 import { MatchingLancerComponent } from './components/matching/matching-lancer/matching-lancer.component';
 import { MatchingResultatComponent } from './components/matching/matching-resultat/matching-resultat.component';
 
+import { AiDashboardComponent } from './components/ai/ai-dashboard/ai-dashboard.component';
+import { OcrScanComponent } from './components/ai/ocr-scan/ocr-scan.component';
+import { NlpAnalyseComponent } from './components/ai/nlp-analyse/nlp-analyse.component';
+import { QualityCheckComponent } from './components/ai/quality-check/quality-check.component';
+import { LearningDashboardComponent } from './components/ai/learning-dashboard/learning-dashboard.component';
+
 @NgModule({
   declarations: [
     DashboardDonneurComponent,
@@ -32,7 +38,14 @@ import { MatchingResultatComponent } from './components/matching/matching-result
     MatchListComponent,
     MatchDetailComponent,
     MatchingLancerComponent,
-    MatchingResultatComponent
+    MatchingResultatComponent,
+  
+    //IA
+    AiDashboardComponent,
+    OcrScanComponent,
+    NlpAnalyseComponent,
+    QualityCheckComponent,
+    LearningDashboardComponent
   ],
   imports: [
     CommonModule,
