@@ -1,85 +1,125 @@
-<div class="container mt-4">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
+<div class="page-container">
+  <div class="form-wrapper">
 
-      <div class="card shadow-sm">
-        <div class="card-header bg-success text-white">
-          <h5 class="mb-0">
-            <i class="bi bi-recycle me-2"></i>
-            {{ isEdit ? 'Modifier' : 'Ajouter' }} Informations de recyclage
-          </h5>
+    <!-- CARD -->
+    <div class="form-card">
+
+      <!-- HEADER -->
+      <div class="form-header">
+        <div class="header-icon">
+          <i class="bi" [ngClass]="isEdit ? 'bi-pencil-square' : 'bi-recycle'"></i>
         </div>
-
-        <div class="card-body">
-
-          <div *ngIf="errorMessage" class="alert alert-danger">
-            {{ errorMessage }}
-          </div>
-
-          <form [formGroup]="form" (ngSubmit)="submit()">
-
-            <div class="mb-3" *ngIf="!isEdit">
-              <label class="form-label fw-bold">ID Dossier d'Inspection (caseId) *</label>
-              <input type="number"
-                     formControlName="caseId"
-                     class="form-control"
-                     placeholder="Ex: 1"/>
-              <div *ngIf="form.get('caseId')?.invalid &&
-                          form.get('caseId')?.touched"
-                   class="text-danger small">
-                ID Dossier obligatoire
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label fw-bold">Poids (kg) *</label>
-              <input type="number"
-                     formControlName="weight"
-                     class="form-control"
-                     placeholder="Ex: 15.5"
-                     step="0.1"/>
-              <div *ngIf="form.get('weight')?.invalid &&
-                          form.get('weight')?.touched"
-                   class="text-danger small">
-                Poids obligatoire et supérieur à 0
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label fw-bold">Destination *</label>
-              <select formControlName="destination" class="form-select">
-                <option value="">-- Choisir --</option>
-                <option *ngFor="let d of destinations" [value]="d">
-                  {{ d }}
-                </option>
-              </select>
-              <div *ngIf="form.get('destination')?.invalid &&
-                          form.get('destination')?.touched"
-                   class="text-danger small">
-                Destination obligatoire
-              </div>
-            </div>
-
-            <div class="d-flex gap-2 justify-content-end mt-4">
-              <button type="button"
-                      (click)="cancel()"
-                      class="btn btn-outline-secondary">
-                Annuler
-              </button>
-              <button type="submit"
-                      [disabled]="form.invalid || loading"
-                      class="btn btn-success">
-                <span *ngIf="loading"
-                      class="spinner-border spinner-border-sm me-1">
-                </span>
-                Enregistrer
-              </button>
-            </div>
-
-          </form>
+        <div>
+          <h3>{{ isEdit ? 'Modifier' : 'Ajouter' }} Produit Recyclé</h3>
+          <p>{{ isEdit ? 'Modifiez les informations du produit recyclé' : 'Enregistrez un nouveau produit à recycler' }}</p>
         </div>
       </div>
 
+      <!-- ERROR -->
+      <div *ngIf="errorMessage" class="alert-error">
+        <i class="bi bi-exclamation-circle"></i> {{ errorMessage }}
+      </div>
+
+      <!-- FORM -->
+      <form [formGroup]="form" (ngSubmit)="submit()" class="form-body">
+
+        <!-- Description (Inspection Case) -->
+        <div class="form-group" *ngIf="!isEdit">
+          <label class="form-label">
+            <i class="bi bi-text-paragraph me-1"></i> Description de l'infraction
+            <span class="required">*</span>
+          </label>
+          <textarea formControlName="description"
+                    class="form-input"
+                    rows="3"
+                    placeholder="Ex: Le produit est expiré, une destruction/recyclage est nécessaire..."></textarea>
+          <div *ngIf="form.get('description')?.invalid && form.get('description')?.touched"
+               class="field-error">
+            <i class="bi bi-info-circle"></i> La description est obligatoire pour initier le dossier d'inspection parent
+          </div>
+        </div>
+
+        <!-- Delivery ID (Inspection Case) -->
+        <div class="form-group" *ngIf="!isEdit">
+          <label class="form-label">
+            <i class="bi bi-truck me-1"></i> ID Livraison
+            <span class="required">*</span>
+          </label>
+          <input type="number"
+                 formControlName="deliveryId"
+                 class="form-input"
+                 placeholder="Ex: 42"/>
+          <div *ngIf="form.get('deliveryId')?.invalid && form.get('deliveryId')?.touched"
+               class="field-error">
+            <i class="bi bi-info-circle"></i> L'ID livraison est obligatoire pour localiser l'arrivage
+          </div>
+        </div>
+
+        <!-- Weight -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-speedometer2 me-1"></i> Poids (kg)
+            <span class="required">*</span>
+          </label>
+          <input type="number"
+                 formControlName="weight"
+                 class="form-input"
+                 placeholder="Ex: 15.5"
+                 step="0.1"/>
+          <div *ngIf="form.get('weight')?.invalid && form.get('weight')?.touched"
+               class="field-error">
+            <i class="bi bi-info-circle"></i> Poids obligatoire et supérieur à 0
+          </div>
+        </div>
+
+        <!-- Destination -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-truck me-1"></i> Destination
+            <span class="required">*</span>
+          </label>
+          <div class="select-wrapper">
+            <select formControlName="destination" class="form-input">
+              <option [ngValue]="null">-- Sélectionner une destination --</option>
+              <option *ngFor="let d of destinations" [value]="d">
+                {{ d }}
+              </option>
+            </select>
+            <i class="bi bi-chevron-down select-arrow"></i>
+          </div>
+          <div *ngIf="form.get('destination')?.invalid && form.get('destination')?.touched"
+               class="field-error">
+            <i class="bi bi-info-circle"></i> La destination est obligatoire
+          </div>
+        </div>
+
+        <!-- INFO BOX -->
+        <div class="info-box">
+          <div class="info-icon">
+            <i class="bi bi-info-circle"></i>
+          </div>
+          <div class="info-content">
+            <strong>Informations automatiques</strong>
+            <p>La date de transfert est générée automatiquement à la création.</p>
+          </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="form-actions">
+          <button type="button" (click)="cancel()" class="btn-cancel">
+            <i class="bi bi-x-lg me-1"></i> Annuler
+          </button>
+          <button type="submit"
+                  [disabled]="form.invalid || loading"
+                  class="btn-submit">
+            <span *ngIf="loading" class="spinner"></span>
+            <i *ngIf="!loading" class="bi" [ngClass]="isEdit ? 'bi-check-lg' : 'bi-plus-lg'" class="me-1"></i>
+            {{ isEdit ? 'Enregistrer' : 'Ajouter le Produit' }}
+          </button>
+        </div>
+
+      </form>
     </div>
+
   </div>
 </div>

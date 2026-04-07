@@ -6,6 +6,8 @@ import { RecyclingProducts }
 import { RecyclingProductsService } 
   from '../../../services/recycling-products.service';
 
+import { AuthService } from '../../../../gestion-user/services/auth.service';
+
 @Component({
   selector: 'app-recycling-products-list',
   standalone: true,
@@ -19,17 +21,29 @@ export class RecyclingProductsListComponent implements OnInit {
   loading = false;
   errorMessage = '';
 
-  constructor(private service: RecyclingProductsService) {}
+  constructor(
+    private service: RecyclingProductsService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    this.loadAll();
+    if (!this.authService.getCurrentUser()) {
+       this.authService.fetchUserProfile().subscribe(() => this.loadAll());
+    } else {
+       this.loadAll();
+    }
   }
 
   loadAll(): void {
     this.loading = true;
     this.service.getAll().subscribe({
       next: (data) => {
-        this.products = data;
+        const user = this.authService.getCurrentUser();
+        if (this.authService.hasRole('ADMIN')) {
+          this.products = data || [];
+        } else {
+          this.products = (data || []).filter(p => p.inspectionCase?.auditorId === user?.idUser);
+        }
         this.loading = false;
       },
       error: () => {

@@ -5,7 +5,12 @@ import { ReactiveFormsModule, FormBuilder,
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { RecyclingProductsService } 
   from '../../../services/recycling-products.service';
+import { InspectionCaseService } 
+  from '../../../services/inspection-case.service';
+import { AuthService }
+  from '../../../../gestion-user/services/auth.service';
 import { Destination } from '../../../models/recycling-products.model';
+import { InspectionCase, SanitaryVerdict } from '../../../models/inspection-case.model';
 
 @Component({
   selector: 'app-recycling-products-form',
@@ -26,15 +31,23 @@ export class RecyclingProductsFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private service: RecyclingProductsService,
+    private inspectionService: InspectionCaseService,
+    private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
 
   ngOnInit(): void {
+    // Only fetch user profile if creating and not loaded
+    if (!this.productId && !this.authService.getCurrentUser()) {
+       this.authService.fetchUserProfile().subscribe();
+    }
+
     this.form = this.fb.group({
-      caseId:      [''],
-      weight:      ['', [Validators.required, Validators.min(0.1)]],
-      destination: ['', Validators.required]
+      description: [null],
+      deliveryId:  [null],
+      weight:      [null, [Validators.required, Validators.min(0.1)]],
+      destination: [null, Validators.required]
     });
 
     this.productId = this.route.snapshot.params['id'];
@@ -45,15 +58,17 @@ export class RecyclingProductsFormComponent implements OnInit {
         error: () => this.errorMessage = 'Erreur de chargement'
       });
     } else {
-      this.form.get('caseId')?.setValidators(Validators.required);
-      this.form.get('caseId')?.updateValueAndValidity();
+      // Pour la création, description et deliveryId sont obligatoires pour générer le dossier parent
+      this.form.get('description')?.setValidators(Validators.required);
+      this.form.get('deliveryId')?.setValidators(Validators.required);
+      this.form.get('description')?.updateValueAndValidity();
+      this.form.get('deliveryId')?.updateValueAndValidity();
     }
   }
 
   submit(): void {
     if (this.form.invalid) return;
     this.loading = true;
-
     const data = this.form.value;
 
     if (this.isEdit) {
@@ -65,10 +80,32 @@ export class RecyclingProductsFormComponent implements OnInit {
         }
       });
     } else {
-      this.service.create(data.caseId, data).subscribe({
-        next: () => this.router.navigate(['/audit/recycling-products']),
+      // 1. Créer le dossier d'inspection d'abord
+      const currentUser = this.authService.getCurrentUser();
+      const inspectionData: InspectionCase = {
+        description: data.description,
+        sanitaryVerdict: SanitaryVerdict.DESTRUCTION_RECYCLAGE,
+        deliveryId: data.deliveryId,
+        auditorId: currentUser?.idUser
+      };
+
+      this.inspectionService.create(inspectionData).subscribe({
+        next: (createdCase) => {
+          // 2. Lier le produit recyclé au nouveau dossier d'inspection
+          const recycleData = {
+            weight: data.weight,
+            destination: data.destination
+          };
+          this.service.create(createdCase.caseId!, recycleData).subscribe({
+            next: () => this.router.navigate(['/audit/recycling-products']),
+            error: () => {
+              this.errorMessage = 'Erreur lors de la création du produit recyclé';
+              this.loading = false;
+            }
+          });
+        },
         error: () => {
-          this.errorMessage = 'Erreur de création';
+          this.errorMessage = 'Erreur lors de la création du dossier d\'inspection';
           this.loading = false;
         }
       });

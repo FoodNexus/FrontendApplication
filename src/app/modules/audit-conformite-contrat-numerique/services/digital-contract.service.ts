@@ -19,15 +19,15 @@ export class DigitalContractService {
     return this.http.get<DigitalContract>(`${this.apiUrl}/${id}`);
   }
 
-  getByDonor(donorId: number): Observable<DigitalContract[]> {
+  getByDonorName(donorName: string): Observable<DigitalContract[]> {
     return this.http.get<DigitalContract[]>(
-      `${this.apiUrl}/donor/${donorId}`
+      `${this.apiUrl}/donor/${donorName}`
     );
   }
 
-  getByReceiver(receiverId: number): Observable<DigitalContract[]> {
+  getByReceiverName(receiverName: string): Observable<DigitalContract[]> {
     return this.http.get<DigitalContract[]>(
-      `${this.apiUrl}/receiver/${receiverId}`
+      `${this.apiUrl}/receiver/${receiverName}`
     );
   }
 

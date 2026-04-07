@@ -24,9 +24,22 @@ export class InspectionCaseFormComponent implements OnInit {
   caseId!: number;
   loading = false;
   errorMessage = '';
+  successMessage = '';
 
   sanitaryVerdicts = Object.values(SanitaryVerdict);
   resolutionStatuses = Object.values(ResolutionStatus);
+
+  // Labels lisibles
+  verdictLabels: Record<string, string> = {
+    'PROPRE_A_LA_CONSOMMATION': 'Propre à la consommation',
+    'DESTRUCTION_RECYCLAGE': 'Destruction / Recyclage'
+  };
+
+  statusLabels: Record<string, string> = {
+    'EN_COURS': 'En cours',
+    'RESOLU': 'Résolu',
+    'FERME': 'Fermé'
+  };
 
   constructor(
     private fb: FormBuilder,
@@ -37,12 +50,11 @@ export class InspectionCaseFormComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Seulement description + verdict + status
-    // auditorId et deliveryId seront récupérés automatiquement côté backend
     this.form = this.fb.group({
       description:      ['', Validators.required],
-      sanitaryVerdict:  ['', Validators.required],
-      resolutionStatus: ['']
+      sanitaryVerdict:  [null, Validators.required],
+      resolutionStatus: [null],
+      deliveryId:       [null, Validators.required]
     });
 
     this.caseId = this.route.snapshot.params['id'];
@@ -50,7 +62,7 @@ export class InspectionCaseFormComponent implements OnInit {
       this.isEdit = true;
       this.service.getById(this.caseId).subscribe({
         next: (data) => this.form.patchValue(data),
-        error: () => this.errorMessage = 'Erreur de chargement'
+        error: () => this.errorMessage = 'Impossible de charger le dossier.'
       });
     }
 
@@ -63,19 +75,20 @@ export class InspectionCaseFormComponent implements OnInit {
   submit(): void {
     if (this.form.invalid) return;
     this.loading = true;
+    this.errorMessage = '';
 
     const currentUser = this.authService.getCurrentUser();
     const data = {
       ...this.form.value,
       auditorId: currentUser?.idUser,
-      deliveryId: null // Laisser vide selon la requête
+      // creationDate is set automatically by backend
     };
 
     if (this.isEdit) {
       this.service.update(this.caseId, data).subscribe({
         next: () => this.router.navigate(['/audit/inspection-cases']),
         error: () => {
-          this.errorMessage = 'Erreur de modification';
+          this.errorMessage = 'Erreur lors de la modification.';
           this.loading = false;
         }
       });
@@ -83,7 +96,7 @@ export class InspectionCaseFormComponent implements OnInit {
       this.service.create(data).subscribe({
         next: () => this.router.navigate(['/audit/inspection-cases']),
         error: () => {
-          this.errorMessage = 'Erreur de création';
+          this.errorMessage = 'Erreur lors de la création.';
           this.loading = false;
         }
       });

@@ -1,73 +1,142 @@
-<div class="container mt-4">
+<div class="page-container">
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>
-      <i class="bi bi-clipboard2-pulse me-2"></i>
-      Dossiers d'Inspection
-    </h2>
-    <a routerLink="/audit/inspection-cases/add" class="btn btn-primary">
-      <i class="bi bi-plus-circle me-1"></i> Nouveau Dossier
-    </a>
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon">
+        <i class="bi bi-clipboard2-pulse"></i>
+      </div>
+      <div class="title-text">
+        <h2>Dossiers d'Inspection</h2>
+        <p>Gérez vos dossiers d'audit et de conformité</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/user/dashboard" class="btn-back me-3">
+        <i class="bi bi-arrow-left"></i> Retour au Tableau de bord
+      </a>
+      <a routerLink="/audit/inspection-cases/add" class="btn-add">
+        <i class="bi bi-plus-lg"></i> Nouveau Dossier
+      </a>
+    </div>
   </div>
 
-  <div *ngIf="errorMessage" class="alert alert-danger">
-    {{ errorMessage }}
+  <!-- ERROR -->
+  <div *ngIf="errorMessage" class="alert-error">
+    <i class="bi bi-exclamation-circle"></i> {{ errorMessage }}
   </div>
 
-  <div *ngIf="loading" class="text-center py-5">
-    <div class="spinner-border text-primary"></div>
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon total"><i class="bi bi-folder2-open"></i></div>
+      <div class="stat-info">
+        <h4>{{ totalCount }}</h4>
+        <p>Total Dossiers</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon en-cours"><i class="bi bi-clock"></i></div>
+      <div class="stat-info">
+        <h4>{{ enCoursCount }}</h4>
+        <p>En Cours</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon resolu"><i class="bi bi-check-circle"></i></div>
+      <div class="stat-info">
+        <h4>{{ resoluCount }}</h4>
+        <p>Résolus</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon ferme"><i class="bi bi-x-circle"></i></div>
+      <div class="stat-info">
+        <h4>{{ fermeCount }}</h4>
+        <p>Fermés</p>
+      </div>
+    </div>
   </div>
 
-  <div *ngIf="!loading" class="card shadow-sm">
-    <div class="card-body p-0">
-      <table class="table table-hover mb-0">
-        <thead class="table-dark">
-          <tr>
-            <th>#ID</th>
-            <th>Date création</th>
-            <th>Description</th>
-            <th>Statut</th>
-            <th>Verdict Sanitaire</th>
-            <th>Delivery ID</th>
-            <th>Auditor ID</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of inspectionCases">
-            <td>{{ item.caseId }}</td>
-            <td>{{ item.creationDate }}</td>
-            <td>{{ item.description }}</td>
-            <td>
-              <span [class]="getBadgeClass(item.resolutionStatus!)">
-                {{ item.resolutionStatus }}
-              </span>
-            </td>
-            <td>
-              <span [class]="getVerdictClass(item.sanitaryVerdict!)">
-                {{ item.sanitaryVerdict }}
-              </span>
-            </td>
-            <td>{{ item.deliveryId }}</td>
-            <td>{{ item.auditorId }}</td>
-            <td>
+  <!-- LOADER -->
+  <div *ngIf="loading" class="loader-wrapper">
+    <div class="modern-spinner"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div *ngIf="!loading" class="table-card">
+    <div class="table-header">
+      <h5><i class="bi bi-list-ul me-2"></i>Liste des dossiers</h5>
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text"
+               [(ngModel)]="searchTerm"
+               (ngModelChange)="onSearch()"
+               placeholder="Rechercher..."/>
+      </div>
+    </div>
+
+    <table class="modern-table" *ngIf="filteredCases.length > 0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Statut</th>
+          <th>Verdict</th>
+          <th>Delivery</th>
+          <th>Auditor</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of filteredCases; let i = index"
+            [style.animation-delay]="i * 0.05 + 's'">
+          <td><span class="case-id">#{{ item.caseId }}</span></td>
+          <td>{{ item.creationDate }}</td>
+          <td class="description-cell" [title]="item.description">{{ item.description }}</td>
+          <td>
+            <span [class]="getStatusBadgeClass(item.resolutionStatus!)">
+              <i [class]="'bi ' + getStatusIcon(item.resolutionStatus!)"></i>
+              {{ getStatusLabel(item.resolutionStatus!) }}
+            </span>
+          </td>
+          <td>
+            <span [class]="getVerdictBadgeClass(item.sanitaryVerdict!)">
+              <i [class]="'bi ' + getVerdictIcon(item.sanitaryVerdict!)"></i>
+              {{ getVerdictLabel(item.sanitaryVerdict!) }}
+            </span>
+          </td>
+          <td>{{ item.deliveryId || '—' }}</td>
+          <td>{{ item.auditorId }}</td>
+          <td>
+            <div class="actions-cell">
+              <button (click)="changeStatus(item)"
+                      class="btn-action check" title="Changer le statut">
+                <i class="bi bi-arrow-repeat"></i>
+              </button>
               <a [routerLink]="['/audit/inspection-cases/edit', item.caseId]"
-                 class="btn btn-sm btn-outline-primary me-1">
+                 class="btn-action edit" title="Modifier">
                 <i class="bi bi-pencil"></i>
               </a>
               <button (click)="delete(item.caseId!)"
-                      class="btn btn-sm btn-outline-danger">
-                <i class="bi bi-trash"></i>
+                      class="btn-action delete" title="Supprimer">
+                <i class="bi bi-trash3"></i>
               </button>
-            </td>
-          </tr>
-          <tr *ngIf="inspectionCases.length === 0">
-            <td colspan="8" class="text-center text-muted py-4">
-              Aucun dossier trouvé
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- EMPTY STATE -->
+    <div *ngIf="filteredCases.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-clipboard2-x"></i>
+      </div>
+      <h5>Aucun dossier trouvé</h5>
+      <p>Commencez par créer un nouveau dossier d'inspection</p>
     </div>
   </div>
+
 </div>

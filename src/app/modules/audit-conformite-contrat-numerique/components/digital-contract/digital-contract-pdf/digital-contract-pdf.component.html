@@ -1,0 +1,113 @@
+<!-- Action Bar (Not visible in Print) -->
+<div class="print-actions no-print" *ngIf="contract">
+  <button class="btn btn-back" routerLink="/audit/contracts">
+    <i class="bi bi-arrow-left"></i> Retour aux contrats
+  </button>
+  <button class="btn btn-print" (click)="printPdf()">
+    <i class="bi bi-printer"></i> Télécharger en PDF
+  </button>
+</div>
+
+<!-- Loading -->
+<div class="loading-state no-print" *ngIf="loading">
+  <div class="spinner"></div>
+</div>
+
+<!-- Error -->
+<div class="alert alert-danger no-print" *ngIf="error">
+  {{ error }}
+</div>
+
+<!-- The Premium A4 Contract Page -->
+<div class="a4-document" *ngIf="contract">
+  <!-- Top Header / Letterhead -->
+  <div class="doc-header">
+    <div class="logo">
+      <i class=""></i> NutriFlow
+    </div>
+    <div class="doc-ref">
+      <strong>Réf :</strong> NTF-{{ contract.contractId | number:'3.0' }}-{{ contract.generationDate?.substring(0,4) }}<br>
+      <strong>Date :</strong> {{ contract.generationDate | date:'dd/MM/yyyy' }}
+    </div>
+  </div>
+
+  <div class="doc-title">
+    <h1>ATTESTATION DE TRANSFERT & DÉDUCTION FISCALE</h1>
+    <div class="title-line"></div>
+  </div>
+
+  <!-- Body -->
+  <div class="doc-body">
+    <p class="preamble">
+      Par le présent document officiel, généré électroniquement par l'autorité de NutriFlow, il est certifié que le transfert de denrées alimentaires a été acté et validé conformément aux normes en vigueur.
+    </p>
+
+    <!-- The Participants -->
+    <div class="parties-section">
+      <div class="party-box">
+        <h4><i class="bi bi-building"></i> LE DONATEUR</h4>
+        <div class="party-name">{{ contract.donorName }}</div>
+      </div>
+      
+      <div class="party-box">
+        <h4><i class="bi bi-shop"></i> L'ASSOCIATION BÉNÉFICIAIRE</h4>
+        <div class="party-name">{{ contract.receiverName }}</div>
+      </div>
+    </div>
+
+    <!-- The Core Information -->
+    <h3 class="section-title">Détails de l'Opération</h3>
+    <table class="details-table">
+      <tr>
+        <td class="label">Numéro d'Identification Livraison</td>
+        <td class="value"><strong>LIV-{{ contract.deliveryId | number:'4.0' }}</strong></td>
+      </tr>
+      <tr>
+        <td class="label">Statut du Contrat</td>
+        <td class="value badge-status">{{ contract.status }}</td>
+      </tr>
+      <tr>
+        <td class="label">Montant Éligible à la Déduction Fiscale</td>
+        <td class="value highlight-amount">{{ contract.fiscalDeductionValue | number:'1.2-2' }} TND</td>
+      </tr>
+    </table>
+
+    <!-- Clauses -->
+    <h3 class="section-title">Clauses Légales</h3>
+    <div class="clauses">
+      <p><strong>Article 1 :</strong> L'association bénéficiaire certifie avoir reçu les produits associés à la livraison <strong>LIV-{{ contract.deliveryId | number:'4.0' }}</strong> dans les conditions sanitaires adéquates.</p>
+      <p><strong>Article 2 :</strong> Ce document donne droit au Donateur à une déduction fiscale basée sur la valeur déclarée et certifiée ({{ contract.fiscalDeductionValue | number:'1.2-2' }} TND) conformément aux lois de soutien aux banques alimentaires.</p>
+      <p><strong>Article 3 :</strong> NutriFlow agit en tant que tiers de confiance auditeur et archive ce document cryptographiquement dans ses registres.</p>
+    </div>
+  </div>
+
+  <!-- Signatures -->
+  <div class="signatures">
+    <div class="sign-block">
+      <h5>{{ contract.donorName }}</h5>
+      <p class="sign-hint">(Mention "Lu et approuvé" + Cachet)</p>
+      <div class="sign-space"></div>
+    </div>
+    
+    <div class="sign-block center-stamp">
+      <div class="official-stamp">
+        <div class="inner-stamp">
+          <span>CERTIFIÉ</span>
+          <strong>NutriFlow</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="sign-block right">
+      <h5>{{ contract.receiverName }}</h5>
+      <p class="sign-hint">(Mention "Lu et approuvé" + Cachet)</p>
+      <div class="sign-space"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="doc-footer">
+    <p>Document généré électroniquement par l'intelligence d'audit de NutriFlow.</p>
+    <p>Page 1 sur 1 — Validité Légale Assurée</p>
+  </div>
+</div>

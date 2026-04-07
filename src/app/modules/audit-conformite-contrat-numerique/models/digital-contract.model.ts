@@ -4,8 +4,8 @@ export interface DigitalContract {
   pdfDocumentUrl?: string;
   fiscalDeductionValue: number;
   deliveryId: number;
-  donorId: number;
-  receiverId: number;
+  donorName: string;
+  receiverName: string;
   status?: ContractStatus;
 }
 

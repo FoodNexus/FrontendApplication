@@ -1,0 +1,329 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Roboto:wght@300;400;500;700&display=swap');
+
+/* Web Actions */
+:host {
+  display: block;
+  background: #e5e7eb;
+  min-height: 100vh;
+  padding: 2rem 0;
+  font-family: 'Roboto', sans-serif;
+}
+
+.print-actions {
+  max-width: 21cm;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    
+    &.btn-back {
+      background: #fff;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      &:hover { background: #f3f4f6; }
+    }
+    
+    &.btn-print {
+      background: #10b981;
+      color: #fff;
+      &:hover { background: #059669; }
+    }
+  }
+}
+
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+  
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid rgba(16, 185, 129, 0.2);
+    border-top-color: #10b981;
+    border-radius: 50%;
+    animation: spin 1s infinite linear;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── THE A4 DOCUMENT LAYOUT ─── */
+.a4-document {
+  background: white;
+  width: 21cm;
+  min-height: 29.7cm;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  padding: 2cm 2cm;
+  box-sizing: border-box;
+  color: #111827;
+  position: relative;
+}
+
+/* Header */
+.doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #10b981;
+  padding-bottom: 1rem;
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #047857;
+    i { font-size: 2.2rem; }
+  }
+  
+  .doc-ref {
+    text-align: right;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+}
+
+/* Title */
+.doc-title {
+  text-align: center;
+  margin: 3rem 0;
+  
+  h1 {
+    font-family: 'Merriweather', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+    letter-spacing: 0.05em;
+  }
+  
+  .title-line {
+    width: 60px;
+    height: 3px;
+    background: #10b981;
+    margin: 0.8rem auto 0;
+  }
+}
+
+/* Body */
+.doc-body {
+  .preamble {
+    font-family: 'Merriweather', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: #4b5563;
+    line-height: 1.7;
+    text-align: justify;
+    margin-bottom: 2rem;
+  }
+}
+
+.parties-section {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+  
+  .party-box {
+    flex: 1;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    padding: 1.25rem;
+    border-radius: 8px;
+    
+    h4 {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.85rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .party-name {
+      font-family: 'Merriweather', serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #111827;
+    }
+  }
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #047857;
+  border-bottom: 1px solid #d1d5db;
+  padding-bottom: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2.5rem;
+  
+  tr { border-bottom: 1px solid #f3f4f6; }
+  
+  td {
+    padding: 0.85rem 0.5rem;
+    font-size: 0.95rem;
+  }
+  
+  .label {
+    color: #4b5563;
+    width: 50%;
+  }
+  
+  .value {
+    text-align: right;
+    color: #111827;
+  }
+  
+  .badge-status {
+    font-weight: 600;
+    color: #059669;
+  }
+  
+  .highlight-amount {
+    font-family: 'Merriweather', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+}
+
+.clauses {
+  p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #374151;
+    margin-bottom: 0.85rem;
+    text-align: justify;
+  }
+}
+
+/* Signatures */
+.signatures {
+  margin-top: 4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  
+  .sign-block {
+    width: 30%;
+    
+    h5 {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #111827;
+    }
+    
+    .sign-hint {
+      margin: 0.2rem 0 0 0;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      font-style: italic;
+    }
+    
+    .sign-space {
+      height: 80px;
+      margin-top: 1rem;
+      border-bottom: 1px dashed #d1d5db;
+    }
+    
+    &.right { text-align: right; }
+    
+    &.center-stamp {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}
+
+/* Official Stamp (Pure CSS) */
+.official-stamp {
+  width: 90px;
+  height: 90px;
+  border: 3px double #10b981;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-15deg);
+  opacity: 0.8;
+  
+  .inner-stamp {
+    text-align: center;
+    color: #10b981;
+    
+    span {
+      display: block;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+    }
+    strong {
+      display: block;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+  }
+}
+
+/* Footer */
+.doc-footer {
+  position: absolute;
+  bottom: 2cm;
+  left: 2cm;
+  right: 2cm;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #9ca3af;
+  
+  p { margin: 0; }
+}
+
+/* ─── PRINT STYLES ─── */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  
+  :host {
+    background: transparent;
+    padding: 0;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .a4-document {
+    width: 100%;
+    min-height: auto;
+    margin: 0;
+    box-shadow: none;
+    padding: 1.5cm 2cm; /* Slightly smaller padding for physical print */
+  }
+}

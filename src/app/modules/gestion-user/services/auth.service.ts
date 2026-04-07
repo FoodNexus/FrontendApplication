@@ -84,12 +84,18 @@ export class AuthService {
   }
 
   public getUserRoles(): string[] {
-    // Récupère les rôles du royaume (realm roles) configurés dans Keycloak
-    return this.keycloak.getUserRoles(true);
+    // Récupère les rôles du profil (base de données)
+    if (this.currentUser && this.currentUser.role) {
+      return [this.currentUser.role.toUpperCase()];
+    }
+    return [];
   }
 
   public hasRole(role: string): boolean {
-    return this.keycloak.isUserInRole(role);
+    if (this.currentUser && this.currentUser.role) {
+      return this.currentUser.role.toUpperCase() === role.toUpperCase();
+    }
+    return false;
   }
 
   public getUsername(): string {
