@@ -47,6 +47,23 @@ export class InspectionCaseService {
     return this.http.post<InspectionCase>(this.apiUrl, data);
   }
 
+  scan(image: File, auditorId: number, deliveryId: number, description?: string): Observable<InspectionCase> {
+    const formData = new FormData();
+    formData.append('image', image);
+    formData.append('auditorId', auditorId.toString());
+    formData.append('deliveryId', deliveryId.toString());
+    if (description) {
+      formData.append('description', description);
+    }
+    return this.http.post<InspectionCase>(`${this.apiUrl}/scan`, formData);
+  }
+
+  analyze(image: File): Observable<{ sanitaryVerdict: SanitaryVerdict }> {
+    const formData = new FormData();
+    formData.append('image', image);
+    return this.http.post<{ sanitaryVerdict: SanitaryVerdict }>(`${this.apiUrl}/analyze`, formData);
+  }
+
   update(id: number, data: InspectionCase): Observable<InspectionCase> {
     return this.http.put<InspectionCase>(`${this.apiUrl}/${id}`, data);
   }

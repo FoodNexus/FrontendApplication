@@ -20,6 +20,10 @@
         <i class="bi bi-exclamation-circle"></i> {{ errorMessage }}
       </div>
 
+      <div *ngIf="successMessage" class="alert-success">
+        <i class="bi bi-check-circle"></i> {{ successMessage }}
+      </div>
+
       <!-- FORM -->
       <form [formGroup]="form" (ngSubmit)="submit()" class="form-body">
 
@@ -91,6 +95,7 @@
             <i class="bi bi-info-circle"></i> L'ID livraison est obligatoire
           </div>
         </div>
+
 
         
         <!-- ACTIONS -->

@@ -26,6 +26,12 @@ const routes: Routes = [
     loadComponent: () => import('./components/inspection-case/inspection-case-form/inspection-case-form.component')
       .then(m => m.InspectionCaseFormComponent)
   },
+  {
+    path: 'inspection-cases/ai-scan',
+    canActivate: [AuthGuard],
+    data: { roles: ['AUDITOR'] },
+    loadComponent: () => import('./components/inspection-case/ai-scanner/ai.component').then(m => m.AiScannerComponent)
+  },
 
   // RecyclingProducts
   {
