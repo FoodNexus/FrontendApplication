@@ -5,7 +5,8 @@ import { StatutMatch } from '../../../models/enums.model';
 
 @Component({
   selector: 'app-match-list',
-  templateUrl: './match-list.component.html'
+  templateUrl: './match-list.component.html',
+  styleUrls: ['./match-list.component.scss']
 })
 export class MatchListComponent implements OnInit {
 
@@ -35,14 +36,14 @@ export class MatchListComponent implements OnInit {
     });
   }
 
-  getStatutBadge(s: string): string {
+  getStatutClass(s: string): string {
     switch (s) {
-      case 'EN_ATTENTE_LOGISTIQUE': return 'bg-warning text-dark';
-      case 'CONFIRME': return 'bg-primary';
-      case 'LIVRE': return 'bg-success';
-      case 'REFUSE': return 'bg-danger';
-      case 'ANNULE': return 'bg-secondary';
-      default: return 'bg-dark';
+      case 'EN_ATTENTE_LOGISTIQUE': return 'statut-en-cours';
+      case 'CONFIRME': return 'statut-disponible';
+      case 'LIVRE': return 'statut-termine';
+      case 'REFUSE': return 'statut-refuse';
+      case 'ANNULE': return 'statut-annule';
+      default: return 'statut-default';
     }
   }
 }

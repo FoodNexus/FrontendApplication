@@ -1,100 +1,93 @@
-<div class="container-fluid p-4">
+<div class="page-container">
 
-  <!-- Titre -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <h2>🤖 Intelligence Artificielle</h2>
-      <p class="text-muted">Modules IA intégrés pour automatiser et optimiser la gestion des dons</p>
-      <hr>
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon">
+        <i class="bi bi-robot"></i>
+      </div>
+      <div class="title-text">
+        <h2>Intelligence Artificielle</h2>
+        <p>Modules IA intégrés pour automatiser et optimiser la gestion des dons</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/user/dashboard" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Retour au Dashboard
+      </a>
     </div>
   </div>
 
-  <!-- 4 cartes IA -->
-  <div class="row g-4">
+  <!-- AI CARDS -->
+  <div class="ai-cards-grid">
 
     <!-- OCR -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card h-100 border-primary shadow-sm">
-        <div class="card-body text-center">
-          <div class="display-4 mb-3">📷</div>
-          <h5 class="card-title">Scanner OCR</h5>
-          <p class="card-text text-muted">Scannez un produit par photo pour extraire le code-barre et la date de péremption</p>
-          <ul class="list-unstyled text-start">
-            <li class="text-success">✔ Lecture code-barre</li>
-            <li class="text-success">✔ Extraction date péremption</li>
-            <li class="text-success">✔ Création automatique de lot</li>
-          </ul>
-        </div>
-        <div class="card-footer bg-white border-0 text-center pb-3">
-          <a routerLink="ocr" class="btn btn-primary">Accéder →</a>
-        </div>
+    <div class="ai-card border-blue">
+      <div class="card-icon-wrapper blue">
+        <i class="bi bi-camera"></i>
       </div>
+      <h5 class="card-title">Scanner OCR</h5>
+      <p class="card-text">Scannez un produit par photo pour extraire le code-barre et la date de péremption</p>
+      <ul class="feature-list">
+        <li><i class="bi bi-check-circle-fill icon-check"></i> Lecture code-barre</li>
+        <li><i class="bi bi-check-circle-fill icon-check"></i> Extraction date péremption</li>
+        <li><i class="bi bi-check-circle-fill icon-check"></i> Création automatique de lot</li>
+      </ul>
+      <a routerLink="ocr" class="btn-access blue">Accéder <i class="bi bi-arrow-right"></i></a>
     </div>
 
     <!-- NLP -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card h-100 border-success shadow-sm">
-        <div class="card-body text-center">
-          <div class="display-4 mb-3">💬</div>
-          <h5 class="card-title">Analyse Texte (NLP)</h5>
-          <p class="card-text text-muted">Décrivez votre don en texte libre et le système comprendra automatiquement</p>
-          <ul class="list-unstyled text-start">
-            <li class="text-success">��� Reconnaissance produit</li>
-            <li class="text-success">✔ Extraction quantité</li>
-            <li class="text-success">✔ Déduction urgence</li>
-          </ul>
-        </div>
-        <div class="card-footer bg-white border-0 text-center pb-3">
-          <a routerLink="nlp" class="btn btn-success">Accéder →</a>
-        </div>
+    <div class="ai-card border-green">
+      <div class="card-icon-wrapper green">
+        <i class="bi bi-chat-text"></i>
       </div>
+      <h5 class="card-title">Analyse Texte (NLP)</h5>
+      <p class="card-text">Décrivez votre don en texte libre et le système comprendra automatiquement</p>
+      <ul class="feature-list">
+        <li><i class="bi bi-check-circle-fill icon-check"></i> Reconnaissance produit</li>
+        <li><i class="bi bi-check-circle-fill icon-check"></i> Extraction quantité</li>
+        <li><i class="bi bi-check-circle-fill icon-check"></i> Déduction urgence</li>
+      </ul>
+      <a routerLink="nlp" class="btn-access green">Accéder <i class="bi bi-arrow-right"></i></a>
     </div>
 
-    <!-- Vision -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card h-100 border-warning shadow-sm">
-        <div class="card-body text-center">
-          <div class="display-4 mb-3">🔍</div>
-          <h5 class="card-title">Contrôle Qualité</h5>
-          <p class="card-text text-muted">Prenez une photo pour vérifier automatiquement la qualité du produit</p>
-          <ul class="list-unstyled text-start">
-            <li class="text-success">✔ Analyse visuelle</li>
-            <li class="text-success">✔ Détection moisissure</li>
-            <li class="text-success">✔ Décision auto matching/recyclage</li>
-          </ul>
-        </div>
-        <div class="card-footer bg-white border-0 text-center pb-3">
-          <a routerLink="quality" class="btn btn-warning">Accéder →</a>
-        </div>
+    <!-- Quality -->
+    <div class="ai-card border-orange">
+      <div class="card-icon-wrapper orange">
+        <i class="bi bi-search"></i>
       </div>
+      <h5 class="card-title">Contrôle Qualité</h5>
+      <p class="card-text">Prenez une photo pour vérifier automatiquement la qualité du produit</p>
+      <ul class="feature-list">
+        <li><i class="bi bi-check-circle-fill icon-check"></i> Analyse visuelle</li>
+        <li><i class="bi bi-check-circle-fill icon-check"></i> Détection moisissure</li>
+        <li><i class="bi bi-check-circle-fill icon-check"></i> Décision auto matching</li>
+      </ul>
+      <a routerLink="quality" class="btn-access orange">Accéder <i class="bi bi-arrow-right"></i></a>
     </div>
 
     <!-- Learning -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card h-100 border-info shadow-sm">
-        <div class="card-body text-center">
-          <div class="display-4 mb-3">🧠</div>
-          <h5 class="card-title">Apprentissage</h5>
-          <p class="card-text text-muted">Consultez comment le système apprend des matchs passés pour s'améliorer</p>
-          <ul class="list-unstyled text-start">
-            <li class="text-success">✔ Profils receveurs</li>
-            <li class="text-success">✔ Taux de succès</li>
-            <li class="text-success">✔ Bonus/malus adaptatifs</li>
-          </ul>
-        </div>
-        <div class="card-footer bg-white border-0 text-center pb-3">
-          <a routerLink="learning" class="btn btn-info text-white">Accéder →</a>
-        </div>
+    <div class="ai-card border-purple">
+      <div class="card-icon-wrapper purple">
+        <i class="bi bi-lightbulb"></i>
       </div>
+      <h5 class="card-title">Apprentissage</h5>
+      <p class="card-text">Consultez comment le système apprend des matchs passés pour s'améliorer</p>
+      <ul class="feature-list">
+        <li><i class="bi bi-check-circle-fill icon-check"></i> Profils receveurs</li>
+        <li><i class="bi bi-check-circle-fill icon-check"></i> Taux de succès</li>
+        <li><i class="bi bi-check-circle-fill icon-check"></i> Bonus/malus adaptatifs</li>
+      </ul>
+      <a routerLink="learning" class="btn-access purple">Accéder <i class="bi bi-arrow-right"></i></a>
     </div>
 
   </div>
 
-  <!-- Compteur -->
-  <div class="row mt-4">
-    <div class="col-12 text-center">
-      <span class="badge bg-dark fs-6">4 Modules IA actifs</span>
-    </div>
+  <!-- STATUS BADGE -->
+  <div class="status-container">
+    <span class="badge-status">
+      <span class="pulse-dot"></span> 4 Modules IA actifs et opérationnels
+    </span>
   </div>
 
 </div>

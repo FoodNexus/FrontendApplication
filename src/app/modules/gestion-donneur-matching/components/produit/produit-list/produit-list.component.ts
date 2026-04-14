@@ -5,7 +5,8 @@ import { CategorieProduit } from '../../../models/enums.model';
 
 @Component({
   selector: 'app-produit-list',
-  templateUrl: './produit-list.component.html'
+  templateUrl: './produit-list.component.html',
+  styleUrls: ['./produit-list.component.scss']
 })
 export class ProduitListComponent implements OnInit {
 
@@ -53,12 +54,12 @@ export class ProduitListComponent implements OnInit {
     }
   }
 
-  getBadgeClass(categorie: string): string {
+  getCategorieClass(categorie: string): string {
     switch (categorie) {
-      case 'FRAIS': return 'bg-success';
-      case 'SURGELE': return 'bg-info';
-      case 'SEC': return 'bg-warning text-dark';
-      default: return 'bg-secondary';
+      case 'FRAIS':   return 'cat-frais';
+      case 'SURGELE': return 'cat-surgele';
+      case 'SEC':     return 'cat-sec';
+      default:        return 'cat-default';
     }
   }
 

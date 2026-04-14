@@ -50,7 +50,7 @@ export class LotDetailComponent implements OnInit {
 
   lancerMatching(): void {
     if (this.lot) {
-      this.router.navigate(['donneur/matching/lancer'], { queryParams: { lotId: this.lot.idLot } });
+      this.router.navigate(['donneur/matching'], { queryParams: { lotId: this.lot.idLot } });
     }
   }
 

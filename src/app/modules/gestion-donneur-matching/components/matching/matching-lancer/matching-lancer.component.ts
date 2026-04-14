@@ -7,7 +7,8 @@ import { MatchingResultDTO } from '../../../models/matching-result.model';
 
 @Component({
   selector: 'app-matching-lancer',
-  templateUrl: './matching-lancer.component.html'
+  templateUrl: './matching-lancer.component.html',
+  styleUrls: ['./matching-lancer.component.scss']
 })
 export class MatchingLancerComponent implements OnInit {
 

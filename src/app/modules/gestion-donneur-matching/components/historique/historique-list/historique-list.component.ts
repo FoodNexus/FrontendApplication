@@ -4,7 +4,8 @@ import { HistoriqueResponse } from '../../../models/historique.model';
 
 @Component({
   selector: 'app-historique-list',
-  templateUrl: './historique-list.component.html'
+  templateUrl: './historique-list.component.html',
+  styleUrls: ['./historique-list.component.scss']
 })
 export class HistoriqueListComponent implements OnInit {
 

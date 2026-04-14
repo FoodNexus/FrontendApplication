@@ -9,7 +9,8 @@ import { LotResponse } from '../../../models/lot.model';
 
 @Component({
   selector: 'app-historique-form',
-  templateUrl: './historique-form.component.html'
+  templateUrl: './historique-form.component.html',
+  styleUrls: ['./historique-form.component.scss']
 })
 export class HistoriqueFormComponent implements OnInit {
 
@@ -42,6 +43,11 @@ export class HistoriqueFormComponent implements OnInit {
         },
         error: () => this.errorMessage = 'Non trouvé'
       });
+    } else {
+      const lotId = this.route.snapshot.queryParamMap.get('lotId');
+      if (lotId) {
+        this.historique.lotId = +lotId;
+      }
     }
   }
 
