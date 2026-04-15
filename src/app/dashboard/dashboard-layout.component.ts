@@ -50,35 +50,6 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
           <router-outlet></router-outlet>
         </section>
       </main>
-
-      <footer class="contact-footer">
-        <div class="footer-grid">
-          <section>
-            <h3>About Our Team</h3>
-            <p>
-              We collaborate across modules to build a reliable circular-economy platform
-              for audit, matching, logistics, valorisation, and receiver management.
-            </p>
-          </section>
-
-          <section>
-            <h3>Contact</h3>
-            <p>Email: greenloop.team&#64;project.local</p>
-            <p>Phone: +216 00 000 000</p>
-            <p>Location: Tunis, Tunisia</p>
-          </section>
-
-          <section>
-            <h3>Social</h3>
-            <div class="social-links">
-              <a href="#" aria-label="Twitter">Twitter</a>
-              <a href="#" aria-label="Facebook">Facebook</a>
-              <a href="#" aria-label="Instagram">Instagram</a>
-              <a href="#" aria-label="LinkedIn">LinkedIn</a>
-            </div>
-          </section>
-        </div>
-      </footer>
     </div>
   `,
   styles: [`
@@ -223,55 +194,6 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
       min-width: 0;
     }
 
-    .contact-footer {
-      border-top: 1px solid #d8d8d8;
-      background: #ffffff;
-      margin-top: 1.5rem;
-      padding: 1.4rem 1.5rem 1.8rem;
-    }
-
-    .footer-grid {
-      width: 100%;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-    }
-
-    .footer-grid h3 {
-      margin: 0 0 0.5rem;
-      font-size: 0.95rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: #111827;
-    }
-
-    .footer-grid p {
-      margin: 0.25rem 0;
-      color: #4b5563;
-      font-size: 0.9rem;
-      line-height: 1.4;
-    }
-
-    .social-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .social-links a {
-      text-decoration: none;
-      font-size: 0.85rem;
-      color: #111827;
-      border: 1px solid #d4d4d4;
-      border-radius: 999px;
-      padding: 0.3rem 0.65rem;
-      background: #fafafa;
-    }
-
-    .social-links a:hover {
-      background: #f0f0f0;
-    }
-
     @media (max-width: 740px) {
       .topbar-inner {
         align-items: flex-start;
@@ -292,12 +214,6 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 })
 export class DashboardLayoutComponent {
   navItems = [
-    { label: 'auditConformite', path: '/audit-conformite' },
-    { label: 'gestionDonneur+Matching', path: '/gestion-donneur-matching' },
-    { label: 'communaut-ImpactSoci-tal', path: '/communaut-impact-societal' },
-    { label: 'valorisationOrganique+EconomieCirculaire', path: '/valorisation-organique-economie-circulaire' },
-    { label: 'logistiqueTransport', path: '/logistique-transport' },
-    { label: 'gestionReceveur', path: '/gestion-receveur' },
-    { label: 'gestionReceveur/Recyclables', path: '/gestion-receveur/recyclables' }
+    { label: 'gestionReceveur/Recyclables Admin', path: '/gestion-receveur/recyclables' }
   ];
 }

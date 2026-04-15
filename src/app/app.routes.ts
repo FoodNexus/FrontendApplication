@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { DashboardLayoutComponent } from './dashboard/dashboard-layout.component';
 import { ModuleWorkspaceComponent } from './modules/module-workspace.component';
 import { RecyclablesCrudComponent } from './modules/recyclables-crud.component';
+import { RecyclerFrontLayoutComponent } from './front/recycler-front-layout.component';
+import { StoreRecycleRequestsComponent } from './store/store-recycle-requests.component';
 
 export const routes: Routes = [
   {
@@ -62,6 +64,24 @@ export const routes: Routes = [
         component: RecyclablesCrudComponent
       }
     ]
+  },
+  {
+    path: 'recycler-front',
+    component: RecyclerFrontLayoutComponent
+  },
+  {
+    path: 'store-recycle-requests',
+    component: StoreRecycleRequestsComponent
+  },
+  {
+    path: 'gestion-receveur/recycler-front',
+    redirectTo: 'recycler-front',
+    pathMatch: 'full'
+  },
+  {
+    path: 'gestion-receveur/store-recycle-requests',
+    redirectTo: 'store-recycle-requests',
+    pathMatch: 'full'
   },
   { path: '**', redirectTo: '' }
 ];

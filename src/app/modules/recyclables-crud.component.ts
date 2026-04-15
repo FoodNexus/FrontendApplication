@@ -9,6 +9,7 @@ interface RecyclableItem {
   name: string;
   quantityKg: number;
   status: RecyclableStatus;
+  imageUrl: string;
 }
 
 @Component({
@@ -48,6 +49,16 @@ interface RecyclableItem {
           </select>
         </div>
 
+        <div class="form-group">
+          <label for="imageUrl">Image URL</label>
+          <input
+            id="imageUrl"
+            name="imageUrl"
+            [(ngModel)]="draft.imageUrl"
+            placeholder="https://example.com/recyclable.jpg"
+          />
+        </div>
+
         <button type="submit">{{ editingId === null ? 'Add' : 'Update' }}</button>
         <button type="button" class="secondary" *ngIf="editingId !== null" (click)="cancelEdit()">
           Cancel
@@ -59,6 +70,7 @@ interface RecyclableItem {
           <thead>
             <tr>
               <th>Produit</th>
+              <th>Image</th>
               <th>Quantite (kg)</th>
               <th>Status</th>
               <th>Actions</th>
@@ -67,6 +79,15 @@ interface RecyclableItem {
           <tbody>
             <tr *ngFor="let item of recyclables">
               <td>{{ item.name }}</td>
+              <td>
+                <img
+                  *ngIf="item.imageUrl"
+                  [src]="item.imageUrl"
+                  [alt]="item.name"
+                  class="thumb"
+                />
+                <span *ngIf="!item.imageUrl" class="muted">No image</span>
+              </td>
               <td>{{ item.quantityKg }}</td>
               <td>{{ item.status }}</td>
               <td class="actions">
@@ -155,9 +176,24 @@ interface RecyclableItem {
       display: flex;
       gap: 0.45rem;
     }
+
+    .thumb {
+      width: 56px;
+      height: 42px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      display: block;
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: 0.8rem;
+    }
   `]
 })
 export class RecyclablesCrudComponent {
+  private readonly storageKey = 'gestion-receveur-recyclables';
   protected readonly statuses: RecyclableStatus[] = [
     'In Process',
     'Recycled',
@@ -165,19 +201,17 @@ export class RecyclablesCrudComponent {
     'Rejected'
   ];
 
-  protected recyclables: RecyclableItem[] = [
-    { id: 1, name: 'Plastic bottles', quantityKg: 45, status: 'In Process' },
-    { id: 2, name: 'Cardboard', quantityKg: 30, status: 'Recycled' }
-  ];
+  protected recyclables: RecyclableItem[] = this.getInitialRecyclables();
 
   protected draft: Omit<RecyclableItem, 'id'> = {
     name: '',
     quantityKg: 1,
-    status: 'In Process'
+    status: 'In Process',
+    imageUrl: ''
   };
 
   protected editingId: number | null = null;
-  private nextId = 3;
+  private nextId = this.recyclables.length + 1;
 
   protected saveItem(): void {
     if (!this.draft.name.trim()) {
@@ -189,6 +223,7 @@ export class RecyclablesCrudComponent {
         ...this.recyclables,
         { id: this.nextId++, ...this.draft, name: this.draft.name.trim() }
       ];
+      this.persistRecyclables();
       this.resetForm();
       return;
     }
@@ -198,6 +233,7 @@ export class RecyclablesCrudComponent {
         ? { ...item, ...this.draft, name: this.draft.name.trim() }
         : item
     );
+    this.persistRecyclables();
     this.cancelEdit();
   }
 
@@ -206,7 +242,8 @@ export class RecyclablesCrudComponent {
     this.draft = {
       name: item.name,
       quantityKg: item.quantityKg,
-      status: item.status
+      status: item.status,
+      imageUrl: item.imageUrl
     };
   }
 
@@ -217,6 +254,7 @@ export class RecyclablesCrudComponent {
 
   protected deleteItem(id: number): void {
     this.recyclables = this.recyclables.filter((item) => item.id !== id);
+    this.persistRecyclables();
     if (this.editingId === id) {
       this.cancelEdit();
     }
@@ -226,7 +264,42 @@ export class RecyclablesCrudComponent {
     this.draft = {
       name: '',
       quantityKg: 1,
-      status: 'In Process'
+      status: 'In Process',
+      imageUrl: ''
     };
+  }
+
+  private getInitialRecyclables(): RecyclableItem[] {
+    const cached = localStorage.getItem(this.storageKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached) as RecyclableItem[];
+      } catch {
+        localStorage.removeItem(this.storageKey);
+      }
+    }
+
+    const defaults: RecyclableItem[] = [
+      {
+        id: 1,
+        name: 'Plastic bottles',
+        quantityKg: 45,
+        status: 'In Process',
+        imageUrl: 'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=300&q=80'
+      },
+      {
+        id: 2,
+        name: 'Cardboard',
+        quantityKg: 30,
+        status: 'Pending Collection',
+        imageUrl: 'https://images.unsplash.com/photo-1605600659908-0ef719419d41?auto=format&fit=crop&w=300&q=80'
+      }
+    ];
+    localStorage.setItem(this.storageKey, JSON.stringify(defaults));
+    return defaults;
+  }
+
+  private persistRecyclables(): void {
+    localStorage.setItem(this.storageKey, JSON.stringify(this.recyclables));
   }
 }
