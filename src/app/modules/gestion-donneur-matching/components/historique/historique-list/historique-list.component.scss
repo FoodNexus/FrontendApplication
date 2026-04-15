@@ -142,6 +142,73 @@
   }
 }
 
+/* ─── FILTRES ─── */
+.filters-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  margin-bottom: 1.5rem;
+}
+
+.filters-row {
+  display: grid;
+  grid-template-columns: 1.5fr auto;
+  gap: 1.25rem;
+  align-items: end;
+  max-width: 500px;
+}
+
+.search-box {
+  position: relative;
+  
+  i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 0.9rem;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.55rem 1rem 0.55rem 2.5rem;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-family: 'Inter', sans-serif;
+    color: #1a1a2e;
+    background: #fafbfc;
+    transition: all 0.3s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+      background: #fff;
+    }
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+  }
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #6b7280;
+    letter-spacing: 0.05em;
+  }
+}
+
 /* ─── TABS ─── */
 .tabs-card {
   background: #fff;

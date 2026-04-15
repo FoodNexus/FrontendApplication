@@ -39,6 +39,7 @@ const routes: Routes = [
   // ✅ historiques
   { path: 'historiques', component: HistoriqueListComponent },
   { path: 'historiques/nouveau', component: HistoriqueFormComponent },
+  { path: 'historiques/modifier/:id', component: HistoriqueFormComponent },
   
   // ✅ matchs
   { path: 'matchs', component: MatchListComponent },

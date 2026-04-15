@@ -11,6 +11,7 @@ import { StatutMatch } from '../../../models/enums.model';
 export class MatchListComponent implements OnInit {
 
   matchs: MatchFractionneResponse[] = [];
+  searchKeyword = '';
   selectedStatut = '';
   statuts = Object.values(StatutMatch);
   successMessage = '';
@@ -48,6 +49,22 @@ export class MatchListComponent implements OnInit {
       this.matchs = data;
       this.currentPage = 1;
     });
+  }
+
+  rechercher(): void {
+    if (this.searchKeyword.trim()) {
+      const keyword = this.searchKeyword.toLowerCase();
+      this.matchService.getAll().subscribe(data => {
+        this.matchs = data.filter(m => 
+          m.idMatch.toString().includes(keyword) || 
+          m.lotId.toString().includes(keyword) ||
+          m.idReceveur.toString().includes(keyword)
+        );
+        this.currentPage = 1;
+      });
+    } else {
+      this.loadMatchs();
+    }
   }
 
   filtrerParStatut(): void {

@@ -12,8 +12,11 @@
       </div>
     </div>
     <div class="header-actions">
-      <a routerLink="/user/produits" class="btn-back">
-        <i class="bi bi-arrow-left"></i> Retour aux produits
+      <a routerLink="/donneur/dashboard" class="btn-back me-3">
+        <i class="bi bi-arrow-left"></i> Retour au Dashboard
+      </a>
+      <a routerLink="/donneur/produits" class="btn-back">
+        <i class="bi bi-basket"></i> Retour aux produits
       </a>
     </div>
   </div>
@@ -96,7 +99,7 @@
 
         <!-- ACTIONS -->
         <div class="form-actions mt-4">
-          <a routerLink="/user/produits" class="btn-cancel">
+          <a routerLink="/donneur/produits" class="btn-cancel">
             <i class="bi bi-x-lg me-1"></i> Annuler
           </a>
           <button type="submit" class="btn-submit" [disabled]="!f.valid">

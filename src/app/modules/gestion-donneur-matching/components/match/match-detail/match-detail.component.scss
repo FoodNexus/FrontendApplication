@@ -105,10 +105,10 @@
 
 .form-header {
   background: linear-gradient(135deg, #10b981 0%, #047857 100%);
-  padding: 2rem 2rem 1.75rem;
+  padding: 1.75rem 2rem 1.5rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
   color: #fff;
 
   .header-icon {
@@ -121,6 +121,7 @@
     align-items: center;
     justify-content: center;
     font-size: 1.4rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   h3 {
@@ -128,19 +129,20 @@
     font-weight: 800;
     font-size: 1.35rem;
     letter-spacing: -0.02em;
+    color: #fff;
   }
 
   p {
     margin: 0.2rem 0 0;
     font-size: 0.85rem;
-    opacity: 0.85;
+    opacity: 0.9;
     font-weight: 400;
   }
 }
 
 /* ─── DETAIL BODY ─── */
 .detail-body {
-  padding: 2rem;
+  padding: 2rem 2.5rem;
 }
 
 .detail-row {

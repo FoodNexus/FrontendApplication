@@ -15,7 +15,7 @@
       <a routerLink="/user/dashboard" class="btn-back me-3">
         <i class="bi bi-arrow-left"></i> Retour au Dashboard
       </a>
-      <a routerLink="../historiques/ajouter" class="btn-add">
+      <a routerLink="/donneur/historiques/nouveau" class="btn-add">
         <i class="bi bi-plus-lg"></i> Ajouter un produit à un lot
       </a>
     </div>
@@ -29,9 +29,24 @@
     </button>
   </div>
 
+  <!-- FILTRES -->
+  <div class="filters-card">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label><i class="bi bi-search me-1"></i>Rechercher</label>
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input type="text"
+                 [(ngModel)]="searchKeyword"
+                 placeholder="Produit, Code-barre ou ID..."/>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- TABS -->
   <div class="tabs-card">
-      <div class="header-tabs">
+      <div class="tabs-row">
         <button class="tab-btn" [class.active]="activeTab === 'tous'" (click)="setTab('tous')">
           <i class="bi bi-collection me-2"></i>Tous les produits
         </button>
@@ -78,7 +93,7 @@
           <td>{{ h.datePeremptionExacte | date:'dd/MM/yyyy HH:mm' }}</td>
           <td>
             <div class="actions-cell">
-              <a [routerLink]="['../historiques/modifier', h.idHistorique]"
+              <a [routerLink]="['/donneur/historiques/modifier', h.idHistorique]"
                  class="btn-action edit" title="Modifier">
                 <i class="bi bi-pencil"></i>
               </a>

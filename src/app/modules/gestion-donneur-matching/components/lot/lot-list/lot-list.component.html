@@ -33,6 +33,17 @@
   <div class="filters-card">
     <div class="filters-row">
       <div class="filter-group">
+        <label><i class="bi bi-search me-1"></i>Rechercher</label>
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input type="text"
+                 [(ngModel)]="searchKeyword"
+                 (keyup.enter)="rechercher()"
+                 placeholder="ID Lot ou Donneur..."/>
+        </div>
+      </div>
+
+      <div class="filter-group">
         <label><i class="bi bi-funnel me-1"></i>Statut</label>
         <select class="filter-select"
                 [(ngModel)]="selectedStatut"

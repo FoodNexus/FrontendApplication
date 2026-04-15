@@ -13,6 +13,7 @@ export class HistoriqueListComponent implements OnInit {
   peremptionProche: HistoriqueResponse[] = [];
   perimes: HistoriqueResponse[] = [];
   activeTab = 'tous';
+  searchKeyword = '';
   successMessage = '';
   Math = Math;
 
@@ -60,11 +61,22 @@ export class HistoriqueListComponent implements OnInit {
   }
 
   get displayedList(): HistoriqueResponse[] {
+    let list: HistoriqueResponse[] = [];
     switch (this.activeTab) {
-      case 'proche': return this.peremptionProche;
-      case 'perimes': return this.perimes;
-      default: return this.historiques;
+      case 'proche': list = this.peremptionProche; break;
+      case 'perimes': list = this.perimes; break;
+      default: list = this.historiques; break;
     }
+
+    if (this.searchKeyword.trim()) {
+      const keyword = this.searchKeyword.toLowerCase();
+      return list.filter(h => 
+        h.libelleProduit.toLowerCase().includes(keyword) || 
+        h.codeBarre.toLowerCase().includes(keyword) ||
+        h.idHistorique.toString().includes(keyword)
+      );
+    }
+    return list;
   }
 
   setTab(tab: string): void {

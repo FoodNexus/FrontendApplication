@@ -13,6 +13,7 @@ import { ViewEncapsulation } from '@angular/core';
 export class LotListComponent implements OnInit {
 
   lots: LotResponse[] = [];
+  searchKeyword = '';
   selectedStatut = '';
   selectedUrgence = '';
   statuts = Object.values(StatutLot);
@@ -54,6 +55,22 @@ export class LotListComponent implements OnInit {
     });
   }
 
+  rechercher(): void {
+    if (this.searchKeyword.trim()) {
+      const keyword = this.searchKeyword.toLowerCase();
+      // On filtre côté client pour l'instant pour plus de réactivité
+      this.lotService.getAll().subscribe(data => {
+        this.lots = data.filter(l => 
+          l.idLot.toString().includes(keyword) || 
+          l.donneurId.toString().includes(keyword)
+        );
+        this.currentPage = 1;
+      });
+    } else {
+      this.loadLots();
+    }
+  }
+
   filtrerParStatut(): void {
     if (this.selectedStatut) {
       this.lotService.getByStatut(this.selectedStatut as StatutLot)
@@ -86,8 +103,9 @@ export class LotListComponent implements OnInit {
   getStatutClass(statut: string): string {
   switch (statut) {
     case 'PREDIT_DISPONIBLE': return 'statut-disponible';
-    case 'EN_COURS':          return 'statut-en-cours';
-    case 'TERMINE':           return 'statut-termine';
+    case 'EN_COURS_MATCHING': return 'statut-en-cours';
+    case 'MATCH_VALIDE':      return 'statut-termine';
+    case 'ORIENTE_RECYCLAGE': return 'statut-recycle';
     default:                  return 'statut-default';
   }
 }
@@ -103,6 +121,7 @@ export class LotListComponent implements OnInit {
 }
 
   reinitialiser(): void {
+    this.searchKeyword = '';
     this.selectedStatut = '';
     this.selectedUrgence = '';
     this.loadLots();

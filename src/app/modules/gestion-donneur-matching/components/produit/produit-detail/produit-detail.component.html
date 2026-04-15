@@ -12,10 +12,13 @@
       </div>
     </div>
     <div class="header-actions">
-      <a routerLink="../../produits" class="btn-back me-3">
-        <i class="bi bi-arrow-left"></i> Retour aux produits
+      <a routerLink="/donneur/dashboard" class="btn-back me-3">
+        <i class="bi bi-arrow-left"></i> Retour au Dashboard
       </a>
-      <a [routerLink]="['../../produits/modifier', produit.idProduit]" class="btn-add">
+      <a routerLink="/donneur/produits" class="btn-back me-3">
+        <i class="bi bi-list-ul"></i> Retour aux produits
+      </a>
+      <a [routerLink]="['/donneur/produits/modifier', produit.idProduit]" class="btn-add">
         <i class="bi bi-pencil"></i> Modifier
       </a>
     </div>

@@ -14,7 +14,7 @@
 }
 
 /* On s'assure que les containers parents ne bloquent pas le background */
-app-lot-list,
+app-produit-list,
 .page-container {
   background: transparent !important;
 }
@@ -169,8 +169,8 @@ app-lot-list,
 
 .filters-row {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 1rem;
+  grid-template-columns: 1.5fr 1fr auto;
+  gap: 1.25rem;
   align-items: end;
 }
 
