@@ -82,7 +82,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let lot of lots; let i = index"
+        <tr *ngFor="let lot of paginatedLots; let i = index"
             [style.animation-delay]="i * 0.05 + 's'">
           <td><span class="case-id">#{{ lot.idLot }}</span></td>
           <td>
@@ -133,6 +133,31 @@
         </tr>
       </tbody>
     </table>
+
+    <!-- PAGINATION -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+      <div class="pagination-info">
+        Affichage de <b>{{ (currentPage - 1) * pageSize + 1 }}</b> à <b>{{ Math.min(currentPage * pageSize, lots.length) }}</b> sur <b>{{ lots.length }}</b> lots
+      </div>
+      <div class="pagination-controls">
+        <button class="page-nav-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        
+        <div class="page-numbers">
+          <button *ngFor="let p of pages" 
+                  class="page-number-btn" 
+                  [class.active]="p === currentPage"
+                  (click)="goToPage(p)">
+            {{ p }}
+          </button>
+        </div>
+
+        <button class="page-nav-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
 
     <!-- EMPTY STATE -->
     <div *ngIf="lots.length === 0" class="empty-state">

@@ -14,18 +14,48 @@ export class MatchListComponent implements OnInit {
   selectedStatut = '';
   statuts = Object.values(StatutMatch);
   successMessage = '';
+  Math = Math;
+
+  // Pagination
+  currentPage = 1;
+  pageSize = 10;
+
+  get totalPages(): number {
+    return Math.ceil(this.matchs.length / this.pageSize);
+  }
+
+  get paginatedMatchs(): MatchFractionneResponse[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.matchs.slice(start, start + this.pageSize);
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
 
   constructor(private matchService: MatchFractionneService) {}
 
   ngOnInit(): void { this.loadMatchs(); }
 
   loadMatchs(): void {
-    this.matchService.getAll().subscribe(data => this.matchs = data);
+    this.matchService.getAll().subscribe(data => {
+      this.matchs = data;
+      this.currentPage = 1;
+    });
   }
 
   filtrerParStatut(): void {
     if (this.selectedStatut) {
-      this.matchService.getByStatut(this.selectedStatut as StatutMatch).subscribe(data => this.matchs = data);
+      this.matchService.getByStatut(this.selectedStatut as StatutMatch).subscribe(data => {
+        this.matchs = data;
+        this.currentPage = 1;
+      });
     } else { this.loadMatchs(); }
   }
 

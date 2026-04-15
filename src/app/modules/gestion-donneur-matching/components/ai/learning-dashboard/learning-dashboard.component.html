@@ -134,7 +134,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let p of tousLesProfils">
+          <tr *ngFor="let p of paginatedProfiles">
             <td><span class="case-id">#{{ p.receveurId }}</span></td>
             <td>
               <div class="table-progress-group">
@@ -166,6 +166,31 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination-container" *ngIf="totalPagesItems > 1">
+      <div class="pagination-info">
+        Affichage de <b>{{ (currentPageItems - 1) * pageSizeItems + 1 }}</b> à <b>{{ Math.min(currentPageItems * pageSizeItems, tousLesProfils.length) }}</b> sur <b>{{ tousLesProfils.length }}</b> profils
+      </div>
+      <div class="pagination-controls">
+        <button class="page-nav-btn" [disabled]="currentPageItems === 1" (click)="goToPageItems(currentPageItems - 1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        
+        <div class="page-numbers">
+          <button *ngFor="let p of pagesItems" 
+                  class="page-number-btn" 
+                  [class.active]="p === currentPageItems"
+                  (click)="goToPageItems(p)">
+            {{ p }}
+          </button>
+        </div>
+
+        <button class="page-nav-btn" [disabled]="currentPageItems === totalPagesItems" (click)="goToPageItems(currentPageItems + 1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
     </div>
 
     <!-- EMPTY STATE -->

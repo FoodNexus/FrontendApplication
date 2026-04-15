@@ -14,6 +14,30 @@ export class HistoriqueListComponent implements OnInit {
   perimes: HistoriqueResponse[] = [];
   activeTab = 'tous';
   successMessage = '';
+  Math = Math;
+
+  // Pagination
+  currentPage = 1;
+  pageSize = 10;
+
+  get totalPages(): number {
+    return Math.ceil(this.displayedList.length / this.pageSize);
+  }
+
+  get paginatedHistoriques(): HistoriqueResponse[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.displayedList.slice(start, start + this.pageSize);
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
 
   constructor(private historiqueService: HistoriqueService) {}
 
@@ -41,5 +65,10 @@ export class HistoriqueListComponent implements OnInit {
       case 'perimes': return this.perimes;
       default: return this.historiques;
     }
+  }
+
+  setTab(tab: string): void {
+    this.activeTab = tab;
+    this.currentPage = 1;
   }
 }

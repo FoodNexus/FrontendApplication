@@ -18,26 +18,59 @@ export class LotListComponent implements OnInit {
   statuts = Object.values(StatutLot);
   urgences = Object.values(NiveauUrgence);
   successMessage = '';
+  Math = Math;
+
+  // Pagination
+  currentPage = 1;
+  pageSize = 10;
+
+  get totalPages(): number {
+    return Math.ceil(this.lots.length / this.pageSize);
+  }
+
+  get paginatedLots(): LotResponse[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.lots.slice(start, start + this.pageSize);
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
 
   constructor(private lotService: LotService) {}
 
   ngOnInit(): void { this.loadLots(); }
 
   loadLots(): void {
-    this.lotService.getAll().subscribe(data => this.lots = data);
+    this.lotService.getAll().subscribe(data => {
+      this.lots = data;
+      this.currentPage = 1;
+    });
   }
 
   filtrerParStatut(): void {
     if (this.selectedStatut) {
       this.lotService.getByStatut(this.selectedStatut as StatutLot)
-        .subscribe(data => this.lots = data);
+        .subscribe(data => {
+          this.lots = data;
+          this.currentPage = 1;
+        });
     } else { this.loadLots(); }
   }
 
   filtrerParUrgence(): void {
     if (this.selectedUrgence) {
       this.lotService.getByUrgence(this.selectedUrgence as NiveauUrgence)
-        .subscribe(data => this.lots = data);
+        .subscribe(data => {
+          this.lots = data;
+          this.currentPage = 1;
+        });
     } else { this.loadLots(); }
   }
 

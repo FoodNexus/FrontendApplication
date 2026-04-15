@@ -31,17 +31,17 @@
 
   <!-- TABS -->
   <div class="tabs-card">
-    <div class="tabs-row">
-      <button class="tab-btn" [class.active]="activeTab==='tous'" (click)="activeTab='tous'">
-        <i class="bi bi-list-ul me-1"></i> Tous ({{ historiques.length }})
-      </button>
-      <button class="tab-btn warning" [class.active]="activeTab==='proche'" (click)="activeTab='proche'">
-        <i class="bi bi-exclamation-triangle me-1"></i> Péremption proche ({{ peremptionProche.length }})
-      </button>
-      <button class="tab-btn danger" [class.active]="activeTab==='perimes'" (click)="activeTab='perimes'">
-        <i class="bi bi-x-circle me-1"></i> Périmés ({{ perimes.length }})
-      </button>
-    </div>
+      <div class="header-tabs">
+        <button class="tab-btn" [class.active]="activeTab === 'tous'" (click)="setTab('tous')">
+          <i class="bi bi-collection me-2"></i>Tous les produits
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'proche'" (click)="setTab('proche')">
+          <i class="bi bi-exclamation-circle me-2"></i>Péremption Proche
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'perimes'" (click)="setTab('perimes')">
+          <i class="bi bi-x-octagon me-2"></i>Déjà périmés
+        </button>
+      </div>
   </div>
 
   <!-- TABLE -->
@@ -64,7 +64,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let h of displayedList; let i = index"
+        <tr *ngFor="let h of paginatedHistoriques; let i = index"
             [style.animation-delay]="i * 0.05 + 's'">
           <td><span class="case-id">#{{ h.idHistorique }}</span></td>
           <td>
@@ -91,6 +91,31 @@
         </tr>
       </tbody>
     </table>
+
+    <!-- PAGINATION -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+      <div class="pagination-info">
+        Affichage de <b>{{ (currentPage - 1) * pageSize + 1 }}</b> à <b>{{ Math.min(currentPage * pageSize, displayedList.length) }}</b> sur <b>{{ displayedList.length }}</b> éléments
+      </div>
+      <div class="pagination-controls">
+        <button class="page-nav-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        
+        <div class="page-numbers">
+          <button *ngFor="let p of pages" 
+                  class="page-number-btn" 
+                  [class.active]="p === currentPage"
+                  (click)="goToPage(p)">
+            {{ p }}
+          </button>
+        </div>
+
+        <button class="page-nav-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
 
     <!-- EMPTY STATE -->
     <div *ngIf="displayedList.length === 0" class="empty-state">
