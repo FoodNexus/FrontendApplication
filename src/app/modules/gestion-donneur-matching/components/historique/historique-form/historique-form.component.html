@@ -1,0 +1,53 @@
+<div class="row">
+  <div class="col-md-8 mx-auto">
+    <div class="card">
+      <div class="card-header bg-info text-white">
+        <h4 class="mb-0">
+          <i class="bi me-2" [ngClass]="isEditMode ? 'bi-pencil' : 'bi-plus-circle'"></i>
+          {{ isEditMode ? 'Modifier' : 'Ajouter un produit à un lot' }}
+        </h4>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-danger" *ngIf="errorMessage">
+          <i class="bi bi-exclamation-triangle me-2"></i>{{ errorMessage }}
+        </div>
+        <form (ngSubmit)="onSubmit()" #f="ngForm">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Lot *</label>
+            <select class="form-select" [(ngModel)]="historique.lotId" name="lotId" required>
+              <option [value]="0" disabled>-- Sélectionner --</option>
+              <option *ngFor="let lot of lots" [value]="lot.idLot">
+                Lot #{{ lot.idLot }} — {{ lot.statut }} ({{ lot.niveauUrgence }})
+              </option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Produit *</label>
+            <select class="form-select" [(ngModel)]="historique.produitId" name="produitId" required>
+              <option [value]="0" disabled>-- Sélectionner --</option>
+              <option *ngFor="let p of produits" [value]="p.idProduit">
+                {{ p.libelle }} ({{ p.categorie }})
+              </option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Quantité *</label>
+            <input type="number" class="form-control" [(ngModel)]="historique.quantite" name="quantite" required min="1">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Date de péremption *</label>
+            <input type="datetime-local" class="form-control" [(ngModel)]="historique.datePeremptionExacte" name="datePeremptionExacte" required>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-info text-white" [disabled]="!f.valid">
+              {{ isEditMode ? 'Modifier' : 'Ajouter' }}
+            </button>
+            <a routerLink="../../historiques" class="btn btn-secondary">
+              <i class="bi bi-arrow-left me-1"></i>Annuler
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

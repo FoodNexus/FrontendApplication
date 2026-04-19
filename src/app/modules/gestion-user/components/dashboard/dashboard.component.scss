@@ -1,0 +1,23 @@
+.navbar {
+  border-bottom: 3px solid #dee2e6;
+}
+
+.card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+}
+
+.card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  font-weight: 700;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.btn {
+  border-radius: 8px;
+  font-weight: 600;
+}

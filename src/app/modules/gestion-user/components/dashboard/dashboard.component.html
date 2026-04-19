@@ -1,0 +1,236 @@
+<!-- ACCÈS BLOQUÉ : CONTENU CONDITIONNEL -->
+<div class="container mt-4" *ngIf="!isBlocked">
+  <nav class="navbar navbar-light bg-light rounded shadow-sm p-3 mb-4 d-flex justify-content-between">
+    <span class="navbar-brand mb-0 h1 text-success">
+      <i class="bi bi-speedometer2 me-2"></i> NutriFlow Dashboard
+    </span>
+    <div class="d-flex align-items-center">
+      <span class="me-3 fw-bold text-dark">Bienvenue, {{ username }} !</span>
+      <button class="btn btn-outline-success btn-sm me-2" (click)="switchTab('dashboard')" [class.active]="activeTab === 'dashboard'">
+        <i class="bi bi-speedometer2"></i> Dashboard
+      </button>
+      <button class="btn btn-outline-secondary btn-sm me-2" (click)="switchTab('profile')" [class.active]="activeTab === 'profile'">
+        <i class="bi bi-person"></i> Mon Profil
+      </button>
+      <button class="btn btn-outline-danger btn-sm" (click)="logout()">
+        <i class="bi bi-box-arrow-right me-1"></i> Déconnexion
+      </button>
+    </div>
+  </nav>
+
+  <div class="row" *ngIf="activeTab === 'dashboard'">
+    <!-- Admin Dashboard -->
+    <div class="col-12" *ngIf="hasRole('ADMIN')">
+      <div class="card border-danger shadow-sm mb-4">
+        <div class="card-header bg-danger text-white">ADMIN - Panneau de Contrôle</div>
+        <div class="card-body">
+          <p>Vous avez accès aux statistiques globales et à la gestion des utilisateurs.</p>
+          <button class="btn btn-danger" (click)="switchTab('admin')">Gérer les Utilisateurs</button>
+          <a routerLink="/audit/contracts" class="btn btn-outline-danger ms-2">Contrats Numériques</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Donor Dashboard -->
+    <!-- ✅ col-12 = pleine largeur -->
+    <div class="col-12" *ngIf="hasRole('DONOR')">
+      <app-dashboard-donneur></app-dashboard-donneur>
+    </div>
+
+    <!-- Receiver Dashboard -->
+    <div class="col-md-6" *ngIf="hasRole('RECEIVER')">
+      <div class="card border-info shadow-sm mb-4">
+        <div class="card-header bg-info text-white">RECEVEUR - Demandes</div>
+        <div class="card-body">
+          <p>Consultez les dons disponibles et faites des demandes.</p>
+          <button class="btn btn-info text-white">Consulter les Offres</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transporter Dashboard -->
+    <div class="col-md-6" *ngIf="hasRole('TRANSPORTER')">
+      <div class="card border-warning shadow-sm mb-4">
+        <div class="card-header bg-warning text-dark">LOGISTIQUE - Transport</div>
+        <div class="card-body">
+          <p>Gérez les livraisons et les tournées.</p>
+          <button class="btn btn-warning">Voir les Commandes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auditor Dashboard -->
+    <div class="col-md-6" *ngIf="hasRole('AUDITOR')">
+      <div class="card border-primary shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">AUDIT - Conformité</div>
+        <div class="card-body">
+          <p>Vérifiez les dossiers d'inspection et le statut de recyclage.</p>
+          <a routerLink="/audit/inspection-cases" class="btn btn-primary me-2">Dossiers d'Inspection</a>
+          <a routerLink="/audit/recycling-products" class="btn btn-outline-primary">Produits Recyclés</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recycler Dashboard -->
+    <div class="col-md-6" *ngIf="hasRole('RECYCLER')">
+      <div class="card border-secondary shadow-sm mb-4">
+        <div class="card-header bg-secondary text-white">VALORISATION - Recyclage</div>
+        <div class="card-body">
+          <p>Suivez les processus de valorisation organique.</p>
+          <button class="btn btn-secondary">Rapports de Recyclage</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-info mt-3" *ngIf="roles.length === 0">
+    <i class="bi bi-info-circle me-2"></i> Aucun rôle spécifique détecté.
+  </div>
+
+  <!-- MON PROFIL SECTION -->
+  <div class="row" *ngIf="activeTab === 'profile'">
+    <div class="col-lg-8 mx-auto">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-light">
+          <h4 class="mb-0 text-success"><i class="bi bi-person-circle me-2"></i>Mon Profil</h4>
+        </div>
+        <div class="card-body p-4">
+          <div *ngIf="updateMessage" class="alert alert-success">{{ updateMessage }}</div>
+          <div *ngIf="updateError" class="alert alert-danger">{{ updateError }}</div>
+
+          <form *ngIf="profileForm" [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Prénom</label>
+                <input type="text" class="form-control" formControlName="prenom">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Nom</label>
+                <input type="text" class="form-control" formControlName="nom">
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Téléphone</label>
+                <input type="text" class="form-control" formControlName="telephone">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Adresse</label>
+                <input type="text" class="form-control" formControlName="address">
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+              <button type="button" class="btn btn-outline-danger" (click)="deleteAccount()">
+                <i class="bi bi-trash me-2"></i>Supprimer mon compte
+              </button>
+              <button type="submit" class="btn btn-success" [disabled]="profileForm.invalid">
+                <i class="bi bi-save me-2"></i>Enregistrer les modifications
+              </button>
+            </div>
+          </form>
+
+          <hr class="my-5">
+
+          <h4 class="text-success mb-4"><i class="bi bi-shield-lock me-2"></i>Sécurité & Mot de passe</h4>
+          <div *ngIf="passMessage" class="alert alert-success">{{ passMessage }}</div>
+          <div *ngIf="passError" class="alert alert-danger">{{ passError }}</div>
+
+          <form *ngIf="passwordForm" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Nouveau mot de passe</label>
+                <input type="password" class="form-control" formControlName="newPassword" placeholder="Minimum 6 caractères">
+                <div *ngIf="passwordForm.get('newPassword')?.touched && passwordForm.get('newPassword')?.errors?.['minlength']" class="text-danger small">
+                  Le mot de passe doit faire au moins 6 caractères.
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Confirmer le mot de passe</label>
+                <input type="password" class="form-control" formControlName="confirmPassword" placeholder="Répétez le mot de passe">
+                <div *ngIf="passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched" class="text-danger small">
+                  Les mots de passe ne correspondent pas.
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end">
+              <button type="submit" class="btn btn-outline-success" [disabled]="passwordForm.invalid">
+                <i class="bi bi-key me-2"></i>Mettre à jour le mot de passe
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION ADMIN - GESTION DES UTILISATEURS -->
+  <div class="row" *ngIf="activeTab === 'admin' && hasRole('ADMIN')">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+          <h4 class="mb-0"><i class="bi bi-people me-2"></i>Gestion des utilisateurs</h4>
+          <button class="btn btn-light btn-sm text-danger" (click)="switchTab('dashboard')">Retour</button>
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="adminMessage" class="alert alert-info m-3 p-2">{{ adminMessage }}</div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Nom Complet</th>
+                  <th>Email</th>
+                  <th>Rôle</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of allUsers">
+                  <td>{{ user.idUser }}</td>
+                  <td>{{ user.prenom }} {{ user.nom }}</td>
+                  <td>{{ user.email }}</td>
+                  <td><span class="badge bg-secondary">{{ user.role }}</span></td>
+                  <td>
+                    <span class="badge" [ngClass]="user.actif ? 'bg-success' : 'bg-danger'">
+                      {{ user.actif ? 'Actif' : 'Bloqué' }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="btn btn-sm" [ngClass]="user.actif ? 'btn-outline-danger' : 'btn-outline-success'" 
+                            (click)="toggleUserStatus(user)"
+                            [disabled]="user.idUser === currentUser.idUser">
+                      {{ user.actif ? 'Bloquer' : 'Débloquer' }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- L'INTERFACE POUR COMPTE BLOQUÉ -->
+<div class="container mt-5" *ngIf="isBlocked">
+  <div class="row justify-content-center">
+    <div class="col-md-8 text-center mt-5">
+      <div class="card shadow-lg border-danger p-5 rounded-4 bg-white">
+        <i class="bi bi-exclamation-triangle-fill text-danger mb-4" style="font-size: 5rem;"></i>
+        <h1 class="display-4 fw-bold text-danger">Accès Refusé</h1>
+        <p class="lead text-secondary mb-4">
+          Votre compte est actuellement <strong>bloqué</strong>. <br>
+          Veuillez contacter l'administrateur de <strong>NutriFlow</strong> pour plus d'informations.
+        </p>
+        <div class="d-grid gap-2 col-6 mx-auto mt-4">
+          <button class="btn btn-outline-danger btn-lg shadow-sm" (click)="logout()">
+            <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

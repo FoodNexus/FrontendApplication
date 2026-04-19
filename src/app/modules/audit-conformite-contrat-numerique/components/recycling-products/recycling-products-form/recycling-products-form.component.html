@@ -1,0 +1,115 @@
+<div class="page-container">
+  <div class="form-wrapper">
+
+    <!-- CARD -->
+    <div class="form-card">
+
+      <!-- HEADER -->
+      <div class="form-header">
+        <div class="header-icon">
+          <i class="bi" [ngClass]="isEdit ? 'bi-pencil-square' : 'bi-recycle'"></i>
+        </div>
+        <div>
+          <h3>{{ isEdit ? 'Modifier' : 'Ajouter' }} Produit Recyclé</h3>
+          <p>{{ isEdit ? 'Modifiez les informations du produit recyclé' : 'Enregistrez un nouveau produit à recycler' }}</p>
+        </div>
+      </div>
+
+      <!-- ERROR -->
+      <div *ngIf="errorMessage" class="alert-error">
+        <i class="bi bi-exclamation-circle"></i> {{ errorMessage }}
+      </div>
+
+      <!-- FORM -->
+      <form [formGroup]="form" (ngSubmit)="submit()" class="form-body">
+
+        <!-- Description (Inspection Case) -->
+        <div class="form-group" *ngIf="!isEdit">
+          <label class="form-label">
+            <i class="bi bi-text-paragraph me-1"></i> Description de l'infraction
+            <span class="required">*</span>
+          </label>
+          <textarea formControlName="description"
+                    class="form-input"
+                    rows="3"
+                    placeholder="Ex: Le produit est expiré, une destruction/recyclage est nécessaire..."></textarea>
+          <div *ngIf="form.get('description')?.invalid && form.get('description')?.touched"
+               class="field-error">
+            <i class="bi bi-info-circle"></i> La description est obligatoire pour initier le dossier d'inspection parent
+          </div>
+        </div>
+
+        <!-- Delivery ID (Inspection Case) -->
+        <div class="form-group" *ngIf="!isEdit">
+          <label class="form-label">
+            <i class="bi bi-truck me-1"></i> ID Livraison
+            <span class="required">*</span>
+          </label>
+          <input type="number"
+                 formControlName="deliveryId"
+                 class="form-input"
+                 placeholder="Ex: 42"/>
+          <div *ngIf="form.get('deliveryId')?.invalid && form.get('deliveryId')?.touched"
+               class="field-error">
+            <i class="bi bi-info-circle"></i> L'ID livraison est obligatoire pour localiser l'arrivage
+          </div>
+        </div>
+
+        <!-- Weight -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-speedometer2 me-1"></i> Poids (kg)
+            <span class="required">*</span>
+          </label>
+          <input type="number"
+                 formControlName="weight"
+                 class="form-input"
+                 placeholder="Ex: 15.5"
+                 step="0.1"/>
+          <div *ngIf="form.get('weight')?.invalid && form.get('weight')?.touched"
+               class="field-error">
+            <i class="bi bi-info-circle"></i> Poids obligatoire et supérieur à 0
+          </div>
+        </div>
+
+        <!-- Destination -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-truck me-1"></i> Destination
+            <span class="required">*</span>
+          </label>
+          <div class="select-wrapper">
+            <select formControlName="destination" class="form-input">
+              <option [ngValue]="null">-- Sélectionner une destination --</option>
+              <option *ngFor="let d of destinations" [value]="d">
+                {{ d }}
+              </option>
+            </select>
+            <i class="bi bi-chevron-down select-arrow"></i>
+          </div>
+          <div *ngIf="form.get('destination')?.invalid && form.get('destination')?.touched"
+               class="field-error">
+            <i class="bi bi-info-circle"></i> La destination est obligatoire
+          </div>
+        </div>
+
+        
+        <!-- ACTIONS -->
+        <div class="form-actions">
+          <button type="button" (click)="cancel()" class="btn-cancel">
+            <i class="bi bi-x-lg me-1"></i> Annuler
+          </button>
+          <button type="submit"
+                  [disabled]="form.invalid || loading"
+                  class="btn-submit">
+            <span *ngIf="loading" class="spinner"></span>
+            <i *ngIf="!loading" class="bi" [ngClass]="isEdit ? 'bi-check-lg' : 'bi-plus-lg'" class="me-1"></i>
+            {{ isEdit ? 'Enregistrer' : 'Ajouter le Produit' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

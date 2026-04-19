@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Silent SSO Check</title>
+</head>
+<body>
+    <script>
+        // Envoie l'URL actuelle au parent (Keycloak)
+        parent.postMessage(location.href, location.origin);
+    </script>
+</body>
+</html>

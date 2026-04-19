@@ -1,0 +1,60 @@
+<div class="row mb-3">
+  <div class="col-md-6"><h2><i class="bi bi-clock-history me-2"></i>Historiques</h2></div>
+  <div class="col-md-6 text-end">
+    <a routerLink="../historiques/ajouter" class="btn btn-success">
+      <i class="bi bi-plus-circle me-1"></i>Ajouter un produit à un lot
+    </a>
+  </div>
+</div>
+
+<div class="alert alert-success alert-dismissible" *ngIf="successMessage">
+  {{ successMessage }}
+  <button type="button" class="btn-close" (click)="successMessage=''"></button>
+</div>
+
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item">
+    <a class="nav-link" [class.active]="activeTab==='tous'" (click)="activeTab='tous'" role="button">
+      Tous ({{ historiques.length }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link text-warning" [class.active]="activeTab==='proche'" (click)="activeTab='proche'" role="button">
+      <i class="bi bi-exclamation-triangle me-1"></i>Péremption proche ({{ peremptionProche.length }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link text-danger" [class.active]="activeTab==='perimes'" (click)="activeTab='perimes'" role="button">
+      <i class="bi bi-x-circle me-1"></i>Périmés ({{ perimes.length }})
+    </a>
+  </li>
+</ul>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover mb-0">
+        <thead class="table-dark">
+          <tr><th>ID</th><th>Lot</th><th>Produit</th><th>Code-barre</th><th>Quantité</th><th>Péremption</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let h of displayedList">
+            <td>{{ h.idHistorique }}</td>
+            <td><a [routerLink]="['../lots', h.lotId]">Lot #{{ h.lotId }}</a></td>
+            <td>{{ h.libelleProduit }}</td>
+            <td><code>{{ h.codeBarre }}</code></td>
+            <td>{{ h.quantite }}</td>
+            <td>{{ h.datePeremptionExacte | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <a [routerLink]="['../historiques/modifier', h.idHistorique]" class="btn btn-sm btn-outline-warning me-1"><i class="bi bi-pencil"></i></a>
+              <button class="btn btn-sm btn-outline-danger" (click)="supprimer(h.idHistorique)"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="displayedList.length === 0">
+            <td colspan="7" class="text-center text-muted py-4">Aucun historique</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

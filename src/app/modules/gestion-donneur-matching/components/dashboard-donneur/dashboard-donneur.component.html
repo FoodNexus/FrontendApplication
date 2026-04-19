@@ -1,0 +1,222 @@
+<div class="page-container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon">
+        <i class="bi bi-speedometer2"></i>
+      </div>
+      <div class="title-text">
+        <h2>Dashboard — Gestion Donneur & Matching</h2>
+        <p>Vue d'ensemble de vos produits, lots, matchs et alertes</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/donneur/matching" class="btn-add">
+        <i class="bi bi-cpu"></i> Lancer Matching
+      </a>
+    </div>
+  </div>
+
+  <!-- STATS PRINCIPALES -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon produits">
+        <i class="bi bi-basket"></i>
+      </div>
+      <div class="stat-info">
+        <h4>{{ produits.length }}</h4>
+        <p>Produits</p>
+      </div>
+      <a routerLink="/donneur/produits" class="stat-link">
+        Voir tout <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon lots">
+        <i class="bi bi-archive"></i>
+      </div>
+      <div class="stat-info">
+        <h4>{{ lots.length }}</h4>
+        <p>Lots</p>
+      </div>
+      <a routerLink="/donneur/lots" class="stat-link">
+        Voir tout <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon matchs">
+        <i class="bi bi-link-45deg"></i>
+      </div>
+      <div class="stat-info">
+        <h4>{{ matchs.length }}</h4>
+        <p>Matchs</p>
+      </div>
+      <a routerLink="/donneur/matchs" class="stat-link">
+        Voir tout <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon alertes">
+        <i class="bi bi-exclamation-triangle"></i>
+      </div>
+      <div class="stat-info">
+        <h4>{{ alertes.length }}</h4>
+        <p>Alertes péremption</p>
+      </div>
+      <a routerLink="/donneur/historiques" class="stat-link">
+        Voir tout <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- SOUS-CARTES ACTIONS -->
+  <div class="actions-row">
+    <div class="action-card">
+      <div class="action-icon attente">
+        <i class="bi bi-hourglass-split"></i>
+      </div>
+      <h4>{{ lotsDisponibles.length }}</h4>
+      <p>Lots en attente de matching</p>
+      <a routerLink="/donneur/matching" class="btn-outline green">
+        <i class="bi bi-cpu me-1"></i>Lancer matching
+      </a>
+    </div>
+
+    <div class="action-card">
+      <div class="action-icon warning">
+        <i class="bi bi-clock-history"></i>
+      </div>
+      <h4>{{ matchsEnAttente.length }}</h4>
+      <p>Matchs en attente logistique</p>
+      <a routerLink="/donneur/matchs" class="btn-outline orange">
+        <i class="bi bi-list me-1"></i>Gérer les matchs
+      </a>
+    </div>
+
+    <div class="action-card">
+      <div class="action-icon success">
+        <i class="bi bi-check-circle"></i>
+      </div>
+      <h4>{{ lotsValides.length }}</h4>
+      <p>Lots validés</p>
+      <a routerLink="/donneur/lots" class="btn-outline teal">
+        <i class="bi bi-archive me-1"></i>Voir les lots
+      </a>
+    </div>
+
+    <div class="action-card">
+      <div class="action-icon ia">
+        <span>🧠</span>
+      </div>
+      <h4>IA</h4>
+      <p>OCR, NLP, Vision, Learning</p>
+      <a routerLink="/donneur/ai" class="btn-outline dark">
+        <i class="bi bi-robot me-1"></i>Centre IA
+      </a>
+    </div>
+  </div>
+
+  <!-- LOTS CRITIQUES -->
+  <div class="table-card" *ngIf="lotsCritiques.length > 0">
+    <div class="table-header danger">
+      <h5>
+        <i class="bi bi-exclamation-circle me-2"></i>
+        Lots CRITIQUES non traités ({{ lotsCritiques.length }})
+      </h5>
+    </div>
+
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Donneur</th>
+          <th>Date création</th>
+          <th>Produits</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let lot of lotsCritiques; let i = index"
+            [style.animation-delay]="i * 0.05 + 's'">
+          <td><span class="case-id">#{{ lot.idLot }}</span></td>
+          <td>
+            <span class="badge-pill badge-donneur">
+              <i class="bi bi-person"></i> Donneur #{{ lot.donneurId }}
+            </span>
+          </td>
+          <td>{{ lot.dateCreation | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <span class="badge-pill badge-count">{{ lot.nombreProduits }}</span>
+          </td>
+          <td>
+            <a routerLink="/donneur/matching"
+               [queryParams]="{lotId: lot.idLot}"
+               class="btn-action-inline danger">
+              <i class="bi bi-cpu me-1"></i>Matcher
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ALERTES PÉREMPTION -->
+  <div class="table-card" *ngIf="alertes.length > 0" style="margin-top: 1.5rem;">
+    <div class="table-header warning">
+      <h5>
+        <i class="bi bi-clock me-2"></i>
+        Produits qui périment dans 24h
+      </h5>
+    </div>
+
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Code-barre</th>
+          <th>Quantité</th>
+          <th>Péremption</th>
+          <th>Lot</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let h of alertes; let i = index"
+            [style.animation-delay]="i * 0.05 + 's'">
+          <td>
+            <span class="product-name">{{ h.libelleProduit }}</span>
+          </td>
+          <td><code class="code-barre">{{ h.codeBarre }}</code></td>
+          <td>
+            <span class="badge-pill badge-count">{{ h.quantite }}</span>
+          </td>
+          <td>
+            <span class="badge-pill badge-danger-text">
+              <i class="bi bi-exclamation-triangle"></i>
+              {{ h.datePeremptionExacte | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </td>
+          <td>
+            <a [routerLink]="['/donneur/lots', h.lotId]" class="case-id-link">
+              Lot #{{ h.lotId }}
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div *ngIf="produits.length === 0 && lots.length === 0 && matchs.length === 0"
+       class="empty-state">
+    <div class="empty-icon">
+      <i class="bi bi-inbox"></i>
+    </div>
+    <h5>Aucune donnée disponible</h5>
+    <p>Commencez par ajouter des produits ou des lots.</p>
+  </div>
+
+</div>
