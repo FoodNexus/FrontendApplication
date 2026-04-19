@@ -1,0 +1,24 @@
+services:
+  keycloak:
+    image: keycloak/keycloak:latest
+    container_name: foodnexus-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: dev-file
+    ports:
+      - "8080:8080"
+    command:
+      - start-dev
+      - --import-realm
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./keycloak-init.json:/opt/keycloak/data/import/realm.json
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  keycloak_data:
