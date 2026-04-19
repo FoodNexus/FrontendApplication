@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
-import { DashboardLayoutComponent } from './dashboard/dashboard-layout.component';
-import { ModuleWorkspaceComponent } from './modules/module-workspace.component';
-import { RecyclablesCrudComponent } from './modules/recyclables-crud.component';
-import { RecyclerFrontLayoutComponent } from './front/recycler-front-layout.component';
-import { StoreRecycleRequestsComponent } from './store/store-recycle-requests.component';
+import { DashboardLayoutComponent } from './modules/valorisation-organique-economie-circulaire/dashboard-layout.component';
+import { ModuleWorkspaceComponent } from './modules/valorisation-organique-economie-circulaire/module-workspace.component';
+import { RecyclablesCrudComponent } from './modules/valorisation-organique-economie-circulaire/recyclables-crud.component';
+import { RecyclerFrontLayoutComponent } from './modules/valorisation-organique-economie-circulaire/recycler-front-layout.component';
+import { StoreRecycleRequestsComponent } from './modules/valorisation-organique-economie-circulaire/store-recycle-requests.component';
 
 export const routes: Routes = [
   {
