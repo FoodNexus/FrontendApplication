@@ -18,6 +18,13 @@
       <div class="alert alert-danger mt-4" *ngIf="errorMessage">
         {{ errorMessage }}
       </div>
+
+      <p class="small text-muted mt-4 mb-0">
+        Session Keycloak bloquée (« autre utilisateur déjà connecté ») ?
+        <button type="button" class="btn btn-link btn-sm p-0 align-baseline" (click)="forceKeycloakLogout()">
+          Forcer la déconnexion Keycloak
+        </button>
+      </p>
     </div>
   </div>
 </div>

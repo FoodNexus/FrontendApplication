@@ -19,7 +19,8 @@ interface RecyclableItem {
   template: `
     <section class="crud-card">
       <div class="title-row">
-        <h2>Gestion Receveur - Recyclables</h2>
+        <h2>Catalogue des produits recyclables</h2>
+        <p class="subtitle-hint">Réservé à l’administration — alimente la liste consultée par les flux de valorisation.</p>
       </div>
 
       <form (ngSubmit)="saveItem()" class="crud-form">
@@ -110,9 +111,15 @@ interface RecyclableItem {
     }
 
     .title-row h2 {
-      margin: 0 0 1rem;
+      margin: 0 0 0.35rem;
       font-size: 1.2rem;
       color: #111827;
+    }
+
+    .subtitle-hint {
+      margin: 0 0 1rem;
+      font-size: 0.88rem;
+      color: #6b7280;
     }
 
     .crud-form {
@@ -178,12 +185,13 @@ interface RecyclableItem {
     }
 
     .thumb {
-      width: 56px;
-      height: 42px;
+      width: 72px;
+      height: 54px;
       object-fit: cover;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid #d1d5db;
       display: block;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
     .muted {
@@ -194,6 +202,9 @@ interface RecyclableItem {
 })
 export class RecyclablesCrudComponent {
   private readonly storageKey = 'gestion-receveur-recyclables';
+  /** Bump when default catalogue should refresh for all users (local demo). */
+  private readonly catalogSeedKey = 'gestion-receveur-recyclables-catalog-seed';
+  private readonly catalogSeedValue = 'v3-ten-items';
   protected readonly statuses: RecyclableStatus[] = [
     'In Process',
     'Recycled',
@@ -270,10 +281,14 @@ export class RecyclablesCrudComponent {
   }
 
   private getInitialRecyclables(): RecyclableItem[] {
+    const seedOk = localStorage.getItem(this.catalogSeedKey) === this.catalogSeedValue;
     const cached = localStorage.getItem(this.storageKey);
-    if (cached) {
+    if (seedOk && cached) {
       try {
-        return JSON.parse(cached) as RecyclableItem[];
+        const parsed = JSON.parse(cached) as RecyclableItem[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
       } catch {
         localStorage.removeItem(this.storageKey);
       }
@@ -282,19 +297,86 @@ export class RecyclablesCrudComponent {
     const defaults: RecyclableItem[] = [
       {
         id: 1,
-        name: 'Plastic bottles',
-        quantityKg: 45,
+        name: 'Épluchures & déchets verts',
+        quantityKg: 120,
         status: 'In Process',
-        imageUrl: 'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=300&q=80'
+        imageUrl:
+          'https://images.unsplash.com/photo-1464226184884-fa280b87c799?auto=format&fit=crop&w=400&q=80'
       },
       {
         id: 2,
-        name: 'Cardboard',
-        quantityKg: 30,
+        name: 'Marc de café & filtres',
+        quantityKg: 35,
         status: 'Pending Collection',
-        imageUrl: 'https://images.unsplash.com/photo-1605600659908-0ef719419d41?auto=format&fit=crop&w=300&q=80'
+        imageUrl:
+          'https://images.unsplash.com/photo-1447933601403-0c6688de94e5?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        id: 3,
+        name: 'Pelures de fruits & restes de cuisine',
+        quantityKg: 88,
+        status: 'Recycled',
+        imageUrl:
+          'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        id: 4,
+        name: 'Cartons alimentaires propres',
+        quantityKg: 210,
+        status: 'In Process',
+        imageUrl:
+          'https://images.unsplash.com/photo-1605600659908-0ef719419d41?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        id: 5,
+        name: 'Bouteilles PET compressées',
+        quantityKg: 95,
+        status: 'Pending Collection',
+        imageUrl:
+          'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        id: 6,
+        name: 'Bocaux & verre alimentaire',
+        quantityKg: 64,
+        status: 'In Process',
+        imageUrl:
+          'https://images.unsplash.com/photo-1585123334904-845d60e97b29?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        id: 7,
+        name: 'Films & emballages souples',
+        quantityKg: 42,
+        status: 'Rejected',
+        imageUrl:
+          'https://images.unsplash.com/photo-1532996122764-b3b103b2bec8?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        id: 8,
+        name: 'Coquilles & coquillages (broyés)',
+        quantityKg: 28,
+        status: 'Recycled',
+        imageUrl:
+          'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        id: 9,
+        name: 'Papier journal & carton ondulé',
+        quantityKg: 156,
+        status: 'Pending Collection',
+        imageUrl:
+          'https://images.unsplash.com/photo-1503602642458-232111445752?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        id: 10,
+        name: 'Invendus pain & farines',
+        quantityKg: 72,
+        status: 'In Process',
+        imageUrl:
+          'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&q=80'
       }
     ];
+    localStorage.setItem(this.catalogSeedKey, this.catalogSeedValue);
     localStorage.setItem(this.storageKey, JSON.stringify(defaults));
     return defaults;
   }

@@ -1,0 +1,18 @@
+[submodule "backend-services/EurekaServer"]
+	path = src/app/modules/valorisation-organique-economie-circulaire/backend-services/EurekaServer
+	url = https://github.com/FoodNexus/EurekaServer.git
+[submodule "backend-services/APIGateway"]
+	path = src/app/modules/valorisation-organique-economie-circulaire/backend-services/APIGateway
+	url = https://github.com/FoodNexus/APIGateway.git
+[submodule "backend-services/ms_gestionUser"]
+	path = src/app/modules/valorisation-organique-economie-circulaire/backend-services/ms_gestionUser
+	url = https://github.com/FoodNexus/ms_gestionUser.git
+[submodule "backend-services/ms_valorisationOrganique-EconomieCirculaire"]
+	path = src/app/modules/valorisation-organique-economie-circulaire/backend-services/ms_valorisationOrganique-EconomieCirculaire
+	url = https://github.com/FoodNexus/ms_valorisationOrganique-EconomieCirculaire-.git
+[submodule "backend-services/ms_auditConformite-ContratNumerique"]
+	path = src/app/modules/valorisation-organique-economie-circulaire/backend-services/ms_auditConformite-ContratNumerique
+	url = https://github.com/FoodNexus/ms_auditConformite-ContratNumerique.git
+[submodule "src/app/modules/gestion-donneur-matching/backend-services/ms_gestionDonneur-Matching"]
+	path = src/app/modules/gestion-donneur-matching/backend-services/ms_gestionDonneur-Matching
+	url = https://github.com/FoodNexus/ms_gestionDonneur-Matching.git

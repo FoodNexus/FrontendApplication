@@ -89,13 +89,48 @@
       </tbody>
     </table>
 
+    <div *ngIf="nutriFlowVerified.length > 0" class="table-header mt-4">
+      <h5><i class="bi bi-recycle me-2"></i>Produits recyclés — NutriFlow (validés admin)</h5>
+      <p class="small text-muted mb-0">
+        Ces lignes proviennent du module valorisation organique (demandes recycleur validées sur
+        <code>/user/admin/recycler-verification</code>), pas de l’API dossiers d’inspection.
+      </p>
+    </div>
+
+    <table class="modern-table" *ngIf="nutriFlowVerified.length > 0">
+      <thead>
+        <tr>
+          <th>Demande</th>
+          <th>Produit / lot</th>
+          <th>Poids (kg)</th>
+          <th>Validé le</th>
+          <th>Recycleur</th>
+          <th>Destination</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of nutriFlowVerified; let j = index" [style.animation-delay]="j * 0.05 + 's'">
+          <td><span class="case-id">#{{ r.id }}</span></td>
+          <td>{{ r.productName }}</td>
+          <td>{{ r.quantityKg }} kg</td>
+          <td>{{ r.verifiedAt | date: 'short' }}</td>
+          <td><code class="small">{{ r.recyclerUserKey || '—' }}</code></td>
+          <td>
+            <span [ngClass]="getDestinationClass('NUTRIFLOW')">
+              <i class="bi bi-leaf me-1"></i>NutriFlow
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
     <!-- EMPTY STATE -->
-    <div *ngIf="products.length === 0" class="empty-state">
+    <div *ngIf="products.length === 0 && nutriFlowVerified.length === 0" class="empty-state">
       <div class="empty-icon">
         <i class="bi bi-box-seam"></i>
       </div>
       <h5>Aucun produit recyclé</h5>
-      <p>Commencez par ajouter un produit à recycler depuis un dossier d'inspection.</p>
+      <p>Soit aucun dossier d’inspection n’a encore de produit recyclé en base audit, soit aucune opération NutriFlow n’a été validée par l’admin.</p>
     </div>
   </div>
 

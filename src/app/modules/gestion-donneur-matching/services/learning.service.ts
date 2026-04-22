@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -23,7 +24,7 @@ export interface LearningResult {
 
 @Injectable({ providedIn: 'root' })
 export class LearningService {
-  private apiUrl = 'http://localhost:8082/api/learning';
+  private readonly apiUrl = `${environment.matchingApiBaseUrl}/api/learning`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,33 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { DatePipe, DecimalPipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-type ProductStatus = 'available' | 'approved' | 'done';
-type RequestStatus = 'pending' | 'approved' | 'available' | 'done' | 'rejected';
-
-interface RecyclableProduct {
-  id: number;
-  name: string;
-  category: string;
-  availableKg: number;
-  location: string;
-  status: ProductStatus;
-  imageUrl: string;
-}
-
-interface RecyclerRequest {
-  id: number;
-  productId: number;
-  productName: string;
-  quantityKg: number;
-  note: string;
-  status: RequestStatus;
-  requestedAt: Date;
-  lotCode?: string;
-  treatmentPlan?: string;
-  pickupWindow?: string;
-  managerComment?: string;
-}
+import {
+  loadRecyclerRequests,
+  RecyclableProduct,
+  RecyclerRequest,
+  ProductStatus,
+  RequestStatus,
+  saveRecyclerRequests
+} from './recycler-operations.storage';
+import {
+  DONOR_LOT_PRODUCT_ID_BASE,
+  loadAllDonorLots,
+  loadListedDonorLotsForRecycler,
+  saveAllDonorLots
+} from './donor-lots.storage';
+import { RecyclerCreditsService } from './services/recycler-credits.service';
+import { NUTRIFLOW_HUB_PULLED_EVENT } from './services/nutriflow-hub-sync.service';
 
 @Component({
   selector: 'app-recycler-requests',
@@ -40,7 +29,9 @@ interface RecyclerRequest {
           <p class="eyebrow">Recycler Front Office</p>
           <h2>Request Recyclable Products</h2>
           <p class="subtitle">
-            Browse approved and available products, submit recycle requests, and follow progress until completion.
+            Browse products (admin catalogue + <strong>donor lots</strong>). Requests on donor lots stay
+            <strong>awaiting donor</strong> until accepted. Then declare completion for admin verification and
+            <strong>credits</strong>.
           </p>
         </div>
         <div class="hero-metrics">
@@ -55,6 +46,10 @@ interface RecyclerRequest {
           <article>
             <span>Completed</span>
             <strong>{{ doneRequestsCount }}</strong>
+          </article>
+          <article>
+            <span>Mes crédits</span>
+            <strong>{{ creditsService.getBalance() }}</strong>
           </article>
         </div>
       </header>
@@ -128,6 +123,9 @@ interface RecyclerRequest {
 
         <article class="card">
           <h3>Create Request</h3>
+          <p *ngIf="requestSubmitError" class="alert alert-warning" style="margin:0 0 0.75rem;padding:0.5rem 0.65rem;border-radius:8px;font-size:0.85rem;">
+            {{ requestSubmitError }}
+          </p>
           <form class="request-form" (ngSubmit)="createRequest()">
             <label>
               Product
@@ -181,6 +179,7 @@ interface RecyclerRequest {
                 <th>Created</th>
                 <th>Note</th>
                 <th>Lot info</th>
+                <th>Verification</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -201,19 +200,31 @@ interface RecyclerRequest {
                   </span>
                   <ng-template #noLot>-</ng-template>
                 </td>
+                <td class="verify-cell">
+                  <ng-container *ngIf="request.status === 'pending_verification'">
+                    <small>Submitted {{ request.verificationSubmittedAt | date: 'short' }}</small>
+                  </ng-container>
+                  <ng-container *ngIf="request.status === 'verified'">
+                    <small class="text-success">+1 credit</small>
+                  </ng-container>
+                  <ng-container *ngIf="request.status === 'verification_rejected'">
+                    <small class="text-danger">{{ request.adminVerificationComment || 'Rejected' }}</small>
+                  </ng-container>
+                  <span *ngIf="!isVerificationRow(request.status)">—</span>
+                </td>
                 <td class="actions">
                   <button
                     type="button"
                     class="secondary"
-                    *ngIf="request.status === 'available'"
-                    (click)="markDone(request.id)"
+                    *ngIf="canDeclareDoneForAdminReview(request)"
+                    (click)="submitOperationForVerification(request.id)"
                   >
-                    Mark done
+                    Declare done (admin review)
                   </button>
                   <button
                     type="button"
                     class="danger"
-                    *ngIf="request.status === 'pending'"
+                    *ngIf="request.status === 'pending' || request.status === 'awaiting_donor'"
                     (click)="cancelRequest(request.id)"
                   >
                     Cancel
@@ -221,11 +232,39 @@ interface RecyclerRequest {
                 </td>
               </tr>
               <tr *ngIf="visibleRequests.length === 0">
-                <td colspan="8" class="empty">No requests to display.</td>
+                <td colspan="9" class="empty">No requests to display.</td>
               </tr>
             </tbody>
           </table>
         </div>
+      </article>
+
+      <article class="card">
+        <h3>Credit history</h3>
+        <p class="hint">Credits after an administrator validates a completed recycling operation.</p>
+        <div class="table-wrap" *ngIf="creditsService.getLedgerForUser().length > 0; else noCredits">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Request</th>
+                <th>Amount</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of creditsService.getLedgerForUser()">
+                <td>{{ row.createdAt | date: 'short' }}</td>
+                <td>#{{ row.requestId }}</td>
+                <td>+{{ row.amount }}</td>
+                <td>{{ row.note || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noCredits>
+          <p class="empty">No credits yet.</p>
+        </ng-template>
       </article>
     </section>
   `,
@@ -271,7 +310,7 @@ interface RecyclerRequest {
     .hero-metrics {
       display: grid;
       gap: 0.6rem;
-      grid-template-columns: repeat(3, minmax(120px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     }
 
     .hero-metrics article {
@@ -446,6 +485,38 @@ interface RecyclerRequest {
       border-color: #fecaca;
     }
 
+    .badge-awaiting_donor {
+      background: #fdf4ff;
+      color: #86198f;
+      border-color: #e879f9;
+    }
+
+    .badge-pending_verification {
+      background: #eef2ff;
+      color: #3730a3;
+      border-color: #c7d2fe;
+    }
+
+    .badge-verified {
+      background: #ecfdf5;
+      color: #047857;
+      border-color: #6ee7b7;
+    }
+
+    .badge-verification_rejected {
+      background: #fff7ed;
+      color: #9a3412;
+      border-color: #fed7aa;
+    }
+
+    .verify-cell small {
+      display: block;
+      line-height: 1.3;
+    }
+
+    .text-success { color: #047857; }
+    .text-danger { color: #b91c1c; }
+
     .request-form {
       display: grid;
       gap: 0.7rem;
@@ -499,12 +570,10 @@ interface RecyclerRequest {
     }
   `]
 })
-export class RecyclerRequestsComponent {
-  private readonly requestsKey = 'gestion-receveur-requests';
+export class RecyclerRequestsComponent implements OnInit, OnDestroy {
   private readonly storageKey = 'gestion-receveur-recyclables';
   protected products: RecyclableProduct[] = this.getProductsFromAdmin();
-
-  protected requests: RecyclerRequest[] = this.getStoredRequests();
+  protected requests: RecyclerRequest[] = loadRecyclerRequests();
 
   protected filters: { search: string; status: ProductStatus | 'all' } = {
     search: '',
@@ -518,9 +587,39 @@ export class RecyclerRequestsComponent {
   };
 
   protected showOnlyOpen = false;
+  protected requestSubmitError = '';
   private nextRequestId = this.requests.length > 0
     ? Math.max(...this.requests.map((entry) => entry.id)) + 1
     : 1001;
+
+  private readonly onHubPulled = (): void => {
+    this.ngZone.run(() => this.refreshFromStorage());
+  };
+
+  constructor(
+    protected creditsService: RecyclerCreditsService,
+    private ngZone: NgZone
+  ) {}
+
+  ngOnInit(): void {
+    this.refreshFromStorage();
+    if (typeof window !== 'undefined') {
+      window.addEventListener(NUTRIFLOW_HUB_PULLED_EVENT, this.onHubPulled);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener(NUTRIFLOW_HUB_PULLED_EVENT, this.onHubPulled);
+    }
+  }
+
+  private refreshFromStorage(): void {
+    this.requests = loadRecyclerRequests();
+    this.products = this.getProductsFromAdmin();
+    this.nextRequestId =
+      this.requests.length > 0 ? Math.max(...this.requests.map((entry) => entry.id)) + 1 : 1001;
+  }
 
   protected get filteredProducts(): RecyclableProduct[] {
     const q = this.filters.search.trim().toLowerCase();
@@ -537,9 +636,13 @@ export class RecyclerRequestsComponent {
   }
 
   protected get visibleRequests(): RecyclerRequest[] {
+    const key = this.creditsService.getCurrentRecyclerKey();
+    const mine = this.requests.filter((r) => !r.recyclerUserKey || r.recyclerUserKey === key);
     const data = this.showOnlyOpen
-      ? this.requests.filter((r) => ['pending', 'approved', 'available'].includes(r.status))
-      : this.requests;
+      ? mine.filter((r) =>
+          ['awaiting_donor', 'pending', 'approved', 'available', 'pending_verification'].includes(r.status)
+        )
+      : mine;
     return [...data].sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
   }
 
@@ -548,53 +651,121 @@ export class RecyclerRequestsComponent {
   }
 
   protected get openRequestsCount(): number {
-    return this.requests.filter((r) => ['pending', 'approved', 'available'].includes(r.status)).length;
+    const key = this.creditsService.getCurrentRecyclerKey();
+    return this.requests.filter(
+      (r) =>
+        (!r.recyclerUserKey || r.recyclerUserKey === key) &&
+        ['awaiting_donor', 'pending', 'approved', 'available', 'pending_verification'].includes(r.status)
+    ).length;
   }
 
   protected get doneRequestsCount(): number {
-    return this.requests.filter((r) => r.status === 'done').length;
+    const key = this.creditsService.getCurrentRecyclerKey();
+    return this.requests.filter(
+      (r) =>
+        (!r.recyclerUserKey || r.recyclerUserKey === key) &&
+        (r.status === 'done' || r.status === 'verified')
+    ).length;
   }
 
   protected prepareRequest(product: RecyclableProduct): void {
+    this.requestSubmitError = '';
     this.draft.productId = product.id;
     this.draft.quantityKg = Math.max(1, Math.min(10, product.availableKg));
   }
 
   protected createRequest(): void {
+    this.requestSubmitError = '';
+    this.products = this.getProductsFromAdmin();
+    this.requests = loadRecyclerRequests();
+    this.nextRequestId =
+      this.requests.length > 0 ? Math.max(...this.requests.map((entry) => entry.id)) + 1 : 1001;
+
     if (this.draft.productId === null) {
+      this.requestSubmitError = 'Sélectionnez un produit dans la liste.';
       return;
     }
 
-    const product = this.products.find((p) => p.id === this.draft.productId);
-    if (!product || this.draft.quantityKg < 1 || this.draft.quantityKg > product.availableKg) {
+    const pid = Number(this.draft.productId);
+    const product = this.products.find((p) => Number(p.id) === pid);
+    if (!product) {
+      this.requestSubmitError = 'Produit introuvable. Rechargez la page.';
       return;
     }
 
+    if (this.draft.quantityKg < 1 || this.draft.quantityKg > product.availableKg) {
+      this.requestSubmitError = 'Quantité invalide pour ce produit.';
+      return;
+    }
+
+    let donorLotId = product.donorLotId;
+    let donorUserKey = product.donorUserKey;
+    if (donorLotId != null) {
+      const lotRow = loadAllDonorLots().find((l) => l.id === donorLotId);
+      if (!lotRow) {
+        this.requestSubmitError =
+          'Lot donateur introuvable (stockage). Le donateur doit republier ou activer le hub NutriFlow (port 8095).';
+        return;
+      }
+      if (!lotRow.donorUserKey) {
+        this.requestSubmitError = 'Lot donateur invalide (propriétaire inconnu).';
+        return;
+      }
+      donorUserKey = lotRow.donorUserKey;
+      donorLotId = lotRow.id;
+    }
+
+    const isDonorLot = donorLotId != null;
     const request: RecyclerRequest = {
       id: this.nextRequestId++,
       productId: product.id,
       productName: product.name,
       quantityKg: this.draft.quantityKg,
       note: this.draft.note.trim(),
-      status: product.status === 'available' ? 'available' : 'pending',
-      requestedAt: new Date()
+      status: isDonorLot ? 'awaiting_donor' : product.status === 'available' ? 'available' : 'pending',
+      requestedAt: new Date(),
+      recyclerUserKey: this.creditsService.getCurrentRecyclerKey(),
+      donorUserKey: isDonorLot ? donorUserKey : undefined,
+      donorLotId: isDonorLot ? donorLotId : undefined
     };
 
     this.requests = [request, ...this.requests];
     this.persistRequests();
-    product.availableKg = Math.max(0, product.availableKg - this.draft.quantityKg);
-    if (product.availableKg === 0) {
-      product.status = 'done';
+    if (!isDonorLot) {
+      product.availableKg = Math.max(0, product.availableKg - this.draft.quantityKg);
+      if (product.availableKg === 0) {
+        product.status = 'done';
+      }
+      this.persistProducts();
     }
-    this.persistProducts();
 
     this.draft = { productId: null, quantityKg: 1, note: '' };
   }
 
-  protected markDone(requestId: number): void {
-    this.requests = this.requests.map((request) =>
-      request.id === requestId ? { ...request, status: 'done' } : request
-    );
+  /**
+   * Catalogue admin : seulement <code>available</code>.
+   * Lots donateur : avant correctif, acceptation donateur → <code>pending</code> (avec <code>donorLotId</code>) — on permet encore « Declare done ».
+   */
+  protected canDeclareDoneForAdminReview(request: RecyclerRequest): boolean {
+    if (request.status === 'available') {
+      return true;
+    }
+    return request.status === 'pending' && request.donorLotId != null;
+  }
+
+  protected submitOperationForVerification(requestId: number): void {
+    const key = this.creditsService.getCurrentRecyclerKey();
+    this.requests = this.requests.map((request) => {
+      if (request.id !== requestId || !this.canDeclareDoneForAdminReview(request)) {
+        return request;
+      }
+      return {
+        ...request,
+        status: 'pending_verification',
+        recyclerUserKey: request.recyclerUserKey ?? key,
+        verificationSubmittedAt: new Date().toISOString()
+      };
+    });
     this.persistRequests();
   }
 
@@ -606,6 +777,9 @@ export class RecyclerRequestsComponent {
 
     this.requests = this.requests.filter((entry) => entry.id !== requestId);
     this.persistRequests();
+    if (request.status === 'awaiting_donor') {
+      return;
+    }
     const product = this.products.find((p) => p.id === request.productId);
     if (product) {
       product.availableKg += request.quantityKg;
@@ -616,28 +790,26 @@ export class RecyclerRequestsComponent {
     }
   }
 
-  private getStoredRequests(): RecyclerRequest[] {
-    const cached = localStorage.getItem(this.requestsKey);
-    if (!cached) {
-      return [];
-    }
-
-    try {
-      const parsed = JSON.parse(cached) as Array<Omit<RecyclerRequest, 'requestedAt'> & { requestedAt: string }>;
-      return parsed.map((entry) => ({
-        ...entry,
-        requestedAt: new Date(entry.requestedAt)
-      }));
-    } catch {
-      localStorage.removeItem(this.requestsKey);
-      return [];
-    }
+  protected isVerificationRow(status: RequestStatus): boolean {
+    return status === 'pending_verification' || status === 'verified' || status === 'verification_rejected';
   }
 
   private getProductsFromAdmin(): RecyclableProduct[] {
+    const donorListed = loadListedDonorLotsForRecycler().map<RecyclableProduct>((lot) => ({
+      id: DONOR_LOT_PRODUCT_ID_BASE + lot.id,
+      name: lot.name,
+      category: lot.category,
+      availableKg: lot.quantityKg,
+      location: lot.location,
+      status: 'available',
+      imageUrl: lot.imageUrl ?? '',
+      donorLotId: lot.id,
+      donorUserKey: lot.donorUserKey
+    }));
+
     const cached = localStorage.getItem(this.storageKey);
     if (!cached) {
-      return [
+      const fallback: RecyclableProduct[] = [
         {
           id: 1,
           name: 'Plastic bottles',
@@ -648,6 +820,7 @@ export class RecyclerRequestsComponent {
           imageUrl: 'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=300&q=80'
         }
       ];
+      return [...fallback, ...donorListed];
     }
 
     try {
@@ -659,7 +832,7 @@ export class RecyclerRequestsComponent {
         imageUrl?: string;
       }>;
 
-      return adminItems.map((item, index) => ({
+      const admin = adminItems.map((item, index) => ({
         id: item.id,
         name: item.name,
         category: this.detectCategory(item.name),
@@ -668,8 +841,9 @@ export class RecyclerRequestsComponent {
         status: this.mapAdminStatus(item.status),
         imageUrl: item.imageUrl ?? ''
       }));
+      return [...admin, ...donorListed];
     } catch {
-      return [];
+      return [...donorListed];
     }
   }
 
@@ -701,6 +875,21 @@ export class RecyclerRequestsComponent {
   }
 
   private persistProducts(): void {
+    const allDonor = loadAllDonorLots();
+    let donorDirty = false;
+    for (const p of this.products) {
+      if (p.donorLotId != null) {
+        const idx = allDonor.findIndex((l) => l.id === p.donorLotId);
+        if (idx >= 0 && allDonor[idx].quantityKg !== p.availableKg) {
+          allDonor[idx] = { ...allDonor[idx], quantityKg: p.availableKg };
+          donorDirty = true;
+        }
+      }
+    }
+    if (donorDirty) {
+      saveAllDonorLots(allDonor);
+    }
+
     const current = localStorage.getItem(this.storageKey);
     if (!current) {
       return;
@@ -726,10 +915,6 @@ export class RecyclerRequestsComponent {
   }
 
   private persistRequests(): void {
-    const serialized = this.requests.map((entry) => ({
-      ...entry,
-      requestedAt: entry.requestedAt.toISOString()
-    }));
-    localStorage.setItem(this.requestsKey, JSON.stringify(serialized));
+    saveRecyclerRequests(this.requests);
   }
 }

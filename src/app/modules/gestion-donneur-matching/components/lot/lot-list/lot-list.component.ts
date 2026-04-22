@@ -3,6 +3,7 @@ import { LotService } from '../../../services/lot.service';
 import { LotResponse } from '../../../models/lot.model';
 import { StatutLot, NiveauUrgence } from '../../../models/enums.model';
 import { ViewEncapsulation } from '@angular/core';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-lot-list',
@@ -18,13 +19,23 @@ export class LotListComponent implements OnInit {
   statuts = Object.values(StatutLot);
   urgences = Object.values(NiveauUrgence);
   successMessage = '';
+  loadError = '';
 
   constructor(private lotService: LotService) {}
 
-  ngOnInit(): void { this.loadLots(); }
+  ngOnInit(): void {
+    this.loadLots();
+  }
 
   loadLots(): void {
-    this.lotService.getAll().subscribe(data => this.lots = data);
+    this.loadError = '';
+    this.lotService.getAll().subscribe({
+      next: (data) => (this.lots = data),
+      error: () => {
+        this.lots = [];
+        this.loadError = `Impossible de joindre l’API des lots (${environment.matchingApiBaseUrl}). Démarrez le microservice matching ou ajustez environment.matchingApiBaseUrl. Vérifiez la console réseau (CORS, 401).`;
+      }
+    });
   }
 
   filtrerParStatut(): void {

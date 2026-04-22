@@ -26,6 +26,15 @@
         <div class="card-body">
           <p>Vous avez accès aux statistiques globales et à la gestion des utilisateurs.</p>
           <button class="btn btn-danger" (click)="switchTab('admin')">Gérer les Utilisateurs</button>
+          <a routerLink="/user/admin/recycler-products" class="btn btn-outline-danger ms-2" title="Catalogue admin (produits recyclables)">
+            <i class="bi bi-box-seam me-1"></i>Produits recyclables (catalogue)
+          </a>
+          <a routerLink="/user/recycler" class="btn btn-outline-success ms-2" title="NutriFlow : demandes et crédits">
+            <i class="bi bi-recycle me-1"></i>Espace recycleur NutriFlow
+          </a>
+          <a routerLink="/user/admin/recycler-verification" class="btn btn-outline-danger ms-2">
+            <i class="bi bi-patch-check me-1"></i>Valider opérations recycleurs
+          </a>
           <a routerLink="/audit/contracts" class="btn btn-outline-danger ms-2">Contrats Numériques</a>
         </div>
       </div>
@@ -76,8 +85,10 @@
       <div class="card border-secondary shadow-sm mb-4">
         <div class="card-header bg-secondary text-white">VALORISATION - Recyclage</div>
         <div class="card-body">
-          <p>Suivez les processus de valorisation organique.</p>
-          <button class="btn btn-secondary">Rapports de Recyclage</button>
+          <p>Ouvrez l’espace <strong>NutriFlow</strong> : demandes, crédits, déclaration pour validation admin.</p>
+          <a routerLink="/user/recycler" class="btn btn-secondary">
+            <i class="bi bi-recycle me-1"></i>NutriFlow — demandes &amp; crédits
+          </a>
         </div>
       </div>
     </div>

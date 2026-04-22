@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ProduitRequest, ProduitResponse } from '../models/produit.model';
@@ -9,7 +10,7 @@ import { CategorieProduit } from '../models/enums.model';
 })
 export class ProduitService {
 
-  private baseUrl = 'http://localhost:8082/api/produits';
+  private readonly baseUrl = `${environment.matchingApiBaseUrl}/api/produits`;
 
   constructor(private http: HttpClient) {}
 

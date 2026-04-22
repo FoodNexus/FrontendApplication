@@ -21,6 +21,11 @@
     </div>
   </div>
 
+  <!-- API ERROR -->
+  <div *ngIf="loadError" class="alert-error" style="margin-bottom: 1rem;">
+    <i class="bi bi-exclamation-circle"></i> {{ loadError }}
+  </div>
+
   <!-- SUCCESS MESSAGE -->
   <div *ngIf="successMessage" class="alert-success-custom">
     <i class="bi bi-check-circle"></i> {{ successMessage }}

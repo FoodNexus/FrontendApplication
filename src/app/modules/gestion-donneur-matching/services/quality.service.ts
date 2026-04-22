@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -21,7 +22,7 @@ export interface QualityDecisionResult {
 
 @Injectable({ providedIn: 'root' })
 export class QualityService {
-  private apiUrl = 'http://localhost:8082/api/quality';
+  private readonly apiUrl = `${environment.matchingApiBaseUrl}/api/quality`;
 
   constructor(private http: HttpClient) {}
 

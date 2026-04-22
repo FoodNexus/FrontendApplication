@@ -17,6 +17,7 @@ export class CompleteProfileComponent implements OnInit {
   roles = [
     { id: 'DONOR', label: 'Donneur', icon: 'bi-hand-thumbs-up', description: 'Pour ceux qui souhaitent donner de la nourriture.' },
     { id: 'RECEIVER', label: 'Receveur', icon: 'bi-heart', description: 'Pour les associations et personnes dans le besoin.' },
+    { id: 'RECYCLER', label: 'Recycleur', icon: 'bi-recycle', description: 'Pour les acteurs de valorisation organique et d\'économie circulaire.' },
     { id: 'TRANSPORTER', label: 'Transporteur', icon: 'bi-truck', description: 'Pour la logistique et la livraison.' },
     { id: 'AUDITOR', label: 'Auditeur', icon: 'bi-shield-check', description: 'Pour le contrôle qualité et la conformité.' }
   ];

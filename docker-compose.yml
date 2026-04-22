@@ -1,4 +1,20 @@
 services:
+  mysql:
+    image: mysql:8.4
+    container_name: foodnexus-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - foodnexus_mysql_data:/var/lib/mysql
+    command: ["mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+
   keycloak:
     image: keycloak/keycloak:latest
     container_name: foodnexus-keycloak
@@ -6,6 +22,9 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_DB: dev-file
+      # Issuer JWT stable pour Spring (localhost:8080) — recréer le volume Keycloak si vous changez cela.
+      KC_HOSTNAME: http://localhost:8080
+      KC_HOSTNAME_STRICT: false
     ports:
       - "8080:8080"
     command:
@@ -22,3 +41,4 @@ services:
 
 volumes:
   keycloak_data:
+  foodnexus_mysql_data:

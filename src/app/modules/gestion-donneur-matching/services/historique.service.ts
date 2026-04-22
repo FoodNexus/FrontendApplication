@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { HistoriqueRequest, HistoriqueResponse } from '../models/historique.model';
@@ -8,7 +9,7 @@ import { HistoriqueRequest, HistoriqueResponse } from '../models/historique.mode
 })
 export class HistoriqueService {
 
-  private baseUrl = 'http://localhost:8082/api/historiques';
+  private readonly baseUrl = `${environment.matchingApiBaseUrl}/api/historiques`;
 
   constructor(private http: HttpClient) {}
 

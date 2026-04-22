@@ -27,6 +27,12 @@
         <i class="bi bi-exclamation-circle"></i> {{ errorMessage }}
       </div>
 
+      <div *ngIf="donneurIdAutoFilled && lot.donneurId >= 1 && !isEditMode" class="alert-info-soft">
+        <i class="bi bi-info-circle me-1"></i>
+        ID donneur prérempli depuis votre compte (<strong>ms_gestionUser</strong> ou dernière session). Modifiez-le si
+        votre table <code>donneur</code> côté matching n’utilise pas le même numéro que <code>idUser</code>.
+      </div>
+
       <form (ngSubmit)="onSubmit()" #f="ngForm">
 
         <!-- ID Donneur -->
@@ -44,6 +50,10 @@
             min="1"
             placeholder="Ex: 1"
           />
+          <p class="text-muted small mt-1 mb-0" style="font-size: 0.85rem;">
+            Doit correspondre à un enregistrement côté API matching (port 8082). Le profil applicatif est chargé via
+            <strong>http://localhost:8087/api/users/me</strong> : connectez-vous d’abord, ou saisissez l’ID à la main.
+          </p>
         </div>
 
         <!-- Niveau d'urgence -->
@@ -58,8 +68,7 @@
             name="niveauUrgence"
             required
           >
-            <option value="" disabled>Choisir un niveau</option>
-            <option *ngFor="let u of urgences" [value]="u">{{ u }}</option>
+            <option *ngFor="let u of urgences" [ngValue]="u">{{ u }}</option>
           </select>
         </div>
 

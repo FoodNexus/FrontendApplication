@@ -3,13 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { LotRequest, LotResponse } from '../models/lot.model';
 import { StatutLot, NiveauUrgence } from '../models/enums.model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LotService {
 
-  private baseUrl = 'http://localhost:8082/api/lots';
+  private readonly baseUrl = `${environment.matchingApiBaseUrl}/api/lots`;
 
   constructor(private http: HttpClient) {}
 

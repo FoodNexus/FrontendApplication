@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RecyclerRequestsComponent } from '../recycler-requests.component';
+import { RecyclerRequestsComponent } from './recycler-requests.component';
 
 @Component({
   selector: 'app-recycler-front-layout',

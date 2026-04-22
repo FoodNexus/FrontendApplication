@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
@@ -17,18 +17,8 @@ interface RecyclableSnapshot {
   standalone: true,
   imports: [NgFor, NgIf, RouterLink, RouterLinkActive, RouterOutlet],
   template: `
-    <div class="dashboard-shell">
-      <header class="topbar">
-        <div class="topbar-inner">
-          <div class="brand">
-            <p class="eyebrow">NORDIC Workspace</p>
-            <h1>Team Dashboard</h1>
-          </div>
-        </div>
-
-      </header>
-
-      <main class="workspace-layout">
+    <div class="dashboard-shell" [class.stats-embed]="statsOnly">
+      <main *ngIf="!statsOnly" class="workspace-layout">
         <aside class="module-sidebar">
           <h2>Modules</h2>
           <p>Select a workspace</p>
@@ -136,6 +126,16 @@ interface RecyclableSnapshot {
     </div>
   `,
   styles: [`
+    .dashboard-shell.stats-embed {
+      min-height: auto;
+      background: transparent;
+    }
+
+    .dashboard-shell.stats-embed .charts-zone {
+      padding: 0.5rem 0 0;
+      margin-top: 0;
+    }
+
     .dashboard-shell {
       min-height: 100vh;
       background: #f5f5f0;
@@ -361,7 +361,7 @@ interface RecyclableSnapshot {
       height: calc(100vh - 170px);
       min-height: 400px;
       position: sticky;
-      top: 95px;
+      top: 1rem;
       display: flex;
       flex-direction: column;
     }
@@ -441,6 +441,9 @@ interface RecyclableSnapshot {
   `]
 })
 export class DashboardLayoutComponent {
+  /** When true, only the statistics charts are shown (for embedding in admin dashboard). */
+  @Input() statsOnly = false;
+
   private readonly storageKey = 'gestion-receveur-recyclables';
   private readonly statusColors: Record<AdminStatus, string> = {
     'In Process': '#1d4ed8',
