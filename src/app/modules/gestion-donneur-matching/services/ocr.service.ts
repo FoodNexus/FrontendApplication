@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
 
 export interface OcrResult {
@@ -27,7 +28,7 @@ export interface OcrCreateLotResponse {
 
 @Injectable({ providedIn: 'root' })
 export class OcrService {
-  private apiUrl = 'http://localhost:8082/api/ocr';
+  private apiUrl = `${environment.apiDonneurUrl}/api/ocr`;
 
   constructor(private http: HttpClient) {}
 

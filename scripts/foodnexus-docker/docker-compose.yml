@@ -1,0 +1,45 @@
+# MySQL + Keycloak for local FoodNexus dev.
+# Run from this directory:  docker compose up -d
+# Or use ..\start-full-stack.ps1 from scripts\ (starts this + Java + Angular).
+#
+# Keycloak: http://localhost:8080/admin  (admin / admin)
+# MySQL: localhost:3306  root, no password (dev only)
+#
+# Realm: put foodnexus-realm.json in docker/keycloak/import/ (see README in that folder)
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: foodnexus-mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    volumes:
+      - foodnexus_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.7
+    container_name: foodnexus-keycloak
+    command:
+      - start-dev
+      - --http-port=8080
+      - --hostname-strict=false
+      - --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./docker/keycloak/import:/opt/keycloak/data/import
+
+volumes:
+  foodnexus_mysql_data:

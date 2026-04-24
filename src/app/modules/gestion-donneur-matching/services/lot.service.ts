@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
 import { LotRequest, LotResponse } from '../models/lot.model';
 import { StatutLot, NiveauUrgence } from '../models/enums.model';
@@ -9,7 +10,7 @@ import { StatutLot, NiveauUrgence } from '../models/enums.model';
 })
 export class LotService {
 
-  private baseUrl = 'http://localhost:8082/api/lots';
+  private baseUrl = `${environment.apiDonneurUrl}/api/lots`;
 
   constructor(private http: HttpClient) {}
 

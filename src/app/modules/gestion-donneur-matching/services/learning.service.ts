@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
 
 export interface ReceveurProfile {
@@ -23,7 +24,7 @@ export interface LearningResult {
 
 @Injectable({ providedIn: 'root' })
 export class LearningService {
-  private apiUrl = 'http://localhost:8082/api/learning';
+  private apiUrl = `${environment.apiDonneurUrl}/api/learning`;
 
   constructor(private http: HttpClient) {}
 

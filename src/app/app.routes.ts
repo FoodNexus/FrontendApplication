@@ -16,5 +16,10 @@ export const routes: Routes = [
     loadChildren: () => import('./modules/gestion-donneur-matching/gestion-donneur-matching.module')
       .then(m => m.GestionDonneurMatchingModule)
   },
+  {
+    path: 'valorisation',
+    loadChildren: () => import('./modules/valorisation-organique-economie-circulaire/valorisation-organique-economie-circulaire.module')
+      .then(m => m.ValorisationOrganiqueEconomieCirculaireModule)
+  },
   { path: '', redirectTo: 'user/home', pathMatch: 'full' }
 ];

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
 import { InspectionCase, ResolutionStatus, SanitaryVerdict } 
   from '../models/inspection-case.model';
@@ -7,7 +8,7 @@ import { InspectionCase, ResolutionStatus, SanitaryVerdict }
 @Injectable({ providedIn: 'root' })
 export class InspectionCaseService {
 
-  private apiUrl = 'http://localhost:8083/api/inspection-cases';
+  private apiUrl = `${environment.apiAuditUrl}/api/inspection-cases`;
 
   constructor(private http: HttpClient) {}
 

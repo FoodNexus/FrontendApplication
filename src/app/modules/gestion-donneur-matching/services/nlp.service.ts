@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
 
 export interface NlpResult {
@@ -27,7 +28,7 @@ export interface NlpCreateLotResponse {
 
 @Injectable({ providedIn: 'root' })
 export class NlpService {
-  private apiUrl = 'http://localhost:8082/api/nlp';
+  private apiUrl = `${environment.apiDonneurUrl}/api/nlp`;
 
   constructor(private http: HttpClient) {}
 

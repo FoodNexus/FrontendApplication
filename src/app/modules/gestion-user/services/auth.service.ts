@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { KeycloakService } from 'keycloak-angular';
 
@@ -7,7 +8,7 @@ import { KeycloakService } from 'keycloak-angular';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8087/api/users';
+  private apiUrl = `${environment.apiUserUrl}/api/users`;
   private currentUser: any = null;
   public isBlocked = false;
 

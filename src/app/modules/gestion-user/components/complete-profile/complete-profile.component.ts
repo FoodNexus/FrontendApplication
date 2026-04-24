@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-complete-profile',
@@ -46,7 +47,7 @@ export class CompleteProfileComponent implements OnInit {
           this.router.navigate(['/user/dashboard']);
           return;
         }
-        this.errorMessage = 'Impossible de charger votre profil. Vérifiez que votre backend sur le port 8087 est bien lancé.';
+        this.errorMessage = `Impossible de charger votre profil. Vérifiez que ms_gestionUser est démarré (${environment.apiUserUrl}).`;
         console.error('Error fetching profile', err);
       }
     });

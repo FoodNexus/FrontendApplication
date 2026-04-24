@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
 import { MatchFractionneRequest, MatchFractionneResponse } from '../models/match-fractionne.model';
 import { StatutMatch } from '../models/enums.model';
@@ -9,7 +10,7 @@ import { StatutMatch } from '../models/enums.model';
 })
 export class MatchFractionneService {
 
-  private baseUrl = 'http://localhost:8082/api/matchs';
+  private baseUrl = `${environment.apiDonneurUrl}/api/matchs`;
 
   constructor(private http: HttpClient) {}
 
