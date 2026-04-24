@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DONOR_LOT_PRODUCT_ID_BASE, loadAllDonorLots } from '../storage/donor-lots.storage';
+import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-panel.component';
 
 type RequestStatus = 'pending' | 'approved' | 'available' | 'done' | 'rejected';
 type AdminStatus = 'In Process' | 'Recycled' | 'Pending Collection' | 'Rejected';
@@ -30,7 +32,7 @@ interface AdminRecyclable {
 @Component({
   selector: 'app-store-recycle-requests',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, FormsModule, DatePipe],
+  imports: [NgFor, NgIf, NgClass, FormsModule, DatePipe, RecyclerRequestsStatsPanelComponent],
   template: `
     <div class="store-shell">
       <header class="topbar">
@@ -51,6 +53,8 @@ interface AdminRecyclable {
           <article><span>Ready / Available</span><strong>{{ availableCount }}</strong></article>
           <article><span>Completed</span><strong>{{ doneCount }}</strong></article>
         </section>
+
+        <app-recycler-requests-stats-panel />
 
         <section class="card">
           <div class="card-header">
@@ -333,6 +337,11 @@ export class StoreRecycleRequestsComponent {
   }
 
   protected getProductImage(productId: number): string {
+    if (productId >= DONOR_LOT_PRODUCT_ID_BASE) {
+      const donorLotId = productId - DONOR_LOT_PRODUCT_ID_BASE;
+      const lot = loadAllDonorLots().find((l) => l.id === donorLotId);
+      return lot?.imageUrl ?? '';
+    }
     const raw = localStorage.getItem(this.recyclablesKey);
     if (!raw) {
       return '';

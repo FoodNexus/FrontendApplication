@@ -4,9 +4,17 @@
     <span class="navbar-brand mb-0 h1 text-success">
       <i class="bi bi-speedometer2 me-2"></i> NutriFlow Dashboard
     </span>
-    <div class="d-flex align-items-center">
-      <span class="me-3 fw-bold text-dark">Bienvenue, {{ username }} !</span>
-      <button class="btn btn-outline-success btn-sm me-2" (click)="switchTab('dashboard')" [class.active]="activeTab === 'dashboard'">
+    <div class="d-flex align-items-center flex-wrap justify-content-end gap-2">
+      <span class="me-2 fw-bold text-dark">Bienvenue, {{ username }} !</span>
+      <a
+        *ngIf="hasRole('ADMIN')"
+        routerLink="/valorisation/nutriflow"
+        class="btn btn-success btn-sm"
+        title="Back-office NutriFlow : catalogue recyclables et inventaire"
+      >
+        <i class="bi bi-recycle me-1"></i> Recyclables (admin)
+      </a>
+      <button class="btn btn-outline-success btn-sm" (click)="switchTab('dashboard')" [class.active]="activeTab === 'dashboard'">
         <i class="bi bi-speedometer2"></i> Dashboard
       </button>
       <button class="btn btn-outline-secondary btn-sm me-2" (click)="switchTab('profile')" [class.active]="activeTab === 'profile'">
@@ -25,8 +33,11 @@
         <div class="card-header bg-danger text-white">ADMIN - Panneau de Contrôle</div>
         <div class="card-body">
           <p>Vous avez accès aux statistiques globales et à la gestion des utilisateurs.</p>
-          <button class="btn btn-danger" (click)="switchTab('admin')">Gérer les Utilisateurs</button>
-          <a routerLink="/audit/contracts" class="btn btn-outline-danger ms-2">Contrats Numériques</a>
+          <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-danger" (click)="switchTab('admin')">Gérer les Utilisateurs</button>
+            <a routerLink="/audit/contracts" class="btn btn-outline-danger">Contrats Numériques</a>
+            <a routerLink="/user/admin/recycler-verification" class="btn btn-outline-warning">Validation NutriFlow</a>
+          </div>
         </div>
       </div>
     </div>
@@ -76,8 +87,8 @@
       <div class="card border-secondary shadow-sm mb-4">
         <div class="card-header bg-secondary text-white">VALORISATION - Recyclage</div>
         <div class="card-body">
-          <p>Suivez les processus de valorisation organique.</p>
-          <button class="btn btn-secondary">Rapports de Recyclage</button>
+          <p>Suivez les demandes, crédits et flux NutriFlow (offres publiées par les donateurs).</p>
+          <a routerLink="/valorisation/nutriflow" class="btn btn-secondary">Espace NutriFlow recycleur</a>
         </div>
       </div>
     </div>

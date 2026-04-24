@@ -214,7 +214,8 @@ export class ValorisationDashboardLayoutComponent {
   protected readonly navItems: { label: string; path: string; exact?: boolean }[] = [
     { label: "Vue d'ensemble", path: 'workspace', exact: true },
     { label: 'CRUD recyclables', path: 'recyclables' },
-    { label: 'Front recycler', path: 'recycler-front' },
+    { label: 'NutriFlow — recycleur (catalogue admin si ADMIN)', path: 'nutriflow' },
+    { label: 'NutriFlow — donateur (lots)', path: 'nutriflow-donor' },
     { label: 'Validation demandes (store)', path: 'store-requests' }
   ];
 }

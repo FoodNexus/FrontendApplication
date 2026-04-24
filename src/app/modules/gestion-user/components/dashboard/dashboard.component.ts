@@ -37,11 +37,13 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.authService.isLoggedIn()) {
+      // Rôles Keycloak disponibles tout de suite ; le profil /me affine (rôle DB).
+      this.syncRolesFromAuth();
       this.authService.fetchUserProfile().subscribe({
         next: (user) => {
           this.currentUser = user;
           this.username = this.authService.getUsername();
-          this.roles = this.authService.getUserRoles();
+          this.syncRolesFromAuth();
           this.initProfileForm();
           if (this.hasRole('ADMIN')) {
             this.loadAllUsers();
@@ -51,6 +53,10 @@ export class DashboardComponent implements OnInit {
       });
       this.initPasswordForm();
     }
+  }
+
+  private syncRolesFromAuth(): void {
+    this.roles = this.authService.getUserRoles();
   }
 
   initProfileForm() {
@@ -154,6 +160,6 @@ export class DashboardComponent implements OnInit {
   }
 
   hasRole(role: string): boolean {
-    return this.roles.includes(role);
+    return this.roles.includes(role.toUpperCase());
   }
 }

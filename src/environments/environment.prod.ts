@@ -6,5 +6,6 @@ export const environment = {
   apiUserUrl: 'http://localhost:8087',
   apiDonneurUrl: 'http://localhost:8082',
   apiAuditUrl: 'http://localhost:8083',
-  apiReceveurUrl: 'http://localhost:8084'
+  apiReceveurUrl: 'http://localhost:8084',
+  nutriflowHubBaseUrl: ''
 };

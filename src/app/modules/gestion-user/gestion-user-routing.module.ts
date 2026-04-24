@@ -13,6 +13,15 @@ const routes: Routes = [
     canActivate: [AuthGuard]   
   },
   { path: 'complete-profile', component: CompleteProfileComponent },
+  {
+    path: 'admin/recycler-verification',
+    loadComponent: () =>
+      import('./components/admin-recycler-verification/admin-recycler-verification.component').then(
+        (m) => m.AdminRecyclerVerificationComponent
+      ),
+    canActivate: [AuthGuard],
+    data: { roles: ['ADMIN'] }
+  },
   { path: '', redirectTo: 'home', pathMatch: 'full' }
 ];
 

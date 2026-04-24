@@ -301,5 +301,8 @@ export class RecyclablesCrudComponent {
 
   private persistRecyclables(): void {
     localStorage.setItem(this.storageKey, JSON.stringify(this.recyclables));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('nutriflow-admin-recyclables-changed'));
+    }
   }
 }

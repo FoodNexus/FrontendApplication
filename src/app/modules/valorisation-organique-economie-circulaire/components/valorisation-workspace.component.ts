@@ -12,7 +12,9 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 
       <nav class="quick-links" aria-label="Accès rapide valorisation">
         <a routerLink="/valorisation/recyclables" class="cta">CRUD recyclables</a>
-        <a routerLink="/valorisation/recycler-front" class="cta secondary">Front recycler</a>
+        <a routerLink="/valorisation/nutriflow" class="cta admin">NutriFlow — catalogue admin &amp; inventaire</a>
+        <a routerLink="/valorisation/nutriflow" class="cta secondary">NutriFlow recycleur</a>
+        <a routerLink="/valorisation/nutriflow-donor" class="cta secondary">NutriFlow donateur</a>
         <a routerLink="/valorisation/store-requests" class="cta secondary">Validation store</a>
       </nav>
     </section>
@@ -58,6 +60,11 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
     .cta.secondary {
       background: #f3f4f6;
       color: #111827;
+    }
+
+    .cta.admin {
+      background: #198754;
+      color: #fff;
     }
   `]
 })
