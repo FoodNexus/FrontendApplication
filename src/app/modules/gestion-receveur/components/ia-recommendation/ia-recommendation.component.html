@@ -1,0 +1,183 @@
+<div class="page-container">
+  <!-- Header Section -->
+  <div class="page-header animate-fade-in">
+    <div class="page-title">
+      <div class="title-icon"><i class="bi bi-stars"></i></div>
+      <div class="title-text">
+        <h2>Recommandation Prédictive IA</h2>
+        <p>Analyse intelligente basée sur les données réelles de la FAO</p>
+        <!-- Refreshed Design -->
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="ai-badge">
+        <i class="bi bi-cpu-fill me-2"></i>Moteur NutriFlow v1.0
+      </div>
+      <a routerLink="/receveur/dashboard" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Tableau de bord
+      </a>
+    </div>
+  </div>
+
+  <div class="dashboard-layout-grid animate-fade-in">
+    <!-- Section Paramètres (Gauche) -->
+    <div class="layout-column">
+      <div class="premium-card">
+        <div class="card-header border-0 bg-transparent px-4 pt-4 pb-0">
+          <div class="card-title">
+            <i class="bi bi-sliders text-emerald"></i>
+            <h2>Configuration de l'analyse</h2>
+          </div>
+        </div>
+
+        <div class="card-body p-4 pt-3">
+          <div class="form-group mb-4">
+            <label class="form-label">Nombre de bénéficiaires *</label>
+            <input type="number" class="form-input" [(ngModel)]="nbPersonnes" min="1" placeholder="Ex: 500">
+            <small class="form-text text-muted">Ajustez selon vos prévisions hebdomadaires</small>
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">Région d'intervention</label>
+            <select class="form-input" [(ngModel)]="region">
+              <option value="Nord">Zone Nord (Tunisie)</option>
+              <option value="Centre">Zone Centre (Tunisie)</option>
+              <option value="Sud">Zone Sud (Tunisie)</option>
+            </select>
+          </div>
+
+          <div class="profile-filters mb-4">
+            <label class="form-label text-emerald mb-3">
+              <i class="bi bi-person-fill me-2"></i>Profil Typique
+            </label>
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label small">Tranche d'âge</label>
+                <select class="form-input" [(ngModel)]="trancheAge">
+                  <option value="Mixte">Population Mixte</option>
+                  <option value="Enfants">Enfants (0-14 ans)</option>
+                  <option value="Adultes">Adultes (15-59 ans)</option>
+                  <option value="Seniors">Seniors (60+ ans)</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label small">Répartition Sexe</label>
+                <select class="form-input" [(ngModel)]="sexe">
+                  <option value="Mixte">Paritaire</option>
+                  <option value="Femmes">Majorité Femmes</option>
+                  <option value="Hommes">Majorité Hommes</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-box mb-4">
+            <div class="info-icon"><i class="bi bi-lightbulb-fill"></i></div>
+            <div class="info-text">
+              <strong>Conseil NutriFlow :</strong> Pour une précision optimale, renseignez le nombre exact de bénéficiaires enregistrés.
+            </div>
+          </div>
+
+          <button class="btn-primary w-100 fw-bold" style="padding-top: 0.85rem; padding-bottom: 0.85rem;" (click)="recommander()" [disabled]="isLoading">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isLoading" class="bi bi-magic me-2"></i>Générer la Recommandation
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Résultats (Droite) -->
+    <div class="layout-column">
+      <!-- Empty State -->
+      <div *ngIf="!resultat && !isLoading" class="premium-card empty-state-card h-100">
+        <div class="card-body d-flex flex-column align-items-center justify-content-center p-5 text-center">
+          <div class="empty-icon">🎯</div>
+          <h3>Optimisation Intelligente</h3>
+          <p class="text-muted">Lancez l'IA pour calculer le panier nutritionnel idéal selon les standards internationaux de la FAO.</p>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="premium-card empty-state-card h-100">
+        <div class="card-body d-flex flex-column align-items-center justify-content-center p-5">
+          <div class="spinner-grow" style="color: #8b5cf6;" role="status"></div>
+          <h4 class="mt-4">IA en cours de réflexion...</h4>
+          <p class="text-muted">Analyse des équilibres glucidiques et protéiques</p>
+        </div>
+      </div>
+
+      <!-- Resultat -->
+      <div *ngIf="resultat" class="recommendation-results">
+        <div class="confidence-meter mb-4 animate-fade-in shadow-sm">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold text-dark" style="font-size: 0.95rem;">Fiabilité de la recommandation</span>
+            <span class="fw-black" [style.color]="'#10b981'">{{resultat.confiance}}%</span>
+          </div>
+          <div class="meter-track">
+            <div class="meter-fill" [style.width.%]="resultat.confiance"></div>
+          </div>
+        </div>
+
+        <!-- Success Message -->
+        <div *ngIf="showSuccess" class="alert alert-success animate-fade-in mb-4 d-flex align-items-center" style="border-radius: 16px; border: none; background: rgba(16, 185, 129, 0.1); color: #059669;">
+          <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+          <div>
+            <h6 class="mb-0 fw-bold">Panier validé avec succès !</h6>
+            <p class="mb-0 small">Vos besoins ont été enregistrés. Redirection en cours...</p>
+          </div>
+        </div>
+
+        <div class="category-block" *ngFor="let cat of [1,2,3,4]">
+          <h5 class="category-title" *ngIf="getProductsByCategory(cat).length > 0">
+            <i class="bi me-2" [ngClass]="{
+              'bi-columns-gap': cat === 1,
+              'bi-droplet-half': cat === 2,
+              'bi-flower3': cat === 3,
+              'bi-egg-fill': cat === 4
+            }"></i>
+            {{ cat == 1 ? 'Bases Céréalières' : cat == 2 ? 'Épicerie Fine' : cat == 3 ? 'Maraîchage' : 'Sources de Protéines' }}
+          </h5>
+
+          <div class="row row-cols-1 row-cols-md-2 g-3 mb-4 mt-1">
+            <div class="col" *ngFor="let item of getProductsByCategory(cat)">
+              <div class="product-item">
+                <div class="d-flex align-items-center gap-3 flex-grow-1">
+                  <div class="icon-box">
+                    <i [class]="'bi ' + getProductIcon(item[0])"></i>
+                  </div>
+                  <div class="details">
+                    <span class="product-name">{{translations[item[0]] || item[0]}}</span>
+                    <div class="d-flex align-items-baseline gap-1">
+                      <span class="product-qty">{{item[1]}}</span>
+                      <small class="text-muted fw-bold">{{ item[0].toLowerCase().includes('lait') || item[0].toLowerCase().includes('huile') ? 'L' : 'Kg' }}</small>
+                    </div>
+                  </div>
+                </div>
+                
+                <button class="btn-add-item" 
+                        (click)="validerProduit(item[0], item[1])" 
+                        [disabled]="validatingItems.has(item[0]) || validatedItems.has(item[0])"
+                        [ngClass]="{'added': validatedItems.has(item[0])}">
+                  <span *ngIf="validatingItems.has(item[0])" class="spinner-border spinner-border-sm"></span>
+                  <i *ngIf="!validatingItems.has(item[0]) && !validatedItems.has(item[0])" class="bi bi-plus-lg"></i>
+                  <i *ngIf="validatedItems.has(item[0])" class="bi bi-check-lg"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end gap-3 actions-bar animate-fade-in">
+          <button class="btn btn-light px-3 py-2 fw-bold text-muted" style="border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 0.9rem;">
+            <i class="bi bi-printer-fill me-2"></i>Exporter PDF
+          </button>
+          <button class="btn-primary" style="padding: 0.5rem 1.25rem;" (click)="validerPanier()" [disabled]="isValidating || showSuccess">
+            <span *ngIf="isValidating" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isValidating" class="bi bi-check-all me-2"></i>
+            {{ isValidating ? 'Enregistrement...' : 'Valider le Panier' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,142 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-main">
+      <button class="btn-header-back" routerLink="/receveur/dashboard">
+        <i class="bi bi-arrow-left"></i> Dashboard
+      </button>
+      <div>
+        <h1>Mes Notations</h1>
+        <p>Consultez les notes que vous avez données aux donneurs</p>
+      </div>
+    </div>
+    <div class="avg-score-card" *ngIf="!isLoading && notations.length > 0">
+      <span class="avg-label">Score moyen</span>
+      <span class="avg-value" [class]="getScoreClass(avgScore)">{{ avgScore }}/5</span>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-card">
+    <input type="text" 
+           placeholder="Rechercher par numéro de don..." 
+           class="search-input" 
+           [(ngModel)]="searchTerm" 
+           (input)="onFilterChange()">
+    
+    <div class="filter-buttons">
+      <button class="filter-btn" [class.active]="filterNote === 'TOUS'" (click)="filterNote='TOUS';onFilterChange()">
+        Toutes
+      </button>
+      <button class="filter-btn" [class.active]="filterNote === '5'" (click)="filterNote='5';onFilterChange()">
+        5 <i class="bi bi-star-fill"></i>
+      </button>
+      <button class="filter-btn" [class.active]="filterNote === '4'" (click)="filterNote='4';onFilterChange()">
+        4 <i class="bi bi-star-fill"></i>
+      </button>
+      <button class="filter-btn" [class.active]="filterNote === '3'" (click)="filterNote='3';onFilterChange()">
+        3 <i class="bi bi-star-fill"></i>
+      </button>
+      <button class="filter-btn" [class.active]="filterNote === '2'" (click)="filterNote='2';onFilterChange()">
+        2 <i class="bi bi-star-fill"></i>
+      </button>
+      <button class="filter-btn" [class.active]="filterNote === '1'" (click)="filterNote='1';onFilterChange()">
+        1 <i class="bi bi-star-fill"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Chargement de vos notations...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="alert-error">
+
+    <p><i class="bi bi-exclamation-circle"></i> {{ errorMessage }}</p>
+    <button class="btn-retry" (click)="loadNotations()">Réessayer</button>
+  </div>
+
+  <!-- Contenu -->
+  <div *ngIf="!isLoading && !errorMessage">
+    <!-- Statistiques -->
+    <div class="stats-row" *ngIf="notations.length > 0">
+      <div class="stat-card">
+        <span class="stat-value">{{ notations.length }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ getNoteCount(5) }}</span>
+        <span class="stat-label">5 <i class="bi bi-star-fill"></i></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ getNoteCount(4) }}</span>
+        <span class="stat-label">4 <i class="bi bi-star-fill"></i></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ getNoteCount(3) }}</span>
+        <span class="stat-label">3 <i class="bi bi-star-fill"></i></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ getNoteCount(2) }}</span>
+        <span class="stat-label">2 <i class="bi bi-star-fill"></i></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ getNoteCount(1) }}</span>
+        <span class="stat-label">1 <i class="bi bi-star-fill"></i></span>
+      </div>
+    </div>
+
+    <!-- Liste des notations -->
+    <div *ngIf="filteredNotations.length > 0" class="notations-list">
+      <div class="notation-card" *ngFor="let notation of filteredNotations">
+        <div class="notation-header">
+          <div class="don-info">
+            <span class="don-icon"><i class="bi bi-gift"></i></span>
+            <span class="don-id">Don #{{ notation.donId }}</span>
+          </div>
+          <div class="notation-stars">
+            <span *ngFor="let star of getNoteStars(notation.note)" class="star" [class.filled]="star === '★'">
+              <i class="bi" [class.bi-star-fill]="star === '★'" [class.bi-star]="star !== '★'"></i>
+            </span>
+          </div>
+        </div>
+        
+        <div class="notation-body">
+          <div class="comment" *ngIf="notation.commentaire">
+            <span class="comment-icon"><i class="bi bi-chat-left-text"></i></span>
+            <span class="comment-text">"{{ notation.commentaire }}"</span>
+          </div>
+          <div class="comment" *ngIf="!notation.commentaire">
+            <span class="comment-icon"><i class="bi bi-chat-left-text"></i></span>
+            <span class="comment-text text-muted">Aucun commentaire</span>
+          </div>
+        </div>
+        
+        <div class="notation-footer">
+          <span class="date">{{ notation.dateNotation | date:'dd/MM/yyyy à HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aucun résultat -->
+    <div *ngIf="filteredNotations.length === 0 && notations.length > 0" class="empty-card">
+      <div class="empty-icon"><i class="bi bi-search"></i></div>
+      <h3>Aucune notation trouvée</h3>
+      <p>Aucune notation ne correspond aux filtres sélectionnés.</p>
+      <button class="btn-reset" (click)="filterNote='TOUS';searchTerm='';onFilterChange()">
+        Réinitialiser les filtres
+      </button>
+    </div>
+
+    <div *ngIf="notations.length === 0" class="empty-card">
+  
+      <div class="empty-icon"><i class="bi bi-star"></i></div>
+      <h3>Aucune notation</h3>
+      <p>Vous n'avez pas encore noté de dons.</p>
+      <p class="info-text">Les notations apparaîtront après avoir reçu des dons.</p>
+    </div>
+  </div>
+</div>

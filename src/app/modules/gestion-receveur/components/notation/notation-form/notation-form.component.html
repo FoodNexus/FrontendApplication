@@ -1,0 +1,69 @@
+<div class="page-container">
+  <div class="form-wrapper">
+    <div class="form-card">
+    <div class="form-header">
+      <button class="btn-header-back inverse" routerLink="/receveur/dashboard">
+        <i class="bi bi-arrow-left"></i> Dashboard
+      </button>
+      <div class="header-icon"><i class="bi bi-pencil-square"></i></div>
+      <div>
+        <h3>Noter un don</h3>
+        <p>Partagez votre expérience avec le donneur</p>
+      </div>
+    </div>
+
+    <div class="don-info" *ngIf="donId">
+      <span class="don-icon"><i class="bi bi-gift"></i></span>
+      <span class="don-id">Don #{{ donId }}</span>
+    </div>
+
+    <div *ngIf="errorMessage && !donId" class="alert-error">
+      <i class="bi bi-x-circle"></i> {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="save()" *ngIf="donId">
+      <!-- Note -->
+      <div class="form-group">
+        <label class="form-label">Votre note</label>
+        <div class="stars-container">
+          <span *ngFor="let star of getStarsArray()" 
+                class="star" 
+                [class.filled]="star <= (notation.note || 0)"
+                (click)="setNote(star)">
+            <i class="bi" [class.bi-star-fill]="star <= (notation.note || 0)" [class.bi-star]="star > (notation.note || 0)"></i>
+          </span>
+        </div>
+        <div class="note-label">
+          {{ getNoteLabel(notation.note || 0) }}
+        </div>
+      </div>
+
+      <!-- Commentaire -->
+      <div class="form-group">
+        <label class="form-label">Commentaire (optionnel)</label>
+        <textarea class="form-input" 
+                  [(ngModel)]="notation.commentaire" 
+                  name="commentaire"
+                  rows="4"
+                  placeholder="Décrivez votre expérience..."></textarea>
+      </div>
+
+      <!-- Boutons -->
+      <div class="form-actions mt-4">
+        <button type="button" class="btn-cancel" (click)="cancel()">Annuler</button>
+        <button type="submit" class="btn-submit" [disabled]="isSaving">
+          {{ isSaving ? 'Enregistrement...' : 'Envoyer la notation' }}
+        </button>
+      </div>
+
+      <!-- Messages -->
+      <div *ngIf="successMessage" class="success-message">
+        <i class="bi bi-check-circle"></i> {{ successMessage }}
+      </div>
+      <div *ngIf="errorMessage" class="alert-error">
+        <i class="bi bi-x-circle"></i> {{ errorMessage }}
+      </div>
+    </form>
+    </div>
+  </div>
+</div>

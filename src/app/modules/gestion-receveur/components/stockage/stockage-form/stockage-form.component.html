@@ -1,0 +1,73 @@
+<div class="page-container">
+  <div class="form-wrapper">
+    <div class="form-card">
+    <div class="form-header">
+      <div class="header-icon"><i class="bi bi-pencil-square"></i></div>
+      <div>
+        <h3>📦 Configuration de mon espace de stockage</h3>
+        <p>Bienvenue ! Avant de commencer, renseignez vos capacités de stockage</p>
+      </div>
+    </div>
+
+    <form (ngSubmit)="saveStockage()">
+      <!-- Capacité maximale -->
+      <div class="form-group">
+        <label class="form-label">📏 Capacité maximale de stockage (kg) *</label>
+        <input type="number" 
+               class="form-input" 
+               [(ngModel)]="stockage.capaciteMaxKg" 
+               name="capaciteMaxKg"
+               required
+               min="0"
+               placeholder="Ex: 500">
+        <small class="form-text">Capacité totale de votre local (étagères, placards, etc.)</small>
+      </div>
+
+      <!-- Frigo -->
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="stockage.aFrigorifique" name="aFrigorifique">
+          🧊 J'ai un frigo / une chambre froide
+        </label>
+      </div>
+
+      <!-- Capacité frigo (conditionnel) -->
+      <div class="form-group" *ngIf="stockage.aFrigorifique">
+        <label class="form-label">❄️ Capacité du frigo (kg)</label>
+        <input type="number" 
+               class="form-input" 
+               [(ngModel)]="stockage.capaciteFrigoKg" 
+               name="capaciteFrigoKg"
+               min="0"
+               placeholder="Ex: 200">
+        <small class="form-text">Capacité pour les produits frais (lait, légumes, viande...)</small>
+      </div>
+
+      <!-- Message d'information -->
+      <div class="info-box">
+        <div class="info-icon">💡</div>
+        <div class="info-text">
+          <strong>Pourquoi ces informations ?</strong><br>
+          Elles permettent aux donneurs de savoir ce que vous pouvez recevoir et d'optimiser les dons.
+        </div>
+      </div>
+
+      <!-- Boutons -->
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="cancel()">Plus tard</button>
+        <button type="submit" class="btn-submit" [disabled]="!isFormValid">💾 Enregistrer mon stockage</button>
+      </div>
+    </form>
+
+    <!-- Message de succès -->
+    <div *ngIf="successMessage" class="success-message">
+      ✅ {{ successMessage }}
+    </div>
+
+    <!-- Message d'erreur -->
+    <div *ngIf="errorMessage" class="alert-error">
+      ❌ {{ errorMessage }}
+    </div>
+    </div>
+  </div>
+</div>

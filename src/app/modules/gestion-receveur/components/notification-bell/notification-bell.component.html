@@ -1,0 +1,84 @@
+<div class="notification-wrapper" (click)="toggleDropdown()" id="bell-wrapper">
+  <div class="bell-trigger" [class.has-notifications]="unreadCount > 0">
+    <i class="bi bi-bell-fill"></i>
+    <span class="pulse-ring" *ngIf="unreadCount > 0"></span>
+    <span class="notification-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+  </div>
+
+  <div class="dropdown-pane glass-morphism animate-slide-up" *ngIf="showDropdown" (click)="$event.stopPropagation()">
+    <header class="pane-header">
+      <div class="header-content">
+        <h3>Notifications</h3>
+        <span class="unread-label" *ngIf="unreadCount > 0">{{ unreadCount }} nouvelles</span>
+      </div>
+      <div class="header-actions">
+        <button (click)="marquerToutLu()" class="action-icon-btn" *ngIf="unreadCount > 0" title="Tout marquer lu">
+          <i class="bi bi-check-all"></i>
+        </button>
+        <button (click)="refresh()" class="action-icon-btn" title="Rafraîchir">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Categories Filter -->
+    <nav class="categories-nav">
+      <button class="cat-btn" [class.active]="filter === 'all'" (click)="setFilter('all')">
+        <span class="cat-dot all"></span> Toutes ({{ stats?.total || 0 }})
+      </button>
+      <button class="cat-btn" [class.active]="filter === 'critical'" (click)="setFilter('critical')">
+        <span class="cat-dot critical"></span> Critiques ({{ stats?.critical || 0 }})
+      </button>
+      <button class="cat-btn" [class.active]="filter === 'urgent'" (click)="setFilter('urgent')">
+        <span class="cat-dot urgent"></span> Urgentes ({{ stats?.urgent || 0 }})
+      </button>
+    </nav>
+
+    <!-- Scrollable Body -->
+    <div class="pane-body">
+      <div *ngIf="isLoading" class="loader-container">
+        <div class="loader-pulse"></div>
+      </div>
+
+      <div class="notification-list" *ngIf="!isLoading">
+        <div *ngFor="let alerte of filteredAlertes" 
+             class="notification-item" 
+             [class]="getNiveauClass(alerte.niveau)"
+             [class.unread]="!alerte.lue" 
+             (click)="marquerLu(alerte.id)">
+          <div class="item-visual">
+            <div class="icon-circle">
+              <i [class]="getIcon(alerte.niveau)"></i>
+            </div>
+          </div>
+          <div class="item-body">
+            <div class="item-top">
+              <span class="item-title">{{ alerte.typeProduit }}</span>
+              <span class="item-time">{{ alerte.dateEnvoi | date:'HH:mm' }}</span>
+            </div>
+            <p class="item-text">{{ alerte.message }}</p>
+            <div class="item-footer">
+              <span class="item-date">{{ alerte.dateEnvoi | date:'dd MMM yyyy' }}</span>
+              <span class="new-dot" *ngIf="!alerte.lue"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredAlertes.length === 0" class="empty-state">
+          <div class="empty-icon">
+            <i class="bi bi-bell-slash"></i>
+          </div>
+          <p>Vous êtes à jour !</p>
+          <span>Aucune notification pour le moment.</span>
+        </div>
+      </div>
+    </div>
+
+    <footer class="pane-footer">
+      <a routerLink="/receveur/alertes" class="view-all-btn">
+        Voir tout l'historique <i class="bi bi-arrow-right"></i>
+      </a>
+    </footer>
+  </div>
+</div>

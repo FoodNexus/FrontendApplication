@@ -1,0 +1,146 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon"><i class="bi bi-box-seam"></i></div>
+      <div class="title-text">
+        <h2>Mon Espace de Stockage</h2>
+        <p>Consultez et gérez vos capacités de stockage</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-refresh" (click)="refresh()"><i class="bi bi-arrow-clockwise"></i> Actualiser</button>
+      <button class="btn-edit" routerLink="/receveur/stockage/modifier"><i class="bi bi-pencil"></i> Modifier</button>
+      <a routerLink="/receveur/dashboard" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Retour
+      </a>
+    </div>
+  </div>
+
+  <!-- Chargement -->
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Chargement de vos informations...</p>
+  </div>
+
+  <!-- Erreur -->
+  <div *ngIf="errorMessage" class="alert-error">
+    <div class="error-icon"><i class="bi bi-exclamation-triangle"></i></div>
+    <div class="error-content">
+      <h3>Erreur</h3>
+      <p>{{ errorMessage }}</p>
+      <button class="btn-retry" (click)="refresh()">Réessayer</button>
+    </div>
+  </div>
+
+  <!-- Contenu -->
+  <div *ngIf="!isLoading && !errorMessage && stockage" class="content">
+    <!-- Carte principale -->
+    <div class="main-card">
+      <div class="card-header">
+        <h2>Informations générales</h2>
+        <span class="badge" [class]="statutOccupation">
+          {{ statutOccupation }}
+        </span>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-icon"><i class="bi bi-rulers"></i></div>
+          <div class="info-detail">
+            <label>Capacité maximale</label>
+            <span class="value">{{ stockage.capaciteMaxKg }} kg</span>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-icon"><i class="bi bi-check-circle"></i></div>
+          <div class="info-detail">
+            <label>Espace disponible</label>
+            <span class="value highlight">{{ stockage.capaciteDisponibleKg }} kg</span>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-icon"><i class="bi bi-box-seam"></i></div>
+          <div class="info-detail">
+            <label>Espace utilisé</label>
+            <span class="value">{{ espaceUtilise }} kg</span>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-icon"><i class="bi bi-snow2"></i></div>
+          <div class="info-detail">
+            <label>Équipement frigo</label>
+            <span class="value">
+              <span *ngIf="stockage.aFrigorifique" class="text-success">
+                Oui ({{ stockage.capaciteFrigoKg }} kg)
+              </span>
+              <span *ngIf="!stockage.aFrigorifique" class="text-muted">
+                Non disponible
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte progression -->
+    <div class="progress-card">
+      <h3><i class="bi bi-graph-up"></i> Taux d'occupation</h3>
+      
+      <div class="progress-stats">
+        <div class="stat-card">
+          <span class="stat-label">Occupé</span>
+          <span class="stat-value">{{ espaceUtilise }} kg</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Libre</span>
+          <span class="stat-value">{{ stockage.capaciteDisponibleKg }} kg</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Total</span>
+          <span class="stat-value">{{ stockage.capaciteMaxKg }} kg</span>
+        </div>
+      </div>
+
+      <div class="progress-bar-container">
+        <div class="progress-bar">
+          <div class="progress-fill" 
+               [style.width.%]="tauxOccupation"
+               [style.background]="progressColor">
+          </div>
+        </div>
+        <div class="progress-percentage">{{ tauxOccupation }}%</div>
+      </div>
+
+      <div class="progress-message" [class]="statutOccupation">
+        <span *ngIf="tauxOccupation < 50">Espace suffisant pour recevoir des dons</span>
+        <span *ngIf="tauxOccupation >= 50 && tauxOccupation < 80">Espace limité, attention aux prochains dons</span>
+        <span *ngIf="tauxOccupation >= 80">Capacité critique, veuillez libérer de l'espace</span>
+      </div>
+    </div>
+
+    <!-- Carte conseils -->
+    <div class="tips-card">
+      <h3><i class="bi bi-lightbulb"></i> Conseils</h3>
+      <ul>
+        <li>Pensez à mettre à jour vos capacités si vous agrandissez votre local</li>
+        <li>Indiquez si vous disposez d'un frigo pour recevoir des produits frais</li>
+        <li>Publiez régulièrement vos besoins pour recevoir des dons adaptés</li>
+        <li>Notez les donneurs pour améliorer la qualité des dons reçus</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Aucune donnée -->
+  <div *ngIf="!isLoading && !errorMessage && !stockage" class="empty-card">
+    <div class="empty-icon"><i class="bi bi-box-seam"></i></div>
+    <h3>Aucun stockage configuré</h3>
+    <p>Vous n'avez pas encore configuré votre espace de stockage.</p>
+    <button class="btn-primary" routerLink="/receveur/stockage/ajout">
+      Configurer mon stockage
+    </button>
+  </div>
+</div>

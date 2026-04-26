@@ -1,0 +1,158 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon"><i class="bi bi-clipboard-check"></i></div>
+      <div class="title-text">
+        <h2>Mes Besoins Alimentaires</h2>
+        <p>Publiez et gérez vos besoins pour recevoir des dons adaptés</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-add" routerLink="/receveur/besoins/add">
+        <i class="bi bi-plus-lg"></i> Nouveau besoin
+      </button>
+      <a routerLink="/receveur/dashboard" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Retour
+      </a>
+    </div>
+  </div>
+
+  <!-- Alerte d'expiration (Modernisée) -->
+  <div *ngIf="showExpirationAlert" class="premium-alert fade-in" [class]="alertType">
+    <div class="alert-content">
+      <div class="alert-icon">
+        <i class="bi" [class.bi-exclamation-triangle]="alertType === 'warning'" 
+                     [class.bi-exclamation-octagon]="alertType === 'critical' || alertType === 'urgent'"
+                     [class.bi-info-circle]="alertType === 'normal'"></i>
+      </div>
+      <div class="alert-body">
+        <h4>Besoins expirés détectés</h4>
+        <p>{{ expirationMessage }}</p>
+      </div>
+      <div class="alert-actions">
+        <button class="btn-alert-action" (click)="nettoyerExpires()">Nettoyer maintenant</button>
+        <button class="btn-close-alert" (click)="showExpirationAlert = false"><i class="bi bi-x"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-row" *ngIf="!isLoading && !errorMessage">
+    <div class="stat-card">
+      <div class="stat-icon all"><i class="bi bi-list-stars"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ besoins.length }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon pending"><i class="bi bi-hourglass-split"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getBesoinsByStatut('EN_ATTENTE') }}</span>
+        <span class="stat-label">En attente</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon satisfied"><i class="bi bi-check2-circle"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getBesoinsByStatut('SATISFAIT') }}</span>
+        <span class="stat-label">Satisfaits</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon expired"><i class="bi bi-exclamation-triangle"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getBesoinsByStatut('EXPIRE') }}</span>
+        <span class="stat-label">Expirés</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-card">
+    <div class="search-area">
+      <i class="bi bi-search"></i>
+      <input type="text" placeholder="Rechercher un produit..." [(ngModel)]="searchTerm" (input)="onFilterChange()">
+    </div>
+    <div class="filter-groups">
+      <button class="filter-btn" [class.active]="filterStatut === 'TOUS'" (click)="filterStatut='TOUS';onFilterChange()">Tous</button>
+      <button class="filter-btn" [class.active]="filterStatut === 'EN_ATTENTE'" (click)="filterStatut='EN_ATTENTE';onFilterChange()">En attente</button>
+      <button class="filter-btn" [class.active]="filterStatut === 'SATISFAIT'" (click)="filterStatut='SATISFAIT';onFilterChange()">Satisfaits</button>
+      <button class="filter-btn" [class.active]="filterStatut === 'EXPIRE'" (click)="filterStatut='EXPIRE';onFilterChange()">Expirés</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Chargement de vos besoins...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="alert-error">
+    <div class="error-icon">❌</div>
+    <div class="error-content">
+      <p>{{ errorMessage }}</p>
+      <button class="btn-retry" (click)="loadBesoins()">Réessayer</button>
+    </div>
+  </div>
+
+  <!-- Contenu -->
+  <div *ngIf="!isLoading && !errorMessage" class="content">
+    <div *ngIf="filteredBesoins.length > 0" class="besoin-grid">
+      <div class="besoin-card" *ngFor="let besoin of filteredBesoins" [class.expired]="besoin.statut === 'EXPIRE'">
+        <div class="card-header">
+          <div class="type-area">
+            <span class="type-icon">{{ besoin.typeProduit | slice:0:1 }}</span>
+            <h3>{{ besoin.typeProduit }}</h3>
+          </div>
+          <span class="status-badge" [class]="getStatutClass(besoin.statut)">
+            {{ getStatutText(besoin.statut) }}
+          </span>
+        </div>
+        
+        <div class="card-body">
+          <div class="info-row">
+            <span class="label"><i class="bi bi-hash"></i> Quantité:</span>
+            <span class="value">{{ besoin.quantiteKg }} kg</span>
+          </div>
+          <div class="info-row" *ngIf="besoin.dateExpiration">
+            <span class="label"><i class="bi bi-calendar-event"></i> Expiration:</span>
+            <span class="value">{{ besoin.dateExpiration | date:'dd/MM/yyyy' }}</span>
+          </div>
+
+          <!-- Chronomètre d'expiration -->
+          <div *ngIf="besoin.dateExpiration && besoin.statut !== 'SATISFAIT'" 
+               class="expiration-timer" 
+               [class]="getAlerteExpiration(getJoursRestants(besoin.dateExpiration)).type">
+            <span class="timer-icon">{{ getAlerteExpiration(getJoursRestants(besoin.dateExpiration)).icon }}</span>
+            <span class="timer-message">{{ getAlerteExpiration(getJoursRestants(besoin.dateExpiration)).message }}</span>
+          </div>
+          <p class="description" *ngIf="besoin.description">
+            {{ besoin.description }}
+          </p>
+        </div>
+
+        <div class="card-actions" *ngIf="besoin.statut === 'EN_ATTENTE'">
+          <button class="btn-edit-inline" [routerLink]="['/receveur/besoins/edit', besoin.id]">
+            <i class="bi bi-pencil"></i> Modifier
+          </button>
+          <button class="btn-delete-inline" (click)="deleteBesoin(besoin.id)">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aucun résultat -->
+    <div *ngIf="filteredBesoins.length === 0" class="empty-card">
+      <div class="empty-icon">📝</div>
+      <h3>Aucun besoin trouvé</h3>
+      <p>Vous n'avez pas de besoins correspondant à vos critères.</p>
+      <button class="btn-primary" routerLink="/receveur/besoins/add">
+        <i class="bi bi-plus-lg"></i> Créer un besoin
+      </button>
+    </div>
+  </div>
+</div>
