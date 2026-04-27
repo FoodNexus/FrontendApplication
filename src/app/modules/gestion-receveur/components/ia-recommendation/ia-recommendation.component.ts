@@ -158,46 +158,46 @@ export class IaRecommendationComponent {
 
   getProductIcon(produit: string): string {
     const p = produit.toLowerCase();
-    
+
     // 1. Bases Céréalières (Breads, grains, flour)
     if (p.includes('pain') || p.includes('bread') || p.includes('tabouna') || p.includes('baguette') ||
-        p.includes('semoule') || p.includes('semolina') || 
-        p.includes('couscous') || 
-        p.includes('farine') || p.includes('flour') ||
-        p.includes('pâte') || p.includes('pate') || p.includes('spaghetti') ||
-        p.includes('riz') || p.includes('rice')) {
+      p.includes('semoule') || p.includes('semolina') ||
+      p.includes('couscous') ||
+      p.includes('farine') || p.includes('flour') ||
+      p.includes('pâte') || p.includes('pate') || p.includes('spaghetti') ||
+      p.includes('riz') || p.includes('rice')) {
       return 'bi-columns-gap';
     }
-    
+
     // 2. Épicerie Fine (Oils, Sugar, Concentrates, Pulses)
-    if (p.includes('huile') || p.includes('oil') || 
-        p.includes('sucre') || p.includes('sugar') || 
-        p.includes('concentré') || p.includes('concentrated') ||
-        p.includes('pois chiche') || p.includes('chickpeas') ||
-        p.includes('haricot') || p.includes('bean') ||
-        p.includes('lentille') || p.includes('lentil')) {
+    if (p.includes('huile') || p.includes('oil') ||
+      p.includes('sucre') || p.includes('sugar') ||
+      p.includes('concentré') || p.includes('concentrated') ||
+      p.includes('pois chiche') || p.includes('chickpeas') ||
+      p.includes('haricot') || p.includes('bean') ||
+      p.includes('lentille') || p.includes('lentil')) {
       return 'bi-droplet-half';
     }
-    
+
     // 3. Maraîchage (Vegetables)
-    if (p.includes('tomate') || p.includes('tomato') || 
-        p.includes('oignon') || p.includes('onion') || 
-        p.includes('pomme de terre') || p.includes('potato') || 
-        p.includes('carotte') || p.includes('carrot') || 
-        p.includes('légume') || p.includes('vegetable')) {
+    if (p.includes('tomate') || p.includes('tomato') ||
+      p.includes('oignon') || p.includes('onion') ||
+      p.includes('pomme de terre') || p.includes('potato') ||
+      p.includes('carotte') || p.includes('carrot') ||
+      p.includes('légume') || p.includes('vegetable')) {
       return 'bi-flower3';
     }
-    
+
     // 4. Sources de Protéines (Meat, Eggs, Milk)
-    if (p.includes('viande') || p.includes('meat') || 
-        p.includes('œuf') || p.includes('oeuf') || p.includes('egg') || 
-        p.includes('poulet') || p.includes('chicken') || 
-        p.includes('agneau') || p.includes('lamb') || 
-        p.includes('bœuf') || p.includes('boeuf') || p.includes('beef') || 
-        p.includes('lait') || p.includes('milk')) {
+    if (p.includes('viande') || p.includes('meat') ||
+      p.includes('œuf') || p.includes('oeuf') || p.includes('egg') ||
+      p.includes('poulet') || p.includes('chicken') ||
+      p.includes('agneau') || p.includes('lamb') ||
+      p.includes('bœuf') || p.includes('boeuf') || p.includes('beef') ||
+      p.includes('lait') || p.includes('milk')) {
       return 'bi-egg-fill';
     }
-    
+
     return 'bi-box-seam';
   }
 }

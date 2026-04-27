@@ -6,7 +6,7 @@
           <h2 class="display-5 fw-bold mb-2">Finalisons votre profil</h2>
           <p class="lead mb-0">Choisissez votre rôle sur la plateforme <strong>NutriFlow</strong>.</p>
         </div>
-                <div class="card-body p-5">
+        <div class="card-body p-5">
           <div *ngIf="loading" class="text-center py-5">
             <div class="spinner-border text-success mb-3" role="status">
               <span class="visually-hidden">Chargement...</span>
@@ -15,16 +15,16 @@
           </div>
 
           <form *ngIf="profileForm && !loading" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-            
+
             <!-- Role Selection -->
             <h5 class="mb-4 text-secondary fw-bold">1. Sélectionnez votre rôle :</h5>
             <div class="row g-3 mb-5">
               <div class="col-md-3" *ngFor="let role of roles">
                 <div class="role-card border rounded-4 p-3 text-center h-100 cursor-pointer transition-all"
-                     [class.border-success]="selectedRole === role.id"
-                     [class.bg-light-success]="selectedRole === role.id"
-                     (click)="selectRole(role.id)">
-                  <div class="icon-circle mb-3 mx-auto shadow-sm" [class.bg-success]="selectedRole === role.id" [class.text-white]="selectedRole === role.id">
+                  [class.border-success]="selectedRole === role.id" [class.bg-light-success]="selectedRole === role.id"
+                  (click)="selectRole(role.id)">
+                  <div class="icon-circle mb-3 mx-auto shadow-sm" [class.bg-success]="selectedRole === role.id"
+                    [class.text-white]="selectedRole === role.id">
                     <i class="bi {{ role.icon }} fs-3"></i>
                   </div>
                   <h6 class="fw-bold mb-2">{{ role.label }}</h6>
@@ -36,14 +36,16 @@
             <!-- Contact Info (Names from Keycloak) -->
             <div *ngIf="selectedRole">
               <h5 class="mb-4 text-secondary fw-bold">2. Informations de contact :</h5>
-              
+
               <div class="alert alert-light border-2 rounded-4 mb-4 d-flex align-items-center shadow-sm">
                 <div class="icon-circle bg-success text-white me-3" style="width: 50px; height: 50px;">
                   <i class="bi bi-person-check fs-4"></i>
                 </div>
                 <div>
-                  <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">Identité synchronisée</div>
-                  <div class="h5 mb-0 fw-bold">{{ authService.getCurrentUser()?.prenom }} {{ authService.getCurrentUser()?.nom | uppercase }}</div>
+                  <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">
+                    Identité synchronisée</div>
+                  <div class="h5 mb-0 fw-bold">{{ authService.getCurrentUser()?.prenom }} {{
+                    authService.getCurrentUser()?.nom | uppercase }}</div>
                 </div>
               </div>
 
@@ -52,27 +54,32 @@
                   <label class="form-label small text-muted">Téléphone</label>
                   <div class="input-group">
                     <span class="input-group-text bg-white border-2 border-end-0"><i class="bi bi-telephone"></i></span>
-                    <input type="text" class="form-control form-control-lg border-2 border-start-0 shadow-sm rounded-end-3" formControlName="telephone" placeholder="Ex: +216 00 000 000">
+                    <input type="text"
+                      class="form-control form-control-lg border-2 border-start-0 shadow-sm rounded-end-3"
+                      formControlName="telephone" placeholder="Ex: +216 00 000 000">
                   </div>
                 </div>
               </div>
 
               <!-- Role Specific Fields -->
               <h5 class="mb-4 text-secondary fw-bold">3. Détails spécifiques :</h5>
-              
+
               <!-- DONOR -->
               <div *ngIf="selectedRole === 'DONOR'" class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label small text-muted">Nom de l'entreprise / Organisation</label>
-                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3" formControlName="donorCompanyName">
+                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3"
+                    formControlName="donorCompanyName">
                 </div>
                 <div class="col-md-6">
                   <label class="form-label small text-muted">Numéro de TVA (Tax ID)</label>
-                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3" formControlName="taxIdNumber">
+                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3"
+                    formControlName="taxIdNumber">
                 </div>
                 <div class="col-12">
                   <label class="form-label small text-muted">Adresse du siège</label>
-                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3" formControlName="address">
+                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3"
+                    formControlName="address">
                 </div>
               </div>
 
@@ -80,7 +87,8 @@
               <div *ngIf="selectedRole === 'RECEIVER'" class="row g-3">
                 <div class="col-12">
                   <label class="form-label small text-muted">Nom de l'association</label>
-                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3" formControlName="associationName">
+                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3"
+                    formControlName="associationName">
                 </div>
               </div>
 
@@ -88,7 +96,8 @@
               <div *ngIf="selectedRole === 'TRANSPORTER'" class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label small text-muted">Compagnie de transport</label>
-                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3" formControlName="transporterCompanyName">
+                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3"
+                    formControlName="transporterCompanyName">
                 </div>
                 <div class="col-md-6">
                   <label class="form-label small text-muted">Type de véhicule</label>
@@ -104,16 +113,19 @@
               <div *ngIf="selectedRole === 'AUDITOR'" class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label small text-muted">Numéro de certification</label>
-                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3" formControlName="certificationNumber">
+                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3"
+                    formControlName="certificationNumber">
                 </div>
                 <div class="col-md-6">
                   <label class="form-label small text-muted">Nom de l'agence d'audit</label>
-                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3" formControlName="agencyName">
+                  <input type="text" class="form-control form-control-lg border-2 shadow-sm rounded-3"
+                    formControlName="agencyName">
                 </div>
               </div>
 
               <div class="d-grid gap-2 mt-5">
-                <button type="submit" class="btn btn-success btn-lg py-3 fw-bold rounded-3 shadow-sm animation-pulse" [disabled]="profileForm.invalid || loading">
+                <button type="submit" class="btn btn-success btn-lg py-3 fw-bold rounded-3 shadow-sm animation-pulse"
+                  [disabled]="profileForm.invalid || loading">
                   <span *ngIf="!loading">Finaliser mon inscription</span>
                   <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
                 </button>
@@ -123,8 +135,9 @@
           </form>
         </div>
       </div>
-      
-      <p class="text-center mt-4 text-muted small">Vous pourrez modifier ces informations plus tard depuis votre profil.</p>
+
+      <p class="text-center mt-4 text-muted small">Vous pourrez modifier ces informations plus tard depuis votre profil.
+      </p>
     </div>
   </div>
 </div>

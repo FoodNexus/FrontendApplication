@@ -23,7 +23,7 @@ export interface PredictionResult {
 export class PredictionService {
   private apiUrl = 'http://localhost:8080/api/receveur/predictions';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   predireBesoins(userId: number, horizonJours: number): Observable<PredictionResult> {
     return this.http.get<PredictionResult>(`${this.apiUrl}/${userId}`, {

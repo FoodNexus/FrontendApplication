@@ -6,10 +6,12 @@
     </span>
     <div class="d-flex align-items-center">
       <span class="me-3 fw-bold text-dark">Bienvenue, {{ username }} !</span>
-      <button class="btn btn-outline-success btn-sm me-2" (click)="switchTab('dashboard')" [class.active]="activeTab === 'dashboard'">
+      <button class="btn btn-outline-success btn-sm me-2" (click)="switchTab('dashboard')"
+        [class.active]="activeTab === 'dashboard'">
         <i class="bi bi-speedometer2"></i> Dashboard
       </button>
-      <button class="btn btn-outline-secondary btn-sm me-2" (click)="switchTab('profile')" [class.active]="activeTab === 'profile'">
+      <button class="btn btn-outline-secondary btn-sm me-2" (click)="switchTab('profile')"
+        [class.active]="activeTab === 'profile'">
         <i class="bi bi-person"></i> Mon Profil
       </button>
       <button class="btn btn-outline-danger btn-sm" (click)="logout()">
@@ -145,15 +147,20 @@
             <div class="row mb-3">
               <div class="col-md-6">
                 <label class="form-label">Nouveau mot de passe</label>
-                <input type="password" class="form-control" formControlName="newPassword" placeholder="Minimum 6 caractères">
-                <div *ngIf="passwordForm.get('newPassword')?.touched && passwordForm.get('newPassword')?.errors?.['minlength']" class="text-danger small">
+                <input type="password" class="form-control" formControlName="newPassword"
+                  placeholder="Minimum 6 caractères">
+                <div
+                  *ngIf="passwordForm.get('newPassword')?.touched && passwordForm.get('newPassword')?.errors?.['minlength']"
+                  class="text-danger small">
                   Le mot de passe doit faire au moins 6 caractères.
                 </div>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Confirmer le mot de passe</label>
-                <input type="password" class="form-control" formControlName="confirmPassword" placeholder="Répétez le mot de passe">
-                <div *ngIf="passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched" class="text-danger small">
+                <input type="password" class="form-control" formControlName="confirmPassword"
+                  placeholder="Répétez le mot de passe">
+                <div *ngIf="passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched"
+                  class="text-danger small">
                   Les mots de passe ne correspondent pas.
                 </div>
               </div>
@@ -203,9 +210,8 @@
                     </span>
                   </td>
                   <td>
-                    <button class="btn btn-sm" [ngClass]="user.actif ? 'btn-outline-danger' : 'btn-outline-success'" 
-                            (click)="toggleUserStatus(user)"
-                            [disabled]="user.idUser === currentUser.idUser">
+                    <button class="btn btn-sm" [ngClass]="user.actif ? 'btn-outline-danger' : 'btn-outline-success'"
+                      (click)="toggleUserStatus(user)" [disabled]="user.idUser === currentUser.idUser">
                       {{ user.actif ? 'Bloquer' : 'Débloquer' }}
                     </button>
                   </td>
