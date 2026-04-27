@@ -1,76 +1,87 @@
-<div class="page-container">
+<div class="page-container animate-fade-in">
   <div class="form-wrapper">
-    <div class="form-card">
+    <div class="form-card glass-morphism animate-slide-up">
       <div class="form-header">
-        <div class="header-icon"><i class="bi bi-pencil-square"></i></div>
-        <div>
+        <div class="header-icon-circle">
+          <i class="bi bi-clipboard2-plus"></i>
+        </div>
+        <div class="header-title-group">
           <h3>{{ getTitle() }}</h3>
-          <p>Renseignez les informations de votre besoin alimentaire</p>
+          <p>Exprimez vos besoins pour être mis en relation avec des donneurs.</p>
         </div>
       </div>
 
-      <!-- Loading -->
-      <div *ngIf="isLoading" class="loading">
-        <div class="spinner"></div>
-        <p>Chargement...</p>
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loader-overlay-inline">
+        <div class="spinner-premium"></div>
+        <p>Préparation du formulaire...</p>
       </div>
 
       <!-- Formulaire -->
-      <form (ngSubmit)="save()" *ngIf="!isLoading">
-        <!-- Type de produit -->
-        <div class="form-group">
-          <label class="form-label">Type de produit *</label>
-          <input type="text" class="form-input" [(ngModel)]="besoin.typeProduit" name="typeProduit"
-            placeholder="Ex: Lait, Pâtes, Légumes, Œufs..." required>
-          <small class="form-text">Indiquez le type de produit dont vous avez besoin</small>
-        </div>
+      <form (ngSubmit)="save()" *ngIf="!isLoading" class="premium-form">
+        <div class="form-grid">
+          <!-- Type de produit -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="bi bi-tag"></i> Type de produit <span class="required">*</span>
+            </label>
+            <input type="text" class="form-input" [(ngModel)]="besoin.typeProduit" name="typeProduit"
+              placeholder="Ex: Tomates fraîches, Lait, Pâtes..." required>
+            <div class="input-hint">Indiquez précisément l'article recherché.</div>
+          </div>
 
-        <!-- Quantité -->
-        <div class="form-group">
-          <label>Quantité (kg) *</label>
-          <input type="number" class="form-control" [(ngModel)]="besoin.quantiteKg" name="quantiteKg"
-            placeholder="Ex: 50" min="0.1" step="0.1" required>
-          <small class="form-text">Poids estimé en kilogrammes</small>
-        </div>
-
-        <!-- Description -->
-        <div class="form-group">
-          <label class="form-label">Description</label>
-          <textarea class="form-input" [(ngModel)]="besoin.description" name="description" rows="3"
-            placeholder="Décrivez votre besoin (optionnel)"></textarea>
-          <small class="form-text">Informations complémentaires pour les donneurs</small>
-        </div>
-
-        <!-- Date d'expiration - SANS VALIDATION -->
-        <div class="form-group">
-          <label>Date d'expiration souhaitée</label>
-          <input type="date" class="form-control" [(ngModel)]="besoin.dateExpiration" name="dateExpiration">
-          <small class="form-text">Date jusqu'à laquelle ce besoin est valable</small>
-        </div>
-
-        <!-- Message d'information -->
-        <div class="info-box">
-          <div class="info-icon">i</div>
-          <div class="info-text">
-            <strong>Information :</strong> Les besoins publiés seront visibles par les donneurs qui pourront vous faire
-            des dons adaptés.
+          <!-- Quantité -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="bi bi-speedometer2"></i> Quantité (kg) <span class="required">*</span>
+            </label>
+            <div class="input-with-addon">
+              <input type="number" class="form-input" [(ngModel)]="besoin.quantiteKg" name="quantiteKg"
+                placeholder="Ex: 50" min="0.1" step="0.1" required>
+              <span class="input-addon">kg</span>
+            </div>
+            <div class="input-hint">Poids total estimé pour ce besoin.</div>
           </div>
         </div>
 
-        <!-- Boutons -->
-        <div class="form-actions mt-4">
-          <button type="button" class="btn-cancel" (click)="cancel()">Annuler</button>
-          <button type="submit" class="btn-submit" [disabled]="isSaving || !isFormValid()">
-            {{ getButtonText() }}
-          </button>
+        <!-- Description -->
+        <div class="form-group full-width">
+          <label class="form-label">
+            <i class="bi bi-text-paragraph"></i> Description & Précisions
+          </label>
+          <textarea class="form-input" [(ngModel)]="besoin.description" name="description" rows="3"
+            placeholder="Ex: Besoin urgent pour la soupe populaire de samedi..."></textarea>
         </div>
 
-        <!-- Messages -->
-        <div *ngIf="successMessage" class="success-message">
-          {{ successMessage }}
+        <!-- Date d'expiration -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-calendar-event"></i> Date limite souhaitée
+          </label>
+          <input type="date" class="form-input" [(ngModel)]="besoin.dateExpiration" name="dateExpiration">
+          <div class="input-hint">Ce besoin expirera automatiquement après cette date.</div>
         </div>
-        <div *ngIf="errorMessage" class="alert-error">
-          {{ errorMessage }}
+
+        <!-- Info Box Scenario -->
+        <div class="scenario-info-box">
+          <div class="info-icon">
+            <i class="bi bi-lightning-charge-fill"></i>
+          </div>
+          <div class="info-content">
+            <strong>Matching Intelligent :</strong> Dès publication, notre IA cherchera des dons correspondants et vous alertera en temps réel.
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-actions-premium">
+          <button type="button" class="btn btn-ghost" (click)="cancel()">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSaving || !isFormValid()">
+            <span *ngIf="!isSaving">{{ getButtonText() }}</span>
+            <span *ngIf="isSaving" class="spinner-border spinner-border-sm"></span>
+            <i class="bi bi-send-check" *ngIf="!isSaving"></i>
+          </button>
         </div>
       </form>
     </div>

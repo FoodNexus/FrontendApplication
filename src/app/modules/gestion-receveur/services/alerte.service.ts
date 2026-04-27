@@ -28,11 +28,13 @@ export interface AlerteStats {
   criticalNonLues: number;
 }
 
+import { APP_CONFIG } from '../../../app.constants';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AlerteService {
-  private apiUrl = 'http://localhost:8080/api/receveur/alertes';
+  private apiUrl = `${APP_CONFIG.RECEVEUR_API}/alertes`;
 
   constructor(private http: HttpClient) { }
 

@@ -1,106 +1,105 @@
-<div class="page-container">
+<div class="page-container animate-fade-in">
   <!-- Header -->
-  <div class="form-header">
-    <button class="btn-back" (click)="goBack()">
-      ← Retour
+  <div class="form-header no-bg mb-4">
+    <button class="btn btn-ghost" (click)="goBack()">
+      <i class="bi bi-arrow-left"></i> Retour
     </button>
-    <h1>Détail du besoin</h1>
   </div>
 
-  <!-- Loading -->
-  <div *ngIf="isLoading" class="loading">
-    <div class="spinner"></div>
-    <p>Chargement...</p>
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loader-overlay-inline">
+    <div class="spinner-premium"></div>
+    <p>Récupération des détails...</p>
   </div>
 
-  <!-- Error -->
-  <div *ngIf="errorMessage" class="error-card">
-    <div class="error-icon"><i class="bi bi-exclamation-triangle"></i></div>
-    <p>{{ errorMessage }}</p>
-    <button class="btn-retry" (click)="loadBesoin()">Réessayer</button>
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="form-card glass-morphism text-center">
+    <div class="error-icon-circle mb-3"><i class="bi bi-exclamation-triangle"></i></div>
+    <h3>Oups !</h3>
+    <p class="text-muted mb-4">{{ errorMessage }}</p>
+    <button class="btn btn-primary" (click)="loadBesoin()">Réessayer</button>
   </div>
 
-  <!-- Contenu -->
-  <div *ngIf="!isLoading && !errorMessage && besoin" class="form-card">
-    <!-- Header avec statut -->
-    <div class="card-header">
-      <div class="besoin-title">
-        <span class="besoin-icon"><i class="bi bi-cart"></i></span>
-        <span class="besoin-type">{{ besoin.typeProduit }}</span>
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && !errorMessage && besoin" class="form-card glass-morphism animate-slide-up">
+    <!-- Header with status -->
+    <div class="card-top-status">
+      <div class="besoin-title-group">
+        <div class="header-icon-circle small">
+          <i class="bi bi-cart-check"></i>
+        </div>
+        <div>
+          <h3>{{ besoin.typeProduit }}</h3>
+          <p class="text-muted">Référence #{{ besoin.id }}</p>
+        </div>
       </div>
-      <span class="status-badge" [class]="getStatutClass(besoin.statut)">
+      <div class="badge-premium" [class]="getStatutClass(besoin.statut)">
         {{ getStatutText(besoin.statut) }}
-      </span>
+      </div>
     </div>
 
-    <!-- Corps -->
-    <div class="card-body">
-      <!-- Quantité -->
-      <div class="info-row">
-        <div class="info-icon"><i class="bi bi-aspect-ratio"></i></div>
-        <div class="info-content">
-          <span class="label">Quantité</span>
-          <span class="value">{{ besoin.quantiteKg }} kg</span>
+    <!-- Body Information -->
+    <div class="detail-grid">
+      <!-- Quantity -->
+      <div class="detail-item">
+        <div class="item-icon"><i class="bi bi-speedometer2"></i></div>
+        <div class="item-info">
+          <span class="label">Quantité demandée</span>
+          <span class="value">{{ besoin.quantiteKg }} <small>kg</small></span>
+        </div>
+      </div>
+
+      <!-- Expiration -->
+      <div class="detail-item" *ngIf="besoin.dateExpiration">
+        <div class="item-icon"><i class="bi bi-calendar2-range"></i></div>
+        <div class="item-info">
+          <span class="label">Date limite</span>
+          <span class="value" [class.text-danger]="isExpired(besoin.dateExpiration)">
+            {{ besoin.dateExpiration | date:'dd MMMM yyyy' }}
+          </span>
+          <div class="item-badge-pill" *ngIf="!isExpired(besoin.dateExpiration) && getDaysLeft(besoin.dateExpiration) <= 7">
+             Moins de {{ getDaysLeft(besoin.dateExpiration) }} jours
+          </div>
         </div>
       </div>
 
       <!-- Description -->
-      <div class="info-row" *ngIf="besoin.description">
-        <div class="info-icon"><i class="bi bi-card-text"></i></div>
-        <div class="info-content">
-          <span class="label">Description</span>
-          <span class="value description">{{ besoin.description }}</span>
+      <div class="detail-item full-width" *ngIf="besoin.description">
+        <div class="item-icon"><i class="bi bi-info-circle"></i></div>
+        <div class="item-info">
+          <span class="label">Description & Notes</span>
+          <p class="value-text">{{ besoin.description }}</p>
         </div>
       </div>
 
-      <!-- Date d'expiration -->
-      <div class="info-row" *ngIf="besoin.dateExpiration">
-        <div class="info-icon"><i class="bi bi-calendar-date"></i></div>
-        <div class="info-content">
-          <span class="label">Date d'expiration</span>
-          <span class="value" [class.expired]="isExpired(besoin.dateExpiration)">
-            {{ besoin.dateExpiration | date:'dd/MM/yyyy' }}
-            <span *ngIf="isExpired(besoin.dateExpiration)" class="expired-badge">(Expiré)</span>
-            <span *ngIf="!isExpired(besoin.dateExpiration) && getDaysLeft(besoin.dateExpiration) <= 7" class="warning-badge">
-              (Plus que {{ getDaysLeft(besoin.dateExpiration) }} jours)
-            </span>
-          </span>
+      <!-- Creation Date -->
+      <div class="detail-item small-detail">
+        <div class="item-icon"><i class="bi bi-clock-history"></i></div>
+        <div class="item-info">
+          <span class="label">Publié le</span>
+          <span class="value-muted">{{ besoin.dateCreation | date:'dd/MM/yyyy à HH:mm' }}</span>
         </div>
       </div>
+    </div>
 
-      <!-- Date de création -->
-      <div class="info-row">
-        <div class="info-icon"><i class="bi bi-clock"></i></div>
-        <div class="info-content">
-          <span class="label">Date de création</span>
-          <span class="value">{{ besoin.dateCreation | date:'dd/MM/yyyy à HH:mm' }}</span>
-        </div>
+    <!-- Matching Logic Simulator Note -->
+    <div class="scenario-info-box mini">
+      <div class="info-icon">
+        <i class="bi bi-search"></i>
+      </div>
+      <div class="info-content">
+        Notre système scanne les dons disponibles pour vous proposer un match optimal.
       </div>
     </div>
 
     <!-- Actions -->
-    <div class="card-actions" *ngIf="besoin.statut === 'EN_ATTENTE'">
-      <button class="btn-edit" (click)="edit()">
-        Modifier
+    <div class="form-actions-premium" *ngIf="besoin.statut === 'EN_ATTENTE'">
+      <button class="btn btn-ghost danger-text" (click)="deleteBesoin()">
+        <i class="bi bi-trash"></i> Supprimer
       </button>
-      <button class="btn-delete" (click)="deleteBesoin()">
-        Supprimer
-      </button>
-    </div>
-    <div class="card-actions" *ngIf="besoin.statut !== 'EN_ATTENTE'">
-      <button class="btn-back-list" (click)="goBack()">
-        ← Retour à la liste
+      <button class="btn btn-primary" (click)="edit()">
+        <i class="bi bi-pencil"></i> Modifier le besoin
       </button>
     </div>
-  </div>
-
-  <!-- Non trouvé -->
-  <div *ngIf="!isLoading && !errorMessage && !besoin" class="empty-card">
-    <div class="empty-icon"><i class="bi bi-mailbox"></i></div>
-    <h3>Besoin non trouvé</h3>
-    <p>Le besoin que vous recherchez n'existe pas ou a été supprimé.</p>
-    <button class="btn-primary" routerLink="/receveur/besoins">
-      Retour à la liste
-    </button>
   </div>
 </div>

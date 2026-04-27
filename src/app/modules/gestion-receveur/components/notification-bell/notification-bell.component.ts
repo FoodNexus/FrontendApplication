@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AlerteService, Alerte, AlerteStats } from '../../services/alerte.service';
+import { APP_CONFIG } from '../../../../app.constants';
 
 @Component({
   selector: 'app-notification-bell',
@@ -11,7 +12,7 @@ import { AlerteService, Alerte, AlerteStats } from '../../services/alerte.servic
   styleUrls: ['./notification-bell.component.scss']
 })
 export class NotificationBellComponent implements OnInit {
-  userId = 1;
+  userId = APP_CONFIG.DEFAULT_USER_ID;
   alertes: Alerte[] = [];
   filteredAlertes: Alerte[] = [];
   unreadCount = 0;
@@ -24,7 +25,10 @@ export class NotificationBellComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadData();
-    setInterval(() => this.loadData(), 30000);
+    if (APP_CONFIG.ENABLE_REALTIME_ALERTS) {
+      console.log('--- NutriFlow Scenario 1: Real-time alerts enabled ---');
+      setInterval(() => this.loadData(), APP_CONFIG.REFRESH_INTERVAL_MS);
+    }
   }
 
   loadData(): void {
