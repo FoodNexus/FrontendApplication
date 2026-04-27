@@ -1,0 +1,119 @@
+<div class="page-container">
+  <div class="form-wrapper">
+
+    <!-- CARD -->
+    <div class="form-card">
+
+      <!-- HEADER -->
+      <div class="form-header">
+        <div class="header-icon">
+          <i class="bi" [ngClass]="isEdit ? 'bi-pencil-square' : 'bi-clipboard2-plus'"></i>
+        </div>
+        <div>
+          <h3>{{ isEdit ? 'Modifier' : 'Nouveau' }} Dossier d'Inspection</h3>
+          <p>{{ isEdit ? 'Modifiez les informations du dossier' : 'Créez un nouveau dossier d\'audit' }}</p>
+        </div>
+      </div>
+
+      <!-- ERROR -->
+      <div *ngIf="errorMessage" class="alert-error">
+        <i class="bi bi-exclamation-circle"></i> {{ errorMessage }}
+      </div>
+
+      <div *ngIf="successMessage" class="alert-success">
+        <i class="bi bi-check-circle"></i> {{ successMessage }}
+      </div>
+
+      <!-- FORM -->
+      <form [formGroup]="form" (ngSubmit)="submit()" class="form-body">
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-text-paragraph me-1"></i> Description
+            <span class="required">*</span>
+          </label>
+          <textarea formControlName="description"
+                    class="form-input"
+                    rows="4"
+                    placeholder="Décrivez l'anomalie constatée lors de l'inspection..."></textarea>
+          <div *ngIf="form.get('description')?.invalid && form.get('description')?.touched"
+               class="field-error">
+            <i class="bi bi-info-circle"></i> La description est obligatoire
+          </div>
+        </div>
+
+        <!-- Verdict Sanitaire -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-shield-check me-1"></i> Verdict Sanitaire
+            <span class="required">*</span>
+          </label>
+          <div class="select-wrapper">
+            <select formControlName="sanitaryVerdict" class="form-input">
+              <option [ngValue]="null">-- Sélectionner un verdict --</option>
+              <option *ngFor="let v of sanitaryVerdicts" [value]="v">
+                {{ verdictLabels[v] || v }}
+              </option>
+            </select>
+            <i class="bi bi-chevron-down select-arrow"></i>
+          </div>
+          <div *ngIf="form.get('sanitaryVerdict')?.invalid && form.get('sanitaryVerdict')?.touched"
+               class="field-error">
+            <i class="bi bi-info-circle"></i> Le verdict sanitaire est obligatoire
+          </div>
+        </div>
+
+        <!-- Resolution Status (edit only) -->
+        <div class="form-group" *ngIf="isEdit">
+          <label class="form-label">
+            <i class="bi bi-flag me-1"></i> Statut de Résolution
+          </label>
+          <div class="select-wrapper">
+            <select formControlName="resolutionStatus" class="form-input">
+              <option [ngValue]="null">-- Sélectionner un statut --</option>
+              <option *ngFor="let s of resolutionStatuses" [value]="s">
+                {{ statusLabels[s] || s }}
+              </option>
+            </select>
+            <i class="bi bi-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Delivery ID -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-truck me-1"></i> Livraison Vers
+            <span class="required">*</span>
+          </label>
+          <input type="text"
+                 formControlName="delevry_to"
+                 class="form-input"
+                 placeholder="Ex: Hôpital Central"/>
+          <div *ngIf="form.get('delevry_to')?.invalid && form.get('delevry_to')?.touched"
+               class="field-error">
+            <i class="bi bi-info-circle"></i> La destination est obligatoire
+          </div>
+        </div>
+
+
+        
+        <!-- ACTIONS -->
+        <div class="form-actions">
+          <button type="button" (click)="cancel()" class="btn-cancel">
+            <i class="bi bi-x-lg me-1"></i> Annuler
+          </button>
+          <button type="submit"
+                  [disabled]="form.invalid || loading"
+                  class="btn-submit">
+            <span *ngIf="loading" class="spinner"></span>
+            <i *ngIf="!loading" class="bi" [ngClass]="isEdit ? 'bi-check-lg' : 'bi-plus-lg'" class="me-1"></i>
+            {{ isEdit ? 'Enregistrer' : 'Créer le Dossier' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

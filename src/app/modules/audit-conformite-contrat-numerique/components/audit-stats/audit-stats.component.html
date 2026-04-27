@@ -1,0 +1,357 @@
+<div class="container mt-4">
+
+  <!-- ══════════════════════════════════════════════════════════════
+       NAVBAR — identical structure to the main user dashboard
+  ══════════════════════════════════════════════════════════════ -->
+  <nav class="navbar navbar-light bg-light rounded shadow-sm p-3 mb-4 d-flex justify-content-between">
+    <span class="navbar-brand mb-0 h1 text-success">
+      <i class="bi bi-speedometer2 me-2"></i> NutriFlow Dashboard
+    </span>
+    <div class="d-flex align-items-center">
+      <app-notification-bell class="me-3"></app-notification-bell>
+      <span class="me-3 fw-bold text-dark">Bienvenue, {{ auditorName }} !</span>
+      <a routerLink="/user/dashboard" class="btn btn-outline-success btn-sm me-2">
+        <i class="bi bi-speedometer2"></i> Dashboard
+      </a>
+      <button class="btn btn-outline-secondary btn-sm me-2" disabled>
+        <i class="bi bi-bar-chart-line-fill"></i> Statistiques
+      </button>
+      <button class="btn btn-outline-danger btn-sm" (click)="logout()">
+        <i class="bi bi-box-arrow-right me-1"></i> Déconnexion
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       LOADING
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="text-center py-5" *ngIf="isLoading">
+    <div class="spinner-border text-success" role="status">
+      <span class="visually-hidden">Chargement…</span>
+    </div>
+    <p class="mt-3 text-muted">Chargement des statistiques…</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       ERROR
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="alert alert-danger d-flex align-items-center gap-3" *ngIf="hasError && !isLoading">
+    <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+    <div>
+      <strong>Erreur de chargement.</strong> Vérifiez que les services backend sont actifs.
+      <button class="btn btn-sm btn-outline-danger ms-3" (click)="loadData()">
+        <i class="bi bi-arrow-clockwise me-1"></i>Réessayer
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       MAIN CONTENT
+  ══════════════════════════════════════════════════════════════ -->
+  <div *ngIf="!isLoading && !hasError">
+
+    <!-- Page title row -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <h4 class="mb-0 fw-bold text-dark">
+        <i class="bi bi-bar-chart-line-fill text-success me-2"></i>
+        Tableau de Bord Statistiques — Audit &amp; Conformité
+      </h4>
+      <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2">
+        <i class="bi bi-circle-fill me-1" style="font-size: 0.55rem; vertical-align: middle;"></i>
+        Données en direct
+      </span>
+    </div>
+
+    <!-- ── KPI CARDS ──────────────────────────────────────────────── -->
+    <div class="row g-3 mb-4">
+
+      <div class="col-sm-6 col-xl-2">
+        <div class="card kpi-card border-0 shadow-sm h-100">
+          <div class="card-body text-center py-4">
+            <div class="kpi-icon-wrap bg-success bg-opacity-10 text-success mx-auto mb-3">
+              <i class="bi bi-file-earmark-check-fill"></i>
+            </div>
+            <div class="kpi-value text-dark">{{ totalInspections }}</div>
+            <div class="kpi-label text-muted">Dossiers d'Inspection</div>
+          </div>
+          <div class="card-footer kpi-footer bg-success bg-opacity-10 text-success">
+            Total
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-xl-2">
+        <div class="card kpi-card border-0 shadow-sm h-100">
+          <div class="card-body text-center py-4">
+            <div class="kpi-icon-wrap bg-primary bg-opacity-10 text-primary mx-auto mb-3">
+              <i class="bi bi-recycle"></i>
+            </div>
+            <div class="kpi-value text-dark">{{ totalWeightKg | number }}<small class="fs-6 fw-normal"> kg</small></div>
+            <div class="kpi-label text-muted">Volume Recyclé</div>
+          </div>
+          <div class="card-footer kpi-footer bg-primary bg-opacity-10 text-primary">
+            Poids total
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-xl-2">
+        <div class="card kpi-card border-0 shadow-sm h-100">
+          <div class="card-body text-center py-4">
+            <div class="kpi-icon-wrap bg-warning bg-opacity-10 text-warning mx-auto mb-3">
+              <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="kpi-value text-dark">{{ resolutionRate }}<small class="fs-6 fw-normal">%</small></div>
+            <div class="kpi-label text-muted">Taux de Résolution</div>
+          </div>
+          <div class="card-footer kpi-footer bg-warning bg-opacity-10 text-warning">
+            Dossiers résolus
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-xl-2">
+        <div class="card kpi-card border-0 shadow-sm h-100">
+          <div class="card-body text-center py-4">
+            <div class="kpi-icon-wrap bg-info bg-opacity-10 text-info mx-auto mb-3">
+              <i class="bi bi-arrow-repeat"></i>
+            </div>
+            <div class="kpi-value text-dark">{{ recyclingRate }}<small class="fs-6 fw-normal">%</small></div>
+            <div class="kpi-label text-muted">Taux de Recyclage</div>
+          </div>
+          <div class="card-footer kpi-footer bg-info bg-opacity-10 text-info">
+            Vers recyclage
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-xl-2">
+        <div class="card kpi-card border-0 shadow-sm h-100">
+          <div class="card-body text-center py-4">
+            <div class="kpi-icon-wrap bg-secondary bg-opacity-10 text-secondary mx-auto mb-3">
+              <i class="bi bi-box-seam-fill"></i>
+            </div>
+            <div class="kpi-value text-dark">{{ avgWeightPerLog }}<small class="fs-6 fw-normal"> kg</small></div>
+            <div class="kpi-label text-muted">Poids Moyen / Log</div>
+          </div>
+          <div class="card-footer kpi-footer bg-secondary bg-opacity-10 text-secondary">
+            Par entrée
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-xl-2">
+        <div class="card kpi-card border-0 shadow-sm h-100">
+          <div class="card-body text-center py-4">
+            <div class="kpi-icon-wrap bg-danger bg-opacity-10 text-danger mx-auto mb-3">
+              <i class="bi bi-link-45deg"></i>
+            </div>
+            <div class="kpi-value text-dark">{{ casesWithRecycling }}</div>
+            <div class="kpi-label text-muted">Dossiers avec Recyclage</div>
+          </div>
+          <div class="card-footer kpi-footer bg-danger bg-opacity-10 text-danger">
+            Liés
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── CHARTS ROW 1 ─────────────────────────────────────────── -->
+    <div class="row g-3 mb-3">
+
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-white border-bottom">
+            <h6 class="mb-0 fw-bold">
+              <i class="bi bi-pie-chart-fill text-success me-2"></i>
+              Distribution des Verdicts Sanitaires
+            </h6>
+            <small class="text-muted">Répartition des dossiers par verdict</small>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas #verdictChart></canvas>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <span class="badge-pill verdict-propre">
+                <i class="bi bi-shield-check me-1"></i>
+                {{ inspections | filterCount:'sanitaryVerdict':'PROPRE_A_LA_CONSOMMATION' }} Consommables
+              </span>
+              <span class="badge-pill verdict-recyclage">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                {{ inspections | filterCount:'sanitaryVerdict':'DESTRUCTION_RECYCLAGE' }} À Recycler
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-white border-bottom">
+            <h6 class="mb-0 fw-bold">
+              <i class="bi bi-clipboard-data-fill text-warning me-2"></i>
+              Statuts de Résolution
+            </h6>
+            <small class="text-muted">État actuel des dossiers d'inspection</small>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas #statusChart></canvas>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <span class="badge-pill status-en-cours">
+                <i class="bi bi-clock me-1"></i>
+                {{ inspections | filterCount:'resolutionStatus':'EN_COURS' }} En cours
+              </span>
+              <span class="badge-pill status-resolu">
+                <i class="bi bi-check-circle me-1"></i>
+                {{ inspections | filterCount:'resolutionStatus':'RESOLU' }} Résolus
+              </span>
+              <span class="badge-pill status-ferme">
+                <i class="bi bi-x-circle me-1"></i>
+                {{ inspections | filterCount:'resolutionStatus':'FERME' }} Fermés
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── CHARTS ROW 2 ─────────────────────────────────────────── -->
+    <div class="row g-3 mb-3">
+
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-white border-bottom">
+            <h6 class="mb-0 fw-bold">
+              <i class="bi bi-bar-chart-fill text-success me-2"></i>
+              Volume Recyclé par Destination
+            </h6>
+            <small class="text-muted">Poids total (kg) selon le flux de valorisation</small>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas #destinationChart></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-white border-bottom">
+            <h6 class="mb-0 fw-bold">
+              <i class="bi bi-bar-chart-steps text-info me-2"></i>
+              Poids Moyen par Destination
+            </h6>
+            <small class="text-muted">Poids moyen (kg) par envoi selon destination</small>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas #weightByDestChart></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── CHARTS ROW 3 — full-width trends ─────────────────────── -->
+    <div class="row g-3 mb-4">
+
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-white border-bottom">
+            <h6 class="mb-0 fw-bold">
+              <i class="bi bi-graph-up-arrow text-success me-2"></i>
+              Tendance Mensuelle des Inspections
+            </h6>
+            <small class="text-muted">Nombre de dossiers créés par mois</small>
+          </div>
+          <div class="card-body">
+            <div class="chart-container chart-container--tall">
+              <canvas #monthlyChart></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-white border-bottom">
+            <h6 class="mb-0 fw-bold">
+              <i class="bi bi-graph-up text-primary me-2"></i>
+              Volume de Recyclage Mensuel
+            </h6>
+            <small class="text-muted">Poids total recyclé (kg) par mois</small>
+          </div>
+          <div class="card-body">
+            <div class="chart-container chart-container--tall">
+              <canvas #recyclingTrendChart></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── SUMMARY TABLE ─────────────────────────────────────────── -->
+    <div class="activity-section mb-5">
+      <div class="activity-card">
+        <div class="activity-header">
+          <h3><i class="bi bi-table me-2"></i>Synthèse des Indicateurs</h3>
+          <span class="btn-view-all">Vue consolidée</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table dashboard-table">
+            <thead>
+              <tr>
+                <th>Indicateur</th>
+                <th>Valeur</th>
+                <th>Unité</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><i class="bi bi-file-earmark text-success me-2"></i>Total Inspections</td>
+                <td><strong>{{ totalInspections }}</strong></td>
+                <td class="text-muted">dossiers</td>
+              </tr>
+              <tr>
+                <td><i class="bi bi-recycle text-primary me-2"></i>Volume Total Recyclé</td>
+                <td><strong>{{ totalWeightKg | number }}</strong></td>
+                <td class="text-muted">kg</td>
+              </tr>
+              <tr>
+                <td><i class="bi bi-check-circle text-success me-2"></i>Taux de Résolution</td>
+                <td><strong>{{ resolutionRate }}%</strong></td>
+                <td class="text-muted">pourcentage</td>
+                
+              </tr>
+              <tr>
+                <td><i class="bi bi-arrow-repeat text-info me-2"></i>Taux de Recyclage</td>
+                <td><strong>{{ recyclingRate }}%</strong></td>
+                <td class="text-muted">pourcentage</td>
+                
+              </tr>
+              <tr>
+                <td><i class="bi bi-box-seam text-warning me-2"></i>Poids Moyen / Log</td>
+                <td><strong>{{ avgWeightPerLog }}</strong></td>
+                <td class="text-muted">kg</td>
+              </tr>
+              <tr>
+                <td><i class="bi bi-link-45deg text-danger me-2"></i>Dossiers liés au Recyclage</td>
+                <td><strong>{{ casesWithRecycling }}</strong></td>
+                <td class="text-muted">dossiers</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main content -->
+</div><!-- /container -->

@@ -1,0 +1,111 @@
+<div class="scanner-page">
+  <div class="scanner-container">
+    
+    <!-- HEADER -->
+    <header class="scanner-header">
+      <div class="logo-area">
+        <i class="bi bi-cpu pulse-ai"></i>
+        <h1>Scanner AI NutriFlow</h1>
+      </div>
+      <p>Analyse de fraîcheur instantanée pour fruits et légumes</p>
+    </header>
+
+    <!-- MAIN SCANNER -->
+    <main class="scanner-main">
+      <div class="dropzone-card" [class.has-image]="imagePreview" (click)="fileInput.click()">
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+        
+        <div *ngIf="!imagePreview" class="empty-state">
+          <i class="bi bi-cloud-upload"></i>
+          <h3>Déposez une photo ici</h3>
+          <p>ou cliquez pour parcourir vos fichiers</p>
+        </div>
+
+        <div *ngIf="imagePreview" class="preview-stage">
+          <img [src]="imagePreview" alt="Aperçu" class="main-image">
+          <div class="image-overlay">
+            <span><i class="bi bi-camera"></i> Changer d'image</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANALYZE BUTTON -->
+      <div class="actions-area">
+        <button class="btn-primary btn-analyze" 
+                (click)="analyze()" 
+                [disabled]="!selectedFile || isAnalyzing">
+          <span *ngIf="isAnalyzing" class="loader"></span>
+          <i *ngIf="!isAnalyzing" class="bi bi-magic"></i>
+          {{ isAnalyzing ? 'Analyse par l\'IA...' : 'Lancer l\'Analyse' }}
+        </button>
+      </div>
+
+      <!-- RESULTS DISPLAY -->
+      <div *ngIf="analysisDone" class="result-card fade-in">
+        <div class="verdict-banner" [ngClass]="verdict === 'PROPRE_A_LA_CONSOMMATION' ? 'success' : 'danger'">
+          <i class="bi" [ngClass]="verdict === 'PROPRE_A_LA_CONSOMMATION' ? 'bi-check-circle-fill' : 'bi-trash-fill'"></i>
+          <div class="verdict-text">
+            <h2>Verdict de l'Analyse</h2>
+            <p>{{ verdictLabels[verdict!] }}</p>
+          </div>
+        </div>
+        <button class="btn-confirm" (click)="showModal = true">
+          Confirmer & Enregistrer <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-toast">
+        <i class="bi bi-exclamation-triangle"></i> {{ errorMessage }}
+      </div>
+      <div *ngIf="successMessage" class="success-toast">
+        <i class="bi bi-check-circle"></i> {{ successMessage }}
+      </div>
+    </main>
+
+    <!-- FOOTER NAV -->
+    <footer class="scanner-footer">
+      <a routerLink="/audit/inspection-cases" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Retour à la liste
+      </a>
+    </footer>
+  </div>
+
+  <!-- POP-UP MODAL -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Détails du Dossier</h3>
+        <button class="btn-close" (click)="closeModal()">&times;</button>
+      </div>
+      
+      <form [formGroup]="form" (ngSubmit)="save()" class="modal-body">
+        <div class="form-group">
+          <label>Livraison Vers <span class="required">*</span></label>
+          <input type="text" formControlName="delevry_to" placeholder="Ex: Hôpital Central" class="modal-input">
+        </div>
+
+        <div class="form-group">
+          <label>Description des Observations <span class="required">*</span></label>
+          <textarea formControlName="description" rows="4" placeholder="Notez les détails de l'inspection ici..." class="modal-input"></textarea>
+        </div>
+
+        <div class="modal-summary">
+          <div class="summary-item">
+            <span class="label">Verdict AI :</span>
+            <span class="value" [ngClass]="verdict === 'PROPRE_A_LA_CONSOMMATION' ? 'text-success' : 'text-danger'">
+              {{ verdictLabels[verdict!] }}
+            </span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeModal()">Annuler</button>
+          <button type="submit" class="btn-save" [disabled]="form.invalid || isSaving">
+            <span *ngIf="isSaving" class="loader"></span>
+            {{ isSaving ? 'Enregistrement...' : 'Enregistrer le Dossier' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

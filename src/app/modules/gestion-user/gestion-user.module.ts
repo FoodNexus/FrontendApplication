@@ -7,6 +7,7 @@ import { GestionUserRoutingModule } from './gestion-user-routing.module';
 import { HomeComponent } from './components/home/home.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { CompleteProfileComponent } from './components/complete-profile/complete-profile.component';
+
 @NgModule({
   declarations: [
     HomeComponent,

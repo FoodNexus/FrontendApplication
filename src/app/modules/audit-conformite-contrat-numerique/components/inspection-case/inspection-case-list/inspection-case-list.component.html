@@ -1,0 +1,180 @@
+<div class="page-container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon">
+        <i class="bi bi-clipboard2-pulse"></i>
+      </div>
+      <div class="title-text">
+        <h2>Dossiers d'Inspection</h2>
+        <p>Gérez vos dossiers d'audit et de conformité</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <app-notification-bell class="me-3"></app-notification-bell>
+      <a routerLink="/user/dashboard" class="btn-back me-3">
+        <i class="bi bi-arrow-left"></i> Retour au Tableau de bord
+      </a>
+      <a routerLink="/audit/inspection-cases/ai-scan" class="btn-ai-scanner me-2">
+        <i class="bi bi-magic"></i> AI Scanner
+      </a>
+      <a routerLink="/audit/inspection-cases/add" class="btn-add">
+        <i class="bi bi-plus-lg"></i> Nouveau Dossier
+      </a>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div *ngIf="errorMessage" class="alert-error">
+    <i class="bi bi-exclamation-circle"></i> {{ errorMessage }}
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon total"><i class="bi bi-folder2-open"></i></div>
+      <div class="stat-info">
+        <h4>{{ totalCount }}</h4>
+        <p>Total Dossiers</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon en-cours"><i class="bi bi-clock"></i></div>
+      <div class="stat-info">
+        <h4>{{ enCoursCount }}</h4>
+        <p>En Cours</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon resolu"><i class="bi bi-check-circle"></i></div>
+      <div class="stat-info">
+        <h4>{{ resoluCount }}</h4>
+        <p>Résolus</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon ferme"><i class="bi bi-x-circle"></i></div>
+      <div class="stat-info">
+        <h4>{{ fermeCount }}</h4>
+        <p>Fermés</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADER -->
+  <div *ngIf="loading" class="loader-wrapper">
+    <div class="modern-spinner"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div *ngIf="!loading" class="table-card">
+    <div class="table-header">
+      <h5><i class="bi bi-list-ul me-2"></i>Liste des dossiers</h5>
+      <div class="header-filters">
+        <div class="filter-box">
+          <i class="bi bi-filter"></i>
+          <select [(ngModel)]="selectedVerdict" (change)="onSearch()" class="filter-select">
+            <option value="">Tous les verdicts</option>
+            <option *ngFor="let v of sanitaryVerdictOptions" [value]="v">
+              {{ getVerdictLabel(v) }}
+            </option>
+          </select>
+        </div>
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input type="text"
+                 [(ngModel)]="searchTerm"
+                 (ngModelChange)="onSearch()"
+                 placeholder="Rechercher..."/>
+        </div>
+      </div>
+    </div>
+
+    <table class="modern-table" *ngIf="paginatedCases.length > 0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Statut</th>
+          <th>Verdict</th>
+          <th>Destination</th>
+          <th>Auditor</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of paginatedCases; let i = index"
+            [style.animation-delay]="i * 0.05 + 's'">
+          <td><span class="case-id">#{{ item.caseId }}</span></td>
+          <td>{{ item.creationDate }}</td>
+          <td class="description-cell" [title]="item.description">{{ item.description }}</td>
+          <td>
+            <span [class]="getStatusBadgeClass(item.resolutionStatus!)">
+              <i [class]="'bi ' + getStatusIcon(item.resolutionStatus!)"></i>
+              {{ getStatusLabel(item.resolutionStatus!) }}
+            </span>
+          </td>
+          <td>
+            <span [class]="getVerdictBadgeClass(item.sanitaryVerdict!)">
+              <i [class]="'bi ' + getVerdictIcon(item.sanitaryVerdict!)"></i>
+              {{ getVerdictLabel(item.sanitaryVerdict!) }}
+            </span>
+          </td>
+          <td>{{ item.delevry_to || '—' }}</td>
+          <td>{{ item.auditorId }}</td>
+          <td>
+            <div class="actions-cell">
+              <button (click)="changeStatus(item)"
+                      class="btn-action check" title="Changer le statut">
+                <i class="bi bi-arrow-repeat"></i>
+              </button>
+              <a [routerLink]="['/audit/inspection-cases/edit', item.caseId]"
+                 class="btn-action edit" title="Modifier">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <button (click)="delete(item.caseId!)"
+                      class="btn-action delete" title="Supprimer">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- PAGINATION -->
+    <div class="pagination-footer" *ngIf="filteredCases.length > pageSize">
+      <div class="pagination-info">
+        Affichage de {{ (currentPage - 1) * pageSize + 1 }} à 
+        {{ currentPage * pageSize > filteredCases.length ? filteredCases.length : currentPage * pageSize }} 
+        sur {{ filteredCases.length }} éléments
+      </div>
+      <div class="pagination-nav">
+        <button [disabled]="currentPage === 1" (click)="prevPage()" class="btn-nav">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button *ngFor="let p of pages" 
+                [class.active]="p === currentPage" 
+                (click)="setPage(p)" 
+                class="btn-page">
+          {{ p }}
+        </button>
+        <button [disabled]="currentPage === totalPages" (click)="nextPage()" class="btn-nav">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div *ngIf="paginatedCases.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-clipboard2-x"></i>
+      </div>
+      <h5>Aucun dossier trouvé</h5>
+      <p>Modifiez vos filtres ou créez un nouveau dossier d'inspection</p>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,163 @@
+<div class="page-container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon">
+        <i class="bi bi-file-earmark-lock2"></i>
+      </div>
+      <div class="title-text">
+        <h2>Contrats Numériques</h2>
+        <p>Gestion des contrats de déduction fiscale</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <app-notification-bell class="me-3"></app-notification-bell>
+      <a routerLink="/user/dashboard" class="btn-back me-3">
+        <i class="bi bi-arrow-left"></i> Retour au Tableau de bord
+      </a>
+      <a routerLink="/audit/contracts/add" class="btn-add">
+        <i class="bi bi-plus-lg"></i> Nouveau Contrat
+      </a>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div *ngIf="errorMessage" class="alert-error">
+    <i class="bi bi-exclamation-circle"></i> {{ errorMessage }}
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon total"><i class="bi bi-file-earmark-text"></i></div>
+      <div class="stat-info">
+        <h4>{{ totalCount }}</h4>
+        <p>Total Contrats</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon genere"><i class="bi bi-file-earmark-plus"></i></div>
+      <div class="stat-info">
+        <h4>{{ genereCount }}</h4>
+        <p>Générés</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon envoye"><i class="bi bi-send-check"></i></div>
+      <div class="stat-info">
+        <h4>{{ envoyeCount }}</h4>
+        <p>Envoyés</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon archive"><i class="bi bi-archive"></i></div>
+      <div class="stat-info">
+        <h4>{{ archiveCount }}</h4>
+        <p>Archivés</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADER -->
+  <div *ngIf="loading" class="loader-wrapper">
+    <div class="modern-spinner"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div *ngIf="!loading" class="table-card">
+    <div class="table-header">
+      <h5><i class="bi bi-list-ul me-2"></i>Liste des contrats</h5>
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text"
+               [(ngModel)]="searchTerm"
+               (ngModelChange)="onSearch()"
+               placeholder="Rechercher..."/>
+      </div>
+    </div>
+
+    <table class="modern-table" *ngIf="paginatedContracts.length > 0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Date</th>
+          <th>Valeur Fiscale</th>
+          <th>Donneur</th>
+          <th>Receveur</th>
+          <th>Destination</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let contract of paginatedContracts; let i = index"
+            [style.animation-delay]="i * 0.05 + 's'">
+          <td><span class="contract-id">#{{ contract.contractId }}</span></td>
+          <td>{{ contract.generationDate }}</td>
+          <td>
+            <span class="fiscal-value">{{ contract.fiscalDeductionValue | number:'1.2-2' }} TND</span>
+          </td>
+          <td>{{ contract.donorName }}</td>
+          <td>{{ contract.receiverName }}</td>
+          <td>{{ contract.delevry_to }}</td>
+          <td>
+            <span [class]="getStatusBadgeClass(contract.status!)">
+              <i [class]="'bi ' + getStatusIcon(contract.status!)"></i>
+              {{ getStatusLabel(contract.status!) }}
+            </span>
+          </td>
+          <td>
+            <div class="actions-cell">
+              <a [routerLink]="['/audit/contracts/print', contract.contractId]"
+                 class="btn-action view" title="Rendu PDF">
+                <i class="bi bi-file-earmark-pdf"></i>
+              </a>
+              <a [routerLink]="['/audit/contracts/edit', contract.contractId]"
+                 class="btn-action edit" title="Modifier">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <button (click)="delete(contract.contractId!)"
+                      class="btn-action delete" title="Supprimer">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- PAGINATION -->
+    <div class="pagination-footer" *ngIf="filteredContracts.length > pageSize">
+      <div class="pagination-info">
+        Affichage de {{ (currentPage - 1) * pageSize + 1 }} à 
+        {{ currentPage * pageSize > filteredContracts.length ? filteredContracts.length : currentPage * pageSize }} 
+        sur {{ filteredContracts.length }} contrats
+      </div>
+      <div class="pagination-nav">
+        <button [disabled]="currentPage === 1" (click)="prevPage()" class="btn-nav">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button *ngFor="let p of pages" 
+                [class.active]="p === currentPage" 
+                (click)="setPage(p)" 
+                class="btn-page">
+          {{ p }}
+        </button>
+        <button [disabled]="currentPage === totalPages" (click)="nextPage()" class="btn-nav">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div *ngIf="paginatedContracts.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-file-earmark-x"></i>
+      </div>
+      <h5>Aucun contrat trouvé</h5>
+      <p>Modifiez votre recherche ou créez un nouveau contrat numérique.</p>
+    </div>
+  </div>
+
+</div>

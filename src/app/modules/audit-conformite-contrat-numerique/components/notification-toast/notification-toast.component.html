@@ -1,0 +1,29 @@
+<div class="toast-container" *ngIf="visibleToasts.length > 0">
+  <div class="toast-header">
+    <span><i class="bi bi-bell-fill me-2"></i>Notifications Audit</span>
+    <button class="btn-clear" (click)="clearAll()">Tout effacer</button>
+  </div>
+  
+  <div class="toast-list">
+    <div *ngFor="let notif of visibleToasts" 
+         class="toast-item" 
+         [ngClass]="[notif.type.toLowerCase(), notif.closing ? 'closing' : '']">
+      
+      <div class="toast-icon">
+        <i class="bi" [ngClass]="notif.type === 'ALERTE' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill'"></i>
+      </div>
+      
+      <div class="toast-content">
+        <div class="toast-message">{{ notif.message }}</div>
+        <div class="toast-time">{{ notif.createdAt | date:'HH:mm' }}</div>
+      </div>
+      
+      <button class="toast-close" (click)="closeManually(notif.id)">
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <!-- Progress bar indicates time left -->
+      <div class="progress-bar"></div>
+    </div>
+  </div>
+</div>
