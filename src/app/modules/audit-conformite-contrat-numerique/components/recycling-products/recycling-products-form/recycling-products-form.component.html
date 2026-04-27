@@ -39,19 +39,18 @@
           </div>
         </div>
 
-        <!-- Delivery ID (Inspection Case) -->
         <div class="form-group" *ngIf="!isEdit">
           <label class="form-label">
-            <i class="bi bi-truck me-1"></i> ID Livraison
+            <i class="bi bi-truck me-1"></i> Livraison Vers
             <span class="required">*</span>
           </label>
-          <input type="number"
-                 formControlName="deliveryId"
+          <input type="text"
+                 formControlName="delevry_to"
                  class="form-input"
-                 placeholder="Ex: 42"/>
-          <div *ngIf="form.get('deliveryId')?.invalid && form.get('deliveryId')?.touched"
+                 placeholder="Ex: Hôpital Central"/>
+          <div *ngIf="form.get('delevry_to')?.invalid && form.get('delevry_to')?.touched"
                class="field-error">
-            <i class="bi bi-info-circle"></i> L'ID livraison est obligatoire pour localiser l'arrivage
+            <i class="bi bi-info-circle"></i> La destination est obligatoire pour localiser l'arrivage
           </div>
         </div>
 

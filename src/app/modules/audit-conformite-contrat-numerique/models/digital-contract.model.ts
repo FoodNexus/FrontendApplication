@@ -3,7 +3,7 @@ export interface DigitalContract {
   generationDate?: string;
   pdfDocumentUrl?: string;
   fiscalDeductionValue: number;
-  deliveryId: number;
+  delevry_to: string;
   donorName: string;
   receiverName: string;
   status?: ContractStatus;

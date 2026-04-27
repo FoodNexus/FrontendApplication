@@ -54,7 +54,7 @@ export class InspectionCaseFormComponent implements OnInit {
       description:      ['', Validators.required],
       sanitaryVerdict:  [null, Validators.required],
       resolutionStatus: [null],
-      deliveryId:       [null, Validators.required]
+      delevry_to:       ['', Validators.required]
     });
 
     this.caseId = this.route.snapshot.params['id'];

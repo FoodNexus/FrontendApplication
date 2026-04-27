@@ -12,6 +12,7 @@
       </div>
     </div>
     <div class="header-actions">
+      <app-notification-bell class="me-3"></app-notification-bell>
       <a routerLink="/user/dashboard" class="btn-back me-3">
         <i class="bi bi-arrow-left"></i> Retour au Tableau de bord
       </a>
@@ -76,7 +77,7 @@
       </div>
     </div>
 
-    <table class="modern-table" *ngIf="filteredContracts.length > 0">
+    <table class="modern-table" *ngIf="paginatedContracts.length > 0">
       <thead>
         <tr>
           <th>ID</th>
@@ -84,14 +85,13 @@
           <th>Valeur Fiscale</th>
           <th>Donneur</th>
           <th>Receveur</th>
-          <th>Livraison</th>
+          <th>Destination</th>
           <th>Statut</th>
-          <th>PDF</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let contract of filteredContracts; let i = index"
+        <tr *ngFor="let contract of paginatedContracts; let i = index"
             [style.animation-delay]="i * 0.05 + 's'">
           <td><span class="contract-id">#{{ contract.contractId }}</span></td>
           <td>{{ contract.generationDate }}</td>
@@ -100,7 +100,7 @@
           </td>
           <td>{{ contract.donorName }}</td>
           <td>{{ contract.receiverName }}</td>
-          <td>{{ contract.deliveryId }}</td>
+          <td>{{ contract.delevry_to }}</td>
           <td>
             <span [class]="getStatusBadgeClass(contract.status!)">
               <i [class]="'bi ' + getStatusIcon(contract.status!)"></i>
@@ -108,14 +108,11 @@
             </span>
           </td>
           <td>
-            <a [routerLink]="['/audit/contracts/print', contract.contractId]"
-               class="btn-generate-pdf" title="Rendu PDF">
-              <i class="bi bi-file-earmark-pdf me-1"></i> Générer
-            </a>
-            <span *ngIf="!contract.pdfDocumentUrl" class="text-muted">—</span>
-          </td>
-          <td>
             <div class="actions-cell">
+              <a [routerLink]="['/audit/contracts/print', contract.contractId]"
+                 class="btn-action view" title="Rendu PDF">
+                <i class="bi bi-file-earmark-pdf"></i>
+              </a>
               <a [routerLink]="['/audit/contracts/edit', contract.contractId]"
                  class="btn-action edit" title="Modifier">
                 <i class="bi bi-pencil"></i>
@@ -130,13 +127,36 @@
       </tbody>
     </table>
 
+    <!-- PAGINATION -->
+    <div class="pagination-footer" *ngIf="filteredContracts.length > pageSize">
+      <div class="pagination-info">
+        Affichage de {{ (currentPage - 1) * pageSize + 1 }} à 
+        {{ currentPage * pageSize > filteredContracts.length ? filteredContracts.length : currentPage * pageSize }} 
+        sur {{ filteredContracts.length }} contrats
+      </div>
+      <div class="pagination-nav">
+        <button [disabled]="currentPage === 1" (click)="prevPage()" class="btn-nav">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button *ngFor="let p of pages" 
+                [class.active]="p === currentPage" 
+                (click)="setPage(p)" 
+                class="btn-page">
+          {{ p }}
+        </button>
+        <button [disabled]="currentPage === totalPages" (click)="nextPage()" class="btn-nav">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
     <!-- EMPTY STATE -->
-    <div *ngIf="filteredContracts.length === 0" class="empty-state">
+    <div *ngIf="paginatedContracts.length === 0" class="empty-state">
       <div class="empty-icon">
         <i class="bi bi-file-earmark-x"></i>
       </div>
       <h5>Aucun contrat trouvé</h5>
-      <p>Créez un nouveau contrat numérique pour commencer</p>
+      <p>Modifiez votre recherche ou créez un nouveau contrat numérique.</p>
     </div>
   </div>
 

@@ -20,6 +20,10 @@
         <i class="bi bi-exclamation-circle"></i> {{ errorMessage }}
       </div>
 
+      <div *ngIf="successMessage" class="alert-success">
+        <i class="bi bi-check-circle"></i> {{ successMessage }}
+      </div>
+
       <!-- FORM -->
       <form [formGroup]="form" (ngSubmit)="submit()" class="form-body">
 
@@ -79,18 +83,19 @@
         <!-- Delivery ID -->
         <div class="form-group">
           <label class="form-label">
-            <i class="bi bi-truck me-1"></i> ID Livraison
+            <i class="bi bi-truck me-1"></i> Livraison Vers
             <span class="required">*</span>
           </label>
-          <input type="number"
-                 formControlName="deliveryId"
+          <input type="text"
+                 formControlName="delevry_to"
                  class="form-input"
-                 placeholder="Ex: 42"/>
-          <div *ngIf="form.get('deliveryId')?.invalid && form.get('deliveryId')?.touched"
+                 placeholder="Ex: Hôpital Central"/>
+          <div *ngIf="form.get('delevry_to')?.invalid && form.get('delevry_to')?.touched"
                class="field-error">
-            <i class="bi bi-info-circle"></i> L'ID livraison est obligatoire
+            <i class="bi bi-info-circle"></i> La destination est obligatoire
           </div>
         </div>
+
 
         
         <!-- ACTIONS -->

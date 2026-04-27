@@ -1,0 +1,35 @@
+<div class="bell-wrapper">
+  <button class="bell-btn" (click)="toggleDropdown()" [class.active]="isOpen">
+    <i class="bi bi-bell"></i>
+    <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+  </button>
+
+  <div class="dropdown-panel" *ngIf="isOpen">
+    <div class="panel-header">
+      <h6>Notifications ({{ notifications.length }})</h6>
+      <button *ngIf="unreadCount > 0" class="btn-read-all" (click)="markAllAsRead($event)">
+        Tout marquer lu
+      </button>
+    </div>
+
+    <div class="panel-list">
+      <div *ngIf="notifications.length === 0" class="empty-notif">
+        <i class="bi bi-check2-circle"></i>
+        <span>Aucune notification</span>
+      </div>
+
+      <div *ngFor="let notif of notifications" 
+           class="notif-item" 
+           [ngClass]="[notif.type.toLowerCase(), notif.isRead ? 'read' : '']"
+           (click)="markAsRead(notif.id, $event)">
+        <div class="notif-icon">
+          <i class="bi" [ngClass]="notif.type === 'ALERTE' ? 'bi-exclamation-circle' : 'bi-info-circle'"></i>
+        </div>
+        <div class="notif-body">
+          <p>{{ notif.message }}</p>
+          <small>{{ notif.createdAt | date:'HH:mm' }}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

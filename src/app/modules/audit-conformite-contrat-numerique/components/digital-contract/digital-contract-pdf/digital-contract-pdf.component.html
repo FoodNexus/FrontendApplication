@@ -59,8 +59,8 @@
     <h3 class="section-title">Détails de l'Opération</h3>
     <table class="details-table">
       <tr>
-        <td class="label">Numéro d'Identification Livraison</td>
-        <td class="value"><strong>LIV-{{ contract.deliveryId | number:'4.0' }}</strong></td>
+        <td class="label">Destination de la Livraison</td>
+        <td class="value"><strong>{{ contract.delevry_to }}</strong></td>
       </tr>
       <tr>
         <td class="label">Statut du Contrat</td>
@@ -75,7 +75,7 @@
     <!-- Clauses -->
     <h3 class="section-title">Clauses Légales</h3>
     <div class="clauses">
-      <p><strong>Article 1 :</strong> L'association bénéficiaire certifie avoir reçu les produits associés à la livraison <strong>LIV-{{ contract.deliveryId | number:'4.0' }}</strong> dans les conditions sanitaires adéquates.</p>
+      <p><strong>Article 1 :</strong> L'association bénéficiaire certifie avoir reçu les produits associés à la livraison vers <strong>{{ contract.delevry_to }}</strong> dans les conditions sanitaires adéquates.</p>
       <p><strong>Article 2 :</strong> Ce document donne droit au Donateur à une déduction fiscale basée sur la valeur déclarée et certifiée ({{ contract.fiscalDeductionValue | number:'1.2-2' }} TND) conformément aux lois de soutien aux banques alimentaires.</p>
       <p><strong>Article 3 :</strong> NutriFlow agit en tant que tiers de confiance auditeur et archive ce document cryptographiquement dans ses registres.</p>
     </div>

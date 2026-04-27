@@ -6,11 +6,12 @@ import { DigitalContract, ContractStatus }
   from '../../../models/digital-contract.model';
 import { DigitalContractService }
   from '../../../services/digital-contract.service';
+import { NotificationBellComponent } from '../../notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-digital-contract-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, NotificationBellComponent],
   templateUrl: './digital-contract-list.component.html',
   styleUrls: ['./digital-contract-list.component.scss']
 })
@@ -21,6 +22,10 @@ export class DigitalContractListComponent implements OnInit {
   loading = false;
   errorMessage = '';
   searchTerm = '';
+
+  // Pagination
+  currentPage = 1;
+  pageSize = 6;
 
   // Stats
   totalCount = 0;
@@ -38,8 +43,8 @@ export class DigitalContractListComponent implements OnInit {
     this.loading = true;
     this.service.getAll().subscribe({
       next: (data) => {
-        this.contracts = data;
-        this.filteredContracts = data;
+        this.contracts = (data || []).sort((a, b) => b.contractId! - a.contractId!);
+        this.onSearch();
         this.computeStats();
         this.loading = false;
       },
@@ -58,6 +63,7 @@ export class DigitalContractListComponent implements OnInit {
   }
 
   onSearch(): void {
+    this.currentPage = 1;
     const term = this.searchTerm.toLowerCase();
     this.filteredContracts = this.contracts.filter(c =>
       (c.contractId?.toString().includes(term)) ||
@@ -66,6 +72,32 @@ export class DigitalContractListComponent implements OnInit {
       (c.receiverName?.toLowerCase().includes(term)) ||
       (c.pdfDocumentUrl?.toLowerCase().includes(term))
     );
+  }
+
+  // Pagination Getters
+  get paginatedContracts(): DigitalContract[] {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    return this.filteredContracts.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredContracts.length / this.pageSize);
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  setPage(page: number): void {
+    this.currentPage = page;
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) this.currentPage--;
   }
 
   delete(id: number): void {

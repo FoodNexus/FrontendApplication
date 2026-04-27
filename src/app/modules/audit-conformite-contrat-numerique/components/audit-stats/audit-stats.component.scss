@@ -1,0 +1,187 @@
+/* ════════════════════════════════════════════════════════════════
+   AUDIT STATISTICS – mirrors the main dashboard styles
+   ════════════════════════════════════════════════════════════════ */
+
+/* -- Navbar (same as main dashboard) --------------------------- */
+.navbar {
+  border-bottom: 3px solid #dee2e6;
+}
+
+/* -- Cards ------------------------------------------------------ */
+.card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+}
+
+.card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+  font-weight: 700;
+  border-radius: 12px 12px 0 0 !important;
+  padding: 0.85rem 1.25rem 0.25rem;
+
+  small { display: block; font-weight: 400; margin-top: 0.1rem; }
+}
+
+/* -- KPI Cards -------------------------------------------------- */
+.kpi-card {
+  .card-body { padding: 1.5rem 1rem; }
+}
+
+.kpi-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.kpi-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.3rem;
+}
+
+.kpi-footer {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: center;
+  border-radius: 0 0 12px 12px !important;
+  padding: 0.35rem 0;
+}
+
+/* -- Chart containers ------------------------------------------- */
+.chart-container {
+  position: relative;
+  height: 240px;
+
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+.chart-container--tall {
+  height: 270px;
+}
+
+/* -- Activity section (copied from main dashboard) -------------- */
+.activity-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 25px;
+  margin-bottom: 50px;
+}
+
+.activity-card {
+  background: white;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+
+  .activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h3 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+    }
+
+    .btn-view-all {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #10b981;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: #ecfdf5;
+    }
+  }
+}
+
+/* -- Dashboard table (copied from main dashboard) --------------- */
+.dashboard-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+
+  thead th {
+    background: #f8fafc;
+    border: none;
+    color: #64748b;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 15px;
+
+    &:first-child { border-radius: 8px 0 0 8px; }
+    &:last-child  { border-radius: 0 8px 8px 0; }
+  }
+
+  tbody tr {
+    transition: transform 0.2s;
+
+    td {
+      padding: 15px;
+      vertical-align: middle;
+      border-top: 1px solid #f1f5f9;
+      border-bottom: 1px solid #f1f5f9;
+
+      &:first-child { border-left: 1px solid #f1f5f9; border-radius: 12px 0 0 12px; }
+      &:last-child  { border-right: 1px solid #f1f5f9; border-radius: 0 12px 12px 0; }
+    }
+
+    &:hover td {
+      background: #fdfdfd;
+      border-color: #e2e8f0;
+    }
+  }
+}
+
+/* -- Badges (copied from main dashboard) ------------------------ */
+.badge-pill {
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-en-cours  { background: #dbeafe; color: #1d4ed8; }
+.status-resolu    { background: #d1fae5; color: #047857; }
+.status-ferme     { background: #f1f5f9; color: #475569; }
+
+.verdict-propre   { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.verdict-recyclage{ background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
+
+/* -- Buttons ---------------------------------------------------- */
+.btn {
+  border-radius: 8px;
+  font-weight: 600;
+}

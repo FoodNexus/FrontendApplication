@@ -8,11 +8,12 @@ import { InspectionCaseService }
   from '../../../services/inspection-case.service';
 import { AuthService }
   from '../../../../gestion-user/services/auth.service';
+import { NotificationBellComponent } from '../../notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-inspection-case-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, NotificationBellComponent],
   templateUrl: './inspection-case-list.component.html',
   styleUrls: ['./inspection-case-list.component.scss']
 })
@@ -23,12 +24,19 @@ export class InspectionCaseListComponent implements OnInit {
   loading = false;
   errorMessage = '';
   searchTerm = '';
+  selectedVerdict = '';
+
+  // Pagination
+  currentPage = 1;
+  pageSize = 6;
 
   // Stats
   totalCount = 0;
   enCoursCount = 0;
   resoluCount = 0;
   fermeCount = 0;
+
+  sanitaryVerdictOptions = Object.values(SanitaryVerdict);
 
   constructor(
     private service: InspectionCaseService,
@@ -54,8 +62,8 @@ export class InspectionCaseListComponent implements OnInit {
 
     requestOb$.subscribe({
       next: (data) => {
-        this.inspectionCases = data || [];
-        this.filteredCases = data || [];
+        this.inspectionCases = (data || []).sort((a, b) => b.caseId! - a.caseId!);
+        this.filter();
         this.computeStats();
         this.loading = false;
       },
@@ -74,13 +82,44 @@ export class InspectionCaseListComponent implements OnInit {
   }
 
   onSearch(): void {
+    this.currentPage = 1;
+    this.filter();
+  }
+
+  filter(): void {
     const term = this.searchTerm.toLowerCase();
-    this.filteredCases = this.inspectionCases.filter(c =>
-      (c.description?.toLowerCase().includes(term)) ||
-      (c.resolutionStatus?.toLowerCase().includes(term)) ||
-      (c.sanitaryVerdict?.toLowerCase().includes(term)) ||
-      (c.caseId?.toString().includes(term))
-    );
+    this.filteredCases = this.inspectionCases.filter(c => {
+      const matchSearch = (c.description?.toLowerCase().includes(term)) ||
+                          (c.caseId?.toString().includes(term));
+      const matchVerdict = !this.selectedVerdict || c.sanitaryVerdict === this.selectedVerdict;
+      return matchSearch && matchVerdict;
+    });
+  }
+
+  // Pagination Getters
+  get paginatedCases(): InspectionCase[] {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    return this.filteredCases.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredCases.length / this.pageSize);
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  setPage(page: number): void {
+    this.currentPage = page;
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) this.currentPage--;
   }
 
   delete(id: number): void {

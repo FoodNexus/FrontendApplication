@@ -12,8 +12,12 @@
       </div>
     </div>
     <div class="header-actions">
+      <app-notification-bell class="me-3"></app-notification-bell>
       <a routerLink="/user/dashboard" class="btn-back me-3">
         <i class="bi bi-arrow-left"></i> Retour au Tableau de bord
+      </a>
+      <a routerLink="/audit/inspection-cases/ai-scan" class="btn-ai-scanner me-2">
+        <i class="bi bi-magic"></i> AI Scanner
       </a>
       <a routerLink="/audit/inspection-cases/add" class="btn-add">
         <i class="bi bi-plus-lg"></i> Nouveau Dossier
@@ -67,16 +71,27 @@
   <div *ngIf="!loading" class="table-card">
     <div class="table-header">
       <h5><i class="bi bi-list-ul me-2"></i>Liste des dossiers</h5>
-      <div class="search-box">
-        <i class="bi bi-search"></i>
-        <input type="text"
-               [(ngModel)]="searchTerm"
-               (ngModelChange)="onSearch()"
-               placeholder="Rechercher..."/>
+      <div class="header-filters">
+        <div class="filter-box">
+          <i class="bi bi-filter"></i>
+          <select [(ngModel)]="selectedVerdict" (change)="onSearch()" class="filter-select">
+            <option value="">Tous les verdicts</option>
+            <option *ngFor="let v of sanitaryVerdictOptions" [value]="v">
+              {{ getVerdictLabel(v) }}
+            </option>
+          </select>
+        </div>
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input type="text"
+                 [(ngModel)]="searchTerm"
+                 (ngModelChange)="onSearch()"
+                 placeholder="Rechercher..."/>
+        </div>
       </div>
     </div>
 
-    <table class="modern-table" *ngIf="filteredCases.length > 0">
+    <table class="modern-table" *ngIf="paginatedCases.length > 0">
       <thead>
         <tr>
           <th>ID</th>
@@ -84,13 +99,13 @@
           <th>Description</th>
           <th>Statut</th>
           <th>Verdict</th>
-          <th>Delivery</th>
+          <th>Destination</th>
           <th>Auditor</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of filteredCases; let i = index"
+        <tr *ngFor="let item of paginatedCases; let i = index"
             [style.animation-delay]="i * 0.05 + 's'">
           <td><span class="case-id">#{{ item.caseId }}</span></td>
           <td>{{ item.creationDate }}</td>
@@ -107,7 +122,7 @@
               {{ getVerdictLabel(item.sanitaryVerdict!) }}
             </span>
           </td>
-          <td>{{ item.deliveryId || '—' }}</td>
+          <td>{{ item.delevry_to || '—' }}</td>
           <td>{{ item.auditorId }}</td>
           <td>
             <div class="actions-cell">
@@ -129,13 +144,36 @@
       </tbody>
     </table>
 
+    <!-- PAGINATION -->
+    <div class="pagination-footer" *ngIf="filteredCases.length > pageSize">
+      <div class="pagination-info">
+        Affichage de {{ (currentPage - 1) * pageSize + 1 }} à 
+        {{ currentPage * pageSize > filteredCases.length ? filteredCases.length : currentPage * pageSize }} 
+        sur {{ filteredCases.length }} éléments
+      </div>
+      <div class="pagination-nav">
+        <button [disabled]="currentPage === 1" (click)="prevPage()" class="btn-nav">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button *ngFor="let p of pages" 
+                [class.active]="p === currentPage" 
+                (click)="setPage(p)" 
+                class="btn-page">
+          {{ p }}
+        </button>
+        <button [disabled]="currentPage === totalPages" (click)="nextPage()" class="btn-nav">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
     <!-- EMPTY STATE -->
-    <div *ngIf="filteredCases.length === 0" class="empty-state">
+    <div *ngIf="paginatedCases.length === 0" class="empty-state">
       <div class="empty-icon">
         <i class="bi bi-clipboard2-x"></i>
       </div>
       <h5>Aucun dossier trouvé</h5>
-      <p>Commencez par créer un nouveau dossier d'inspection</p>
+      <p>Modifiez vos filtres ou créez un nouveau dossier d'inspection</p>
     </div>
   </div>
 
