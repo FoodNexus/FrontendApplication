@@ -1,0 +1,145 @@
+<div class="page-container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon">
+        <i class="bi bi-clock-history"></i>
+      </div>
+      <div class="title-text">
+        <h2>Historiques</h2>
+        <p>Consultez et gérez les produits assignés aux lots</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/user/dashboard" class="btn-back me-3">
+        <i class="bi bi-arrow-left"></i> Retour au Dashboard
+      </a>
+      <a routerLink="/donneur/historiques/nouveau" class="btn-add">
+        <i class="bi bi-plus-lg"></i> Ajouter un produit à un lot
+      </a>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div *ngIf="successMessage" class="alert-success-custom">
+    <i class="bi bi-check-circle"></i> {{ successMessage }}
+    <button class="btn-close-custom" (click)="successMessage=''">
+      <i class="bi bi-x"></i>
+    </button>
+  </div>
+
+  <!-- FILTRES -->
+  <div class="filters-card">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label><i class="bi bi-search me-1"></i>Rechercher</label>
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input type="text"
+                 [(ngModel)]="searchKeyword"
+                 placeholder="Produit, Code-barre ou ID..."/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-card">
+      <div class="tabs-row">
+        <button class="tab-btn" [class.active]="activeTab === 'tous'" (click)="setTab('tous')">
+          <i class="bi bi-collection me-2"></i>Tous les produits
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'proche'" (click)="setTab('proche')">
+          <i class="bi bi-exclamation-circle me-2"></i>Péremption Proche
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'perimes'" (click)="setTab('perimes')">
+          <i class="bi bi-x-octagon me-2"></i>Déjà périmés
+        </button>
+      </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <h5><i class="bi bi-clock-history me-2"></i>Liste des historiques</h5>
+      <span class="total-badge">{{ displayedList.length }} entrée(s)</span>
+    </div>
+
+    <table class="modern-table" *ngIf="displayedList.length > 0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Lot</th>
+          <th>Produit</th>
+          <th>Code-barre</th>
+          <th>Quantité</th>
+          <th>Péremption</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let h of paginatedHistoriques; let i = index"
+            [style.animation-delay]="i * 0.05 + 's'">
+          <td><span class="case-id">#{{ h.idHistorique }}</span></td>
+          <td>
+            <a [routerLink]="['../lots', h.lotId]" class="case-id-link">
+              Lot #{{ h.lotId }}
+            </a>
+          </td>
+          <td><span class="product-name">{{ h.libelleProduit }}</span></td>
+          <td><span class="code-barre">{{ h.codeBarre }}</span></td>
+          <td><span class="badge-pill badge-count">{{ h.quantite }}</span></td>
+          <td>{{ h.datePeremptionExacte | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <div class="actions-cell">
+              <a [routerLink]="['/donneur/historiques/modifier', h.idHistorique]"
+                 class="btn-action edit" title="Modifier">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <button (click)="supprimer(h.idHistorique)"
+                      class="btn-action delete" title="Supprimer">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- PAGINATION -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+      <div class="pagination-info">
+        Affichage de <b>{{ (currentPage - 1) * pageSize + 1 }}</b> à <b>{{ Math.min(currentPage * pageSize, displayedList.length) }}</b> sur <b>{{ displayedList.length }}</b> éléments
+      </div>
+      <div class="pagination-controls">
+        <button class="page-nav-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        
+        <div class="page-numbers">
+          <button *ngFor="let p of pages" 
+                  class="page-number-btn" 
+                  [class.active]="p === currentPage"
+                  (click)="goToPage(p)">
+            {{ p }}
+          </button>
+        </div>
+
+        <button class="page-nav-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div *ngIf="displayedList.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-clock-history"></i>
+      </div>
+      <h5>Aucun historique</h5>
+      <p>Ajoutez un produit à un lot pour commencer</p>
+    </div>
+  </div>
+
+</div>

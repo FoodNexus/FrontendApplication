@@ -1,0 +1,137 @@
+<div class="page-container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon green">
+        <i class="bi bi-chat-text"></i>
+      </div>
+      <div class="title-text">
+        <h2>Analyse Texte (NLP)</h2>
+        <p>Décrivez votre don librement et l'IA extraira les informations</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="../" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Retour au centre IA
+      </a>
+    </div>
+  </div>
+
+  <div class="ai-twin-layout">
+
+    <!-- INPUT CARD -->
+    <div class="form-card">
+      <div class="form-header green-header">
+        <div class="header-icon">
+          <i class="bi bi-keyboard"></i>
+        </div>
+        <div>
+          <h3>Décrivez votre don</h3>
+          <p>Saisissez le texte librement ou choisissez un exemple</p>
+        </div>
+      </div>
+
+      <div class="form-body">
+        <div class="form-group">
+          <label class="form-label fw-bold">Texte libre :</label>
+          <textarea class="form-input text-area" rows="5" [(ngModel)]="texte"
+            placeholder="Ex: J'ai 50kg de tomates fraîches qui expirent demain..."></textarea>
+        </div>
+
+        <div class="form-group mt-3">
+          <label class="form-label text-muted">Exemples rapides :</label>
+          <div class="quick-tags">
+            <button class="tag-btn" (click)="texte = 'J\'ai 30kg de pommes qui expirent dans 3 jours'">🍎 Pommes</button>
+            <button class="tag-btn" (click)="texte = '200 baguettes de pain à donner aujourd\'hui'">🥖 Pain</button>
+            <button class="tag-btn" (click)="texte = '50 barquettes de viande surgelée, péremption le 15/04/2026'">🥩 Viande</button>
+            <button class="tag-btn" (click)="texte = '100 litres de lait frais, expire demain matin'">🥛 Lait</button>
+          </div>
+        </div>
+
+        <button class="btn-submit w-100 mt-4" [disabled]="!texte.trim() || loading" (click)="analyser()">
+          <span *ngIf="loading" class="spinner"><i class="bi bi-arrow-repeat spin"></i></span>
+          <span *ngIf="!loading"><i class="bi bi-magic me-2"></i>Analyser le texte</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- RESULT CARD -->
+    <div class="result-card-container">
+      <div class="form-card" *ngIf="result">
+        <div class="form-header blue-header">
+          <div class="header-icon">
+            <i class="bi bi-check2-all"></i>
+          </div>
+          <div>
+            <h3>Résultat de l'analyse</h3>
+            <p>Données extraites automatiquement par l'IA</p>
+          </div>
+        </div>
+
+        <div class="detail-body">
+          <div class="detail-row">
+            <div class="detail-label">Produit détecté</div>
+            <div class="detail-value fw-bold text-dark">{{ result.produitDetecte || 'Non reconnu' }}</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Catégorie</div>
+            <div class="detail-value">
+              <span class="badge-pill" [ngClass]="{
+                'cat-frais': result.categorie === 'FRAIS',
+                'cat-surgele': result.categorie === 'SURGELE',
+                'cat-sec': result.categorie === 'SEC'
+              }">{{ result.categorie }}</span>
+            </div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Quantité</div>
+            <div class="detail-value">
+              <span class="badge-pill count">{{ result.quantite }} {{ result.unite }}</span>
+            </div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Date péremption</div>
+            <div class="detail-value">{{ result.datePeremption }}</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Urgence déduite</div>
+            <div class="detail-value">
+              <span class="badge-pill" [ngClass]="{
+                'urg-critique': result.urgence === 'CRITIQUE',
+                'urg-moyen': result.urgence === 'MOYEN',
+                'urg-faible': result.urgence === 'FAIBLE'
+              }">{{ result.urgence }}</span>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-top">
+            <button class="btn-create-lot w-100" (click)="creerLot()" [disabled]="loadingCreation">
+              <span *ngIf="loadingCreation" class="spinner"><i class="bi bi-arrow-repeat spin"></i></span>
+              <span *ngIf="!loadingCreation"><i class="bi bi-plus-circle me-2"></i>Créer le lot automatiquement</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATES -->
+      <div class="empty-state" *ngIf="!result && !error">
+        <div class="empty-icon green-icon">
+          <i class="bi bi-chat-quote"></i>
+        </div>
+        <h5>En attente d'analyse</h5>
+        <p>Remplissez le texte et lancez l'IA.</p>
+      </div>
+
+      <div class="alert-error mt-4" *ngIf="error">
+        <i class="bi bi-exclamation-triangle"></i> {{ error }}
+      </div>
+
+      <div class="alert-success mt-4" *ngIf="lotCree">
+        <i class="bi bi-check-circle"></i> Lot d'identifiant #{{ lotCree.lotId }} créé avec succès !
+      </div>
+
+    </div>
+
+  </div>
+</div>

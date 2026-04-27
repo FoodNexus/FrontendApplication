@@ -12,6 +12,11 @@ export const routes: Routes = [
       .then(m => m.GestionUserModule)
   },
   {
+    path: 'donneur',
+    loadChildren: () => import('./modules/gestion-donneur-matching/gestion-donneur-matching.module')
+      .then(m => m.GestionDonneurMatchingModule)
+  },
+  {
     path: 'receveur',
     loadChildren: () => import('./modules/gestion-receveur/gestion-receveur.module')
       .then(m => m.GestionReceveurModule)

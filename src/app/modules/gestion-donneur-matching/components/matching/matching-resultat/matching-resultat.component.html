@@ -1,0 +1,92 @@
+<div class="page-container" *ngIf="lot">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon">
+        <i class="bi bi-check-circle"></i>
+      </div>
+      <div class="title-text">
+        <h2>Résultat — Lot #{{ lot.idLot }}</h2>
+        <p>Résultat du matching pour le lot sélectionné</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="../../matching" class="btn-back me-3">
+        <i class="bi bi-cpu"></i> Nouveau matching
+      </a>
+      <a routerLink="../../matchs" class="btn-add">
+        <i class="bi bi-list"></i> Tous les matchs
+      </a>
+    </div>
+  </div>
+
+  <!-- SUCCESS ALERT -->
+  <div class="alert-success-custom">
+    <i class="bi bi-check-circle"></i>
+    <strong>Matching terminé !</strong>
+    Lot #{{ lot.idLot }} — Statut :
+    <span class="badge-pill statut-en-cours">{{ lot.statut }}</span>
+    — {{ matchs.length }} match(s) créé(s)
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <h5><i class="bi bi-link-45deg me-2"></i>Matchs créés en base</h5>
+      <span class="total-badge">{{ matchs.length }} match(s)</span>
+    </div>
+
+    <table class="modern-table" *ngIf="matchs.length > 0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Receveur</th>
+          <th>Quantité</th>
+          <th>Score</th>
+          <th>Date</th>
+          <th>Statut</th>
+          <th>Détail</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let m of matchs; let i = index"
+            [style.animation-delay]="i * 0.05 + 's'">
+          <td><span class="case-id">#{{ m.idMatch }}</span></td>
+          <td>
+            <span class="badge-pill badge-donneur">
+              <i class="bi bi-person"></i>
+              Receveur #{{ m.idReceveur }}
+            </span>
+          </td>
+          <td><span class="badge-pill badge-count">{{ m.quantiteAllouee }}</span></td>
+          <td><span class="badge-pill statut-disponible">{{ m.scoreMatching }}</span></td>
+          <td>{{ m.dateMatch | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <span class="badge-pill" [ngClass]="getStatutClass(m.statutMatch)">
+              {{ m.statutMatch }}
+            </span>
+          </td>
+          <td>
+            <div class="actions-cell">
+              <a [routerLink]="['../../matchs', m.idMatch]"
+                 class="btn-action view" title="Voir détail">
+                <i class="bi bi-eye"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- EMPTY STATE -->
+    <div *ngIf="matchs.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-link-45deg"></i>
+      </div>
+      <h5>Aucun match créé</h5>
+      <p>Le matching n'a produit aucun résultat pour ce lot</p>
+    </div>
+  </div>
+
+</div>

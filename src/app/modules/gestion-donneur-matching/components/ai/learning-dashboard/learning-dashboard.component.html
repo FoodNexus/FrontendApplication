@@ -1,0 +1,206 @@
+<div class="page-container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon purple">
+        <i class="bi bi-lightbulb"></i>
+      </div>
+      <div class="title-text">
+        <h2>Apprentissage & Profils</h2>
+        <p>Analyse des performances et préférences des receveurs pour optimiser le matching</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="../" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Retour au centre IA
+      </a>
+    </div>
+  </div>
+
+  <!-- SEARCH & ACTIONS -->
+  <div class="tabs-card">
+    <div class="search-flex">
+      <div class="search-input-group">
+        <label class="search-label">ID Receveur</label>
+        <input type="number" class="search-control" [(ngModel)]="receveurId" min="1" placeholder="Ex: 1">
+      </div>
+      <div class="search-btns">
+        <button class="btn-search purple-btn" (click)="chargerProfil()" [disabled]="loading">
+          <span *ngIf="loading" class="spinner"><i class="bi bi-arrow-repeat spin"></i></span>
+          <i class="bi bi-person-badge me-1" *ngIf="!loading"></i> Charger le profil
+        </button>
+        <button class="btn-search outline-btn" (click)="chargerTous()" [disabled]="loadingAll">
+          <span *ngIf="loadingAll" class="spinner"><i class="bi bi-arrow-repeat spin"></i></span>
+          <i class="bi bi-people me-1" *ngIf="!loadingAll"></i> Voir tous les profils
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert-error" *ngIf="error">
+    <i class="bi bi-exclamation-triangle-fill"></i> {{ error }}
+  </div>
+
+  <!-- PROFIL UNIQUE DISPLAY -->
+  <div *ngIf="selectedProfil" class="profil-detail-container" [@fadeIn]>
+    <div class="form-card">
+      <div class="form-header purple-header">
+        <div class="header-icon">
+          <i class="bi bi-person-circle"></i>
+        </div>
+        <div>
+          <h3>Profil du Receveur #{{ selectedProfil.receveurId }}</h3>
+          <p>Données d'apprentissage et scoring IA</p>
+        </div>
+      </div>
+
+      <div class="detail-body">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-label">Taux de succès global</div>
+            <div class="stat-value">
+              {{ (selectedProfil.tauxSucces * 100).toFixed(0) }}%
+            </div>
+            <div class="progress-mini">
+              <div class="progress-bar" 
+                   [ngClass]="{
+                     'bg-green': selectedProfil.tauxSucces >= 0.7,
+                     'bg-orange': selectedProfil.tauxSucces >= 0.4 && selectedProfil.tauxSucces < 0.7,
+                     'bg-red': selectedProfil.tauxSucces < 0.4
+                   }" [style.width.%]="selectedProfil.tauxSucces * 100">
+              </div>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Matchs Total</div>
+            <div class="stat-value-sm">{{ selectedProfil.totalMatchs }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Livrés</div>
+            <div class="stat-value-sm text-green">{{ selectedProfil.totalLivres }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Refusés / Échecs</div>
+            <div class="stat-value-sm text-red">{{ selectedProfil.totalRefuses }}</div>
+          </div>
+        </div>
+
+        <div class="detail-rows-container mt-4">
+          <div class="detail-row">
+            <div class="detail-label">Distance moyenne acceptée</div>
+            <div class="detail-value text-dark fw-bold">{{ selectedProfil.distanceMoyenneAcceptee.toFixed(1) }} km</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Catégories préférées</div>
+            <div class="detail-value">
+              <div class="tag-group">
+                <span *ngFor="let cat of selectedProfil.categoriesPreferees" class="badge-pill info">{{ cat }}</span>
+                <span *ngIf="!selectedProfil.categoriesPreferees?.length" class="text-muted">Aucune donnée</span>
+              </div>
+            </div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Facteur Bonus/Malus IA</div>
+            <div class="detail-value">
+              <span class="score-badge" [ngClass]="selectedProfil.bonusMalus >= 0 ? 'bonus' : 'malus'">
+                {{ selectedProfil.bonusMalus >= 0 ? '+' : '' }}{{ selectedProfil.bonusMalus.toFixed(3) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIST OF PROFILES -->
+  <div class="table-card mt-4" *ngIf="tousLesProfils && tousLesProfils.length > 0">
+    <div class="table-header">
+      <h5><i class="bi bi-people-fill me-2"></i>Base d'apprentissage ({{ tousLesProfils.length }} profils)</h5>
+    </div>
+    
+    <div class="table-scroll">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>ID Receveur</th>
+            <th>Taux Succès</th>
+            <th>Matchs</th>
+            <th class="text-center">Livrés</th>
+            <th class="text-center">Refusés</th>
+            <th>Dist. Moy</th>
+            <th>Bonus/Malus</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of paginatedProfiles">
+            <td><span class="case-id">#{{ p.receveurId }}</span></td>
+            <td>
+              <div class="table-progress-group">
+                <span class="progress-text">{{ (p.tauxSucces * 100).toFixed(0) }}%</span>
+                <div class="progress-container-table">
+                  <div class="progress-bar-table" 
+                       [ngClass]="{
+                         'bg-green': p.tauxSucces >= 0.7,
+                         'bg-orange': p.tauxSucces >= 0.4 && p.tauxSucces < 0.7,
+                         'bg-red': p.tauxSucces < 0.4
+                       }" [style.width.%]="p.tauxSucces * 100"></div>
+                </div>
+              </div>
+            </td>
+            <td>{{ p.totalMatchs }}</td>
+            <td class="text-center"><span class="badge-pill count-success">{{ p.totalLivres }}</span></td>
+            <td class="text-center"><span class="badge-pill count-danger">{{ p.totalRefuses }}</span></td>
+            <td>{{ p.distanceMoyenneAcceptee.toFixed(1) }} km</td>
+            <td>
+              <span class="score-mini" [ngClass]="p.bonusMalus >= 0 ? 'text-green' : 'text-red'">
+                {{ p.bonusMalus >= 0 ? '+' : '' }}{{ p.bonusMalus.toFixed(2) }}
+              </span>
+            </td>
+            <td class="text-end">
+              <button class="btn-action view" (click)="receveurId = p.receveurId; chargerProfil(); scrollToTop()" title="Voir détail">
+                <i class="bi bi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination-container" *ngIf="totalPagesItems > 1">
+      <div class="pagination-info">
+        Affichage de <b>{{ (currentPageItems - 1) * pageSizeItems + 1 }}</b> à <b>{{ Math.min(currentPageItems * pageSizeItems, tousLesProfils.length) }}</b> sur <b>{{ tousLesProfils.length }}</b> profils
+      </div>
+      <div class="pagination-controls">
+        <button class="page-nav-btn" [disabled]="currentPageItems === 1" (click)="goToPageItems(currentPageItems - 1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        
+        <div class="page-numbers">
+          <button *ngFor="let p of pagesItems" 
+                  class="page-number-btn" 
+                  [class.active]="p === currentPageItems"
+                  (click)="goToPageItems(p)">
+            {{ p }}
+          </button>
+        </div>
+
+        <button class="page-nav-btn" [disabled]="currentPageItems === totalPagesItems" (click)="goToPageItems(currentPageItems + 1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div *ngIf="tousLesProfils.length === 0" class="empty-state">
+      <div class="empty-icon purple-icon">
+        <i class="bi bi-journal-text"></i>
+      </div>
+      <h5>Aucun profil trouvé</h5>
+      <p>Lancez des chargements pour alimenter le dashboard.</p>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,100 @@
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { LotService } from '../../../services/lot.service';
+import { HistoriqueService } from '../../../services/historique.service';
+import { MatchFractionneService } from '../../../services/match-fractionne.service';
+import { LotResponse } from '../../../models/lot.model';
+import { HistoriqueResponse } from '../../../models/historique.model';
+import { MatchFractionneResponse } from '../../../models/match-fractionne.model';
+import { StatutLot } from '../../../models/enums.model';
+import { ViewEncapsulation } from '@angular/core';
+
+@Component({
+  selector: 'app-lot-detail',
+  templateUrl: './lot-detail.component.html',
+  styleUrls: ['./lot-detail.component.scss'],
+  encapsulation: ViewEncapsulation.None  
+})
+export class LotDetailComponent implements OnInit {
+
+  lot: LotResponse | null = null;
+  historiques: HistoriqueResponse[] = [];
+  matchs: MatchFractionneResponse[] = [];
+  errorMessage = '';
+  successMessage = '';
+  isLoadingIA = false;
+
+  constructor(
+    private lotService: LotService,
+    private historiqueService: HistoriqueService,
+    private matchService: MatchFractionneService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    const id = +this.route.snapshot.params['id'];
+    this.lotService.getById(id).subscribe(data => {
+      this.lot = data;
+      this.historiqueService.getByLotId(id).subscribe(h => this.historiques = h);
+      this.matchService.getByLotId(id).subscribe(m => this.matchs = m);
+    });
+  }
+
+  changerStatut(statut: string): void {
+    if (this.lot) {
+      this.lotService.changerStatut(this.lot.idLot, statut as StatutLot).subscribe({
+        next: (data) => this.lot = data,
+        error: (err) => this.errorMessage = err.error?.message || 'Erreur'
+      });
+    }
+  }
+
+  lancerMatching(): void {
+    if (this.lot) {
+      this.router.navigate(['donneur/matching'], { queryParams: { lotId: this.lot.idLot } });
+    }
+  }
+
+  getStatutClass(statut: string): string {
+    switch (statut) {
+      case 'PREDIT_DISPONIBLE':   return 'statut-disponible';
+      case 'EN_COURS_MATCHING':   return 'statut-en-cours';
+      case 'MATCH_VALIDE':        return 'statut-termine';
+      case 'ORIENTE_RECYCLAGE':   return 'statut-default';
+      default:                    return 'statut-default';
+    }
+  }
+
+  getUrgenceClass(urgence: string): string {
+    switch (urgence) {
+      case 'CRITIQUE': return 'urgence-critique';
+      case 'HAUTE':    return 'urgence-haute';
+      case 'NORMALE':  return 'urgence-normale';
+      case 'BASSE':    return 'urgence-basse';
+      default:         return 'urgence-normale';
+    }
+  }
+  fractionnerIntelligemment(): void {
+    if (this.lot) {
+      this.isLoadingIA = true;
+      this.errorMessage = '';
+      this.successMessage = '';
+
+      this.lotService.lancerSmartBatching(this.lot.idLot).subscribe({
+        next: (responseMessage) => {
+          this.successMessage = responseMessage; // Affiche le message du backend
+          this.isLoadingIA = false;
+          
+          // Magie : On rappelle ngOnInit() pour recharger le lot (qui passe en EN_COURS_MATCHING)
+          // et pour rafraîchir la liste des matchs (qui vient de se remplir !)
+          this.ngOnInit(); 
+        },
+        error: (err) => {
+          this.errorMessage = err.error || "Erreur lors du calcul de l'IA pour le fractionnement.";
+          this.isLoadingIA = false;
+        }
+      });
+    }
+  }
+}

@@ -1,0 +1,140 @@
+<div class="page-container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon orange">
+        <i class="bi bi-search"></i>
+      </div>
+      <div class="title-text">
+        <h2>Contrôle Qualité</h2>
+        <p>Vérifiez automatiquement la qualité d'un produit par photo (Computer Vision)</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="../" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Retour au centre IA
+      </a>
+    </div>
+  </div>
+
+  <div class="ai-twin-layout">
+
+    <!-- INPUT CARD -->
+    <div class="form-card">
+      <div class="form-header orange-header">
+        <div class="header-icon">
+          <i class="bi bi-card-image"></i>
+        </div>
+        <div>
+          <h3>Photo du produit</h3>
+          <p>Importez l'image du produit à vérifier</p>
+        </div>
+      </div>
+
+      <div class="form-body">
+        <div class="form-group">
+          <label class="form-label fw-bold">Image du produit</label>
+          <div class="file-upload-wrapper">
+            <input type="file" class="form-input file-input" accept="image/*" (change)="onFileSelected($event)">
+          </div>
+          <p class="form-hint"><i class="bi bi-info-circle me-1"></i>Formats : JPG, PNG</p>
+        </div>
+
+        <div *ngIf="imagePreview" class="image-preview-container mt-3">
+          <img [src]="imagePreview" class="preview-img" alt="Aperçu">
+        </div>
+
+        <button class="btn-submit orange-btn w-100 mt-4" [disabled]="!selectedFile || loading" (click)="verifier()">
+          <span *ngIf="loading" class="spinner"><i class="bi bi-arrow-repeat spin"></i></span>
+          <span *ngIf="!loading"><i class="bi bi-search me-2"></i>Vérifier la qualité</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- RESULT CARD -->
+    <div class="result-card-container">
+      <div class="form-card" *ngIf="result">
+        <div class="form-header" [ngClass]="{
+          'green-header': result.niveau === 'BONNE',
+          'orange-header': result.niveau === 'MOYENNE',
+          'red-header': result.niveau === 'MAUVAISE'
+        }">
+          <div class="header-icon">
+            <i class="bi" [ngClass]="{
+              'bi-check-circle': result.niveau === 'BONNE',
+              'bi-exclamation-triangle': result.niveau === 'MOYENNE',
+              'bi-x-octagon': result.niveau === 'MAUVAISE'
+            }"></i>
+          </div>
+          <div>
+            <h3>
+              <span *ngIf="result.niveau === 'BONNE'">Qualité BONNE</span>
+              <span *ngIf="result.niveau === 'MOYENNE'">Qualité MOYENNE</span>
+              <span *ngIf="result.niveau === 'MAUVAISE'">Qualité MAUVAISE</span>
+            </h3>
+            <p>Analyse IA terminée</p>
+          </div>
+        </div>
+
+        <div class="detail-body">
+          <div class="mb-4">
+            <label class="form-label fw-bold">Score de confiance</label>
+            <div class="progress-container">
+              <div class="progress-bar" 
+                   [style.width.%]="result.score * 100"
+                   [ngClass]="{
+                     'bg-green': result.score >= 0.8,
+                     'bg-orange': result.score >= 0.5 && result.score < 0.8,
+                     'bg-red': result.score < 0.5
+                   }">
+                {{ (result.score * 100).toFixed(0) }}%
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-row border-top pt-3">
+            <div class="detail-label">Niveau détecté</div>
+            <div class="detail-value">
+              <span class="badge-pill" [ngClass]="{
+                'cat-frais': result.niveau === 'BONNE',
+                'cat-sec': result.niveau === 'MOYENNE',
+                'urg-critique': result.niveau === 'MAUVAISE'
+              }">{{ result.niveau }}</span>
+            </div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Recommandation</div>
+            <div class="detail-value text-dark" style="max-width: 60%; text-align: right; line-height: 1.4;">
+              {{ result.recommandation }}
+            </div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Décision système</div>
+            <div class="detail-value">
+              <div class="decision-box" [ngClass]="result.niveau === 'MAUVAISE' ? 'error' : 'success'">
+                <i class="bi" [ngClass]="result.niveau === 'MAUVAISE' ? 'bi-trash3' : 'bi-arrow-right-circle'"></i>
+                {{ result.niveau === 'MAUVAISE' ? 'RECYCLAGE' : 'MATCHING' }}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- STATES -->
+      <div class="empty-state" *ngIf="!result && !error">
+        <div class="empty-icon orange-icon">
+          <i class="bi bi-search"></i>
+        </div>
+        <h5>En attente de vérification</h5>
+        <p>Veuillez uploader une photo pour lancer la détection.</p>
+      </div>
+
+      <div class="alert-error mt-4" *ngIf="error">
+        <i class="bi bi-exclamation-triangle"></i> {{ error }}
+      </div>
+    </div>
+
+  </div>
+</div>

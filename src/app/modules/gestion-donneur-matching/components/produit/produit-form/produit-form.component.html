@@ -1,0 +1,115 @@
+<div class="page-container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon">
+        <i class="bi" [ngClass]="isEditMode ? 'bi-pencil' : 'bi-plus-circle'"></i>
+      </div>
+      <div class="title-text">
+        <h2>{{ isEditMode ? 'Modifier le produit' : 'Ajouter un produit' }}</h2>
+        <p>{{ isEditMode ? 'Modifiez les informations du produit' : 'Enregistrez un nouveau produit alimentaire' }}</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/donneur/dashboard" class="btn-back me-3">
+        <i class="bi bi-arrow-left"></i> Retour au Dashboard
+      </a>
+      <a routerLink="/donneur/produits" class="btn-back">
+        <i class="bi bi-basket"></i> Retour aux produits
+      </a>
+    </div>
+  </div>
+
+  <!-- FORM CARD -->
+  <div class="form-wrapper">
+    <div class="form-card">
+
+      <!-- HEADER -->
+      <div class="form-header">
+        <div class="header-icon">
+          <i class="bi" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-basket'"></i>
+        </div>
+        <div>
+          <h3>{{ isEditMode ? 'Modifier le produit' : 'Nouveau produit' }}</h3>
+          <p>{{ isEditMode ? 'Gérer les informations du produit' : 'Remplissez les informations du produit' }}</p>
+        </div>
+      </div>
+
+      <!-- ERROR -->
+      <div *ngIf="errorMessage" class="alert-error">
+        <i class="bi bi-exclamation-circle"></i> {{ errorMessage }}
+      </div>
+
+      <!-- FORM BODY -->
+      <form (ngSubmit)="onSubmit()" #f="ngForm" class="form-body">
+
+        <!-- Code-barre -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-upc-scan me-1"></i> Code-barre
+            <span class="required">*</span>
+          </label>
+          <input type="text" class="form-input"
+                 [(ngModel)]="produit.codeBarre"
+                 name="codeBarre" required
+                 placeholder="Ex: 3017620422003"/>
+        </div>
+
+        <!-- Libellé -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-tag me-1"></i> Libellé
+            <span class="required">*</span>
+          </label>
+          <input type="text" class="form-input"
+                 [(ngModel)]="produit.libelle"
+                 name="libelle" required
+                 placeholder="Ex: Tomates fraîches 1kg"/>
+        </div>
+
+        <!-- Catégorie -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-collection me-1"></i> Catégorie
+            <span class="required">*</span>
+          </label>
+          <div class="select-wrapper">
+            <select class="form-input"
+                    [(ngModel)]="produit.categorie"
+                    name="categorie" required>
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
+            <i class="bi bi-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Poids unitaire -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-speedometer me-1"></i> Poids unitaire (kg)
+            <span class="required">*</span>
+          </label>
+          <input type="number" class="form-input"
+                 [(ngModel)]="produit.poidsUnitaire"
+                 name="poidsUnitaire" required
+                 min="0.01" step="0.01"
+                 placeholder="Ex: 1.00"/>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="form-actions mt-4">
+          <a routerLink="/donneur/produits" class="btn-cancel">
+            <i class="bi bi-x-lg me-1"></i> Annuler
+          </a>
+          <button type="submit" class="btn-submit" [disabled]="!f.valid">
+            <i class="bi" [ngClass]="isEditMode ? 'bi-check-lg' : 'bi-plus-circle'"></i>
+            {{ isEditMode ? 'Modifier' : 'Créer' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>

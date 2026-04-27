@@ -1,0 +1,183 @@
+<div class="page-container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon">
+        <i class="bi bi-archive"></i>
+      </div>
+      <div class="title-text">
+        <h2>Gestion des Lots</h2>
+        <p>Consultez, filtrez et gérez tous vos lots de dons</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/user/dashboard" class="btn-back me-3">
+        <i class="bi bi-arrow-left"></i> Retour au Dashboard
+      </a>
+      <a routerLink="/donneur/lots/nouveau" class="btn-add">
+        <i class="bi bi-plus-lg"></i> Nouveau Lot
+      </a>
+    </div>
+  </div>
+
+  <!-- SUCCESS MESSAGE -->
+  <div *ngIf="successMessage" class="alert-success-custom">
+    <i class="bi bi-check-circle"></i> {{ successMessage }}
+    <button class="btn-close-custom" (click)="successMessage=''">
+      <i class="bi bi-x"></i>
+    </button>
+  </div>
+
+  <!-- FILTRES -->
+  <div class="filters-card">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label><i class="bi bi-search me-1"></i>Rechercher</label>
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input type="text"
+                 [(ngModel)]="searchKeyword"
+                 (keyup.enter)="rechercher()"
+                 placeholder="ID Lot ou Donneur..."/>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label><i class="bi bi-funnel me-1"></i>Statut</label>
+        <select class="filter-select"
+                [(ngModel)]="selectedStatut"
+                (change)="filtrerParStatut()">
+          <option value="">Tous les statuts</option>
+          <option *ngFor="let s of statuts" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label><i class="bi bi-exclamation-triangle me-1"></i>Urgence</label>
+        <select class="filter-select"
+                [(ngModel)]="selectedUrgence"
+                (change)="filtrerParUrgence()">
+          <option value="">Toutes les urgences</option>
+          <option *ngFor="let u of urgences" [value]="u">{{ u }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>&nbsp;</label>
+        <button class="btn-reset" (click)="reinitialiser()">
+          <i class="bi bi-arrow-clockwise me-1"></i>Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <h5><i class="bi bi-list-ul me-2"></i>Liste des lots</h5>
+      <span class="total-badge">{{ lots.length }} lot(s)</span>
+    </div>
+
+    <table class="modern-table" *ngIf="lots.length > 0">
+      <thead>
+        <tr>
+          <th>#ID</th>
+          <th>Donneur</th>
+          <th>Date création</th>
+          <th>Statut</th>
+          <th>Urgence</th>
+          <th>Produits</th>
+          <th>Matchs</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let lot of paginatedLots; let i = index"
+            [style.animation-delay]="i * 0.05 + 's'">
+          <td><span class="case-id">#{{ lot.idLot }}</span></td>
+          <td>
+            <span class="badge-pill badge-donneur">
+              <i class="bi bi-person"></i>
+              Donneur #{{ lot.donneurId }}
+            </span>
+          </td>
+          <td>{{ lot.dateCreation | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <span class="badge-pill" [ngClass]="getStatutClass(lot.statut)">
+              {{ lot.statut }}
+            </span>
+          </td>
+          <td>
+            <span class="badge-pill" [ngClass]="getUrgenceClass(lot.niveauUrgence)">
+              {{ lot.niveauUrgence }}
+            </span>
+          </td>
+          <td>
+            <span class="badge-pill badge-count">
+              {{ lot.nombreProduits }}
+            </span>
+          </td>
+          <td>
+            <span class="badge-pill badge-count">
+              {{ lot.nombreMatchs }}
+            </span>
+          </td>
+          <td>
+            <div class="actions-cell">
+              <a [routerLink]="['/donneur/lots', lot.idLot]"
+                 class="btn-action view" title="Voir détail">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a [routerLink]="['/donneur/lots/modifier', lot.idLot]"
+                 class="btn-action edit" title="Modifier"
+                 *ngIf="lot.statut === 'PREDIT_DISPONIBLE'">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <button (click)="supprimer(lot.idLot)"
+                      class="btn-action delete" title="Supprimer"
+                      *ngIf="lot.statut === 'PREDIT_DISPONIBLE'">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- PAGINATION -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+      <div class="pagination-info">
+        Affichage de <b>{{ (currentPage - 1) * pageSize + 1 }}</b> à <b>{{ Math.min(currentPage * pageSize, lots.length) }}</b> sur <b>{{ lots.length }}</b> lots
+      </div>
+      <div class="pagination-controls">
+        <button class="page-nav-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        
+        <div class="page-numbers">
+          <button *ngFor="let p of pages" 
+                  class="page-number-btn" 
+                  [class.active]="p === currentPage"
+                  (click)="goToPage(p)">
+            {{ p }}
+          </button>
+        </div>
+
+        <button class="page-nav-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div *ngIf="lots.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-archive"></i>
+      </div>
+      <h5>Aucun lot trouvé</h5>
+      <p>Commencez par créer un nouveau lot de dons.</p>
+    </div>
+  </div>
+
+</div>

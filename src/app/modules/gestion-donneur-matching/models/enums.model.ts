@@ -1,0 +1,26 @@
+export enum CategorieProduit {
+  FRAIS = 'FRAIS',
+  SURGELE = 'SURGELE',
+  SEC = 'SEC'
+}
+
+export enum StatutLot {
+  PREDIT_DISPONIBLE = 'PREDIT_DISPONIBLE',
+  EN_COURS_MATCHING = 'EN_COURS_MATCHING',
+  MATCH_VALIDE = 'MATCH_VALIDE',
+  ORIENTE_RECYCLAGE = 'ORIENTE_RECYCLAGE'
+}
+
+export enum NiveauUrgence {
+  FAIBLE = 'FAIBLE',
+  MOYEN = 'MOYEN',
+  CRITIQUE = 'CRITIQUE'
+}
+
+export enum StatutMatch {
+  EN_ATTENTE_LOGISTIQUE = 'EN_ATTENTE_LOGISTIQUE',
+  CONFIRME = 'CONFIRME',
+  LIVRE = 'LIVRE',
+  REFUSE = 'REFUSE',
+  ANNULE = 'ANNULE'
+}
