@@ -5,7 +5,8 @@ import { ProduitResponse } from '../../../models/produit.model';
 
 @Component({
   selector: 'app-produit-detail',
-  templateUrl: './produit-detail.component.html'
+  templateUrl: './produit-detail.component.html',
+  styleUrls: ['./produit-detail.component.scss']
 })
 export class ProduitDetailComponent implements OnInit {
 
@@ -21,12 +22,12 @@ export class ProduitDetailComponent implements OnInit {
     this.produitService.getById(id).subscribe(data => this.produit = data);
   }
 
-  getBadgeClass(categorie: string): string {
+  getCategorieClass(categorie: string): string {
     switch (categorie) {
-      case 'FRAIS': return 'bg-success';
-      case 'SURGELE': return 'bg-info';
-      case 'SEC': return 'bg-warning text-dark';
-      default: return 'bg-secondary';
+      case 'FRAIS':   return 'cat-frais';
+      case 'SURGELE': return 'cat-surgele';
+      case 'SEC':     return 'cat-sec';
+      default:        return 'cat-default';
     }
   }
 }

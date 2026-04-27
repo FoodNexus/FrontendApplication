@@ -6,7 +6,8 @@ import { CategorieProduit } from '../../../models/enums.model';
 
 @Component({
   selector: 'app-produit-form',
-  templateUrl: './produit-form.component.html'
+  templateUrl: './produit-form.component.html',
+  styleUrls: ['./produit-form.component.scss']
 })
 export class ProduitFormComponent implements OnInit {
 

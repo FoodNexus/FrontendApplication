@@ -1,56 +1,166 @@
-<div class="row mb-3">
-  <div class="col-md-6"><h2><i class="bi bi-link-45deg me-2"></i>Matchs</h2></div>
-  <div class="col-md-6 text-end">
-    <a routerLink="../matching/lancer" class="btn btn-danger">
-      <i class="bi bi-cpu me-1"></i>Lancer un matching
-    </a>
-  </div>
-</div>
+<div class="page-container">
 
-<div class="alert alert-success alert-dismissible" *ngIf="successMessage">
-  {{ successMessage }}
-  <button type="button" class="btn-close" (click)="successMessage=''"></button>
-</div>
-
-<div class="row mb-3">
-  <div class="col-md-4">
-    <select class="form-select" [(ngModel)]="selectedStatut" (change)="filtrerParStatut()">
-      <option value="">Tous les statuts</option>
-      <option *ngFor="let s of statuts" [value]="s">{{ s }}</option>
-    </select>
-  </div>
-</div>
-
-<div class="card">
-  <div class="card-body p-0">
-    <div class="table-responsive">
-      <table class="table table-striped table-hover mb-0">
-        <thead class="table-dark">
-          <tr><th>ID</th><th>Lot</th><th>Receveur</th><th>Quantité</th><th>Score</th><th>Date</th><th>Statut</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let m of matchs">
-            <td>{{ m.idMatch }}</td>
-            <td><a [routerLink]="['../lots', m.lotId]">Lot #{{ m.lotId }}</a></td>
-            <td>Receveur #{{ m.idReceveur }}</td>
-            <td>{{ m.quantiteAllouee }}</td>
-            <td><span class="badge bg-primary">{{ m.scoreMatching }}</span></td>
-            <td>{{ m.dateMatch | date:'dd/MM/yyyy HH:mm' }}</td>
-            <td><span class="badge" [ngClass]="getStatutBadge(m.statutMatch)">{{ m.statutMatch }}</span></td>
-            <td>
-              <div class="btn-group btn-group-sm">
-                <a [routerLink]="['../matchs', m.idMatch]" class="btn btn-outline-primary"><i class="bi bi-eye"></i></a>
-                <button class="btn btn-outline-success" (click)="changerStatut(m.idMatch, 'CONFIRME')" *ngIf="m.statutMatch === 'EN_ATTENTE_LOGISTIQUE'" title="Confirmer"><i class="bi bi-check-lg"></i></button>
-                <button class="btn btn-outline-info" (click)="changerStatut(m.idMatch, 'LIVRE')" *ngIf="m.statutMatch === 'CONFIRME'" title="Livré"><i class="bi bi-truck"></i></button>
-                <button class="btn btn-outline-danger" (click)="changerStatut(m.idMatch, 'REFUSE')" *ngIf="m.statutMatch === 'EN_ATTENTE_LOGISTIQUE'" title="Refuser"><i class="bi bi-x-lg"></i></button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="matchs.length === 0">
-            <td colspan="8" class="text-center text-muted py-4">Aucun match</td>
-          </tr>
-        </tbody>
-      </table>
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon">
+        <i class="bi bi-link-45deg"></i>
+      </div>
+      <div class="title-text">
+        <h2>Gestion des Matchs</h2>
+        <p>Consultez, filtrez et gérez tous les matchs créés</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/donneur/dashboard" class="btn-back me-3">
+        <i class="bi bi-speedometer2"></i> Retour au Dashboard
+      </a>
+      <a routerLink="../matching" class="btn-add">
+        <i class="bi bi-cpu"></i> Lancer un matching
+      </a>
     </div>
   </div>
+
+  <!-- SUCCESS MESSAGE -->
+  <div *ngIf="successMessage" class="alert-success-custom">
+    <i class="bi bi-check-circle"></i> {{ successMessage }}
+    <button class="btn-close-custom" (click)="successMessage=''">
+      <i class="bi bi-x"></i>
+    </button>
+  </div>
+
+  <!-- FILTRES -->
+  <div class="filters-card">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label><i class="bi bi-search me-1"></i>Rechercher</label>
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input type="text"
+                 [(ngModel)]="searchKeyword"
+                 (keyup.enter)="rechercher()"
+                 placeholder="ID Match, Lot ou Receveur..."/>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label><i class="bi bi-funnel me-1"></i>Statut</label>
+        <select class="filter-select"
+                [(ngModel)]="selectedStatut"
+                (change)="filtrerParStatut()">
+          <option value="">Tous les statuts</option>
+          <option *ngFor="let s of statuts" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <h5><i class="bi bi-list-ul me-2"></i>Liste des matchs</h5>
+      <span class="total-badge">{{ matchs.length }} match(s)</span>
+    </div>
+
+    <table class="modern-table" *ngIf="matchs.length > 0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Lot</th>
+          <th>Receveur</th>
+          <th>Quantité</th>
+          <th>Score</th>
+          <th>Date</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let m of paginatedMatchs; let i = index"
+            [style.animation-delay]="i * 0.05 + 's'">
+          <td><span class="case-id">#{{ m.idMatch }}</span></td>
+          <td>
+            <a [routerLink]="['../lots', m.lotId]" class="case-id-link">
+              Lot #{{ m.lotId }}
+            </a>
+          </td>
+          <td>
+            <span class="badge-pill badge-donneur">
+              <i class="bi bi-person"></i>
+              Receveur #{{ m.idReceveur }}
+            </span>
+          </td>
+          <td><span class="badge-pill badge-count">{{ m.quantiteAllouee }}</span></td>
+          <td><span class="badge-pill statut-disponible">{{ m.scoreMatching }}</span></td>
+          <td>{{ m.dateMatch | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <span class="badge-pill" [ngClass]="getStatutClass(m.statutMatch)">
+              {{ m.statutMatch }}
+            </span>
+          </td>
+          <td>
+            <div class="actions-cell">
+              <a [routerLink]="['../matchs', m.idMatch]"
+                 class="btn-action view" title="Voir">
+                <i class="bi bi-eye"></i>
+              </a>
+              <button class="btn-action confirm"
+                      (click)="changerStatut(m.idMatch, 'CONFIRME')"
+                      *ngIf="m.statutMatch === 'EN_ATTENTE_LOGISTIQUE'"
+                      title="Confirmer">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <button class="btn-action deliver"
+                      (click)="changerStatut(m.idMatch, 'LIVRE')"
+                      *ngIf="m.statutMatch === 'CONFIRME'"
+                      title="Livré">
+                <i class="bi bi-truck"></i>
+              </button>
+              <button class="btn-action delete"
+                      (click)="changerStatut(m.idMatch, 'REFUSE')"
+                      *ngIf="m.statutMatch === 'EN_ATTENTE_LOGISTIQUE'"
+                      title="Refuser">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- PAGINATION -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+      <div class="pagination-info">
+        Affichage de <b>{{ (currentPage - 1) * pageSize + 1 }}</b> à <b>{{ Math.min(currentPage * pageSize, matchs.length) }}</b> sur <b>{{ matchs.length }}</b> matchs
+      </div>
+      <div class="pagination-controls">
+        <button class="page-nav-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        
+        <div class="page-numbers">
+          <button *ngFor="let p of pages" 
+                  class="page-number-btn" 
+                  [class.active]="p === currentPage"
+                  (click)="goToPage(p)">
+            {{ p }}
+          </button>
+        </div>
+
+        <button class="page-nav-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div *ngIf="matchs.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-link-45deg"></i>
+      </div>
+      <h5>Aucun match trouvé</h5>
+      <p>Lancez un matching pour créer des matchs</p>
+    </div>
+  </div>
+
 </div>

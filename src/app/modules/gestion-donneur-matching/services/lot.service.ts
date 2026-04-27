@@ -57,4 +57,10 @@ export class LotService {
   getDisponiblesPourMatching(): Observable<LotResponse[]> {
     return this.http.get<LotResponse[]>(`${this.baseUrl}/disponibles-matching`);
   }
+
+  lancerSmartBatching(idLot: number): Observable<string> {
+    // On utilise le port 8082 comme le reste de ton API
+    const matchingUrl = 'http://localhost:8082/api/matching/fractionner';
+    return this.http.post(`${matchingUrl}/${idLot}`, {}, { responseType: 'text' });
+  }
 }

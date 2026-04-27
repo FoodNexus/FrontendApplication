@@ -1,53 +1,123 @@
-<div class="row">
-  <div class="col-md-8 mx-auto">
-    <div class="card">
-      <div class="card-header bg-info text-white">
-        <h4 class="mb-0">
-          <i class="bi me-2" [ngClass]="isEditMode ? 'bi-pencil' : 'bi-plus-circle'"></i>
-          {{ isEditMode ? 'Modifier' : 'Ajouter un produit à un lot' }}
-        </h4>
+<div class="page-container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon">
+        <i class="bi" [ngClass]="isEditMode ? 'bi-pencil' : 'bi-plus-circle'"></i>
       </div>
-      <div class="card-body">
-        <div class="alert alert-danger" *ngIf="errorMessage">
-          <i class="bi bi-exclamation-triangle me-2"></i>{{ errorMessage }}
+      <div class="title-text">
+        <h2>{{ isEditMode ? 'Modifier l\'entrée' : 'Ajouter un produit à un lot' }}</h2>
+        <p>{{ isEditMode ? 'Modifiez les informations de l\'historique' : 'Associez un produit à un lot avec quantité et péremption' }}</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/donneur/dashboard" class="btn-back me-3">
+        <i class="bi bi-arrow-left"></i> Retour au Dashboard
+      </a>
+      <a routerLink="/donneur/historiques" class="btn-back">
+        <i class="bi bi-list-task"></i> Retour aux historiques
+      </a>
+    </div>
+  </div>
+
+  <!-- FORM CARD -->
+  <div class="form-wrapper">
+    <div class="form-card">
+
+      <!-- HEADER -->
+      <div class="form-header">
+        <div class="header-icon">
+          <i class="bi" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-clock-history'"></i>
         </div>
-        <form (ngSubmit)="onSubmit()" #f="ngForm">
-          <div class="mb-3">
-            <label class="form-label fw-bold">Lot *</label>
-            <select class="form-select" [(ngModel)]="historique.lotId" name="lotId" required>
+        <div>
+          <h3>{{ isEditMode ? 'Modifier' : 'Nouvel historique' }}</h3>
+          <p>{{ isEditMode ? 'Gérer les informations' : 'Enregistrer un produit dans un lot' }}</p>
+        </div>
+      </div>
+
+      <!-- ERROR -->
+      <div *ngIf="errorMessage" class="alert-error">
+        <i class="bi bi-exclamation-circle"></i> {{ errorMessage }}
+      </div>
+
+      <!-- FORM BODY -->
+      <form (ngSubmit)="onSubmit()" #f="ngForm" class="form-body">
+
+        <!-- Lot -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-archive me-1"></i> Lot
+            <span class="required">*</span>
+          </label>
+          <div class="select-wrapper">
+            <select class="form-input"
+                    [(ngModel)]="historique.lotId"
+                    name="lotId" required>
               <option [value]="0" disabled>-- Sélectionner --</option>
               <option *ngFor="let lot of lots" [value]="lot.idLot">
                 Lot #{{ lot.idLot }} — {{ lot.statut }} ({{ lot.niveauUrgence }})
               </option>
             </select>
+            <i class="bi bi-chevron-down select-arrow"></i>
           </div>
-          <div class="mb-3">
-            <label class="form-label fw-bold">Produit *</label>
-            <select class="form-select" [(ngModel)]="historique.produitId" name="produitId" required>
+        </div>
+
+        <!-- Produit -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-basket me-1"></i> Produit
+            <span class="required">*</span>
+          </label>
+          <div class="select-wrapper">
+            <select class="form-input"
+                    [(ngModel)]="historique.produitId"
+                    name="produitId" required>
               <option [value]="0" disabled>-- Sélectionner --</option>
               <option *ngFor="let p of produits" [value]="p.idProduit">
                 {{ p.libelle }} ({{ p.categorie }})
               </option>
             </select>
+            <i class="bi bi-chevron-down select-arrow"></i>
           </div>
-          <div class="mb-3">
-            <label class="form-label fw-bold">Quantité *</label>
-            <input type="number" class="form-control" [(ngModel)]="historique.quantite" name="quantite" required min="1">
-          </div>
-          <div class="mb-3">
-            <label class="form-label fw-bold">Date de péremption *</label>
-            <input type="datetime-local" class="form-control" [(ngModel)]="historique.datePeremptionExacte" name="datePeremptionExacte" required>
-          </div>
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-info text-white" [disabled]="!f.valid">
-              {{ isEditMode ? 'Modifier' : 'Ajouter' }}
-            </button>
-            <a routerLink="../../historiques" class="btn btn-secondary">
-              <i class="bi bi-arrow-left me-1"></i>Annuler
-            </a>
-          </div>
-        </form>
-      </div>
+        </div>
+
+        <!-- Quantité -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-boxes me-1"></i> Quantité
+            <span class="required">*</span>
+          </label>
+          <input type="number" class="form-input"
+                 [(ngModel)]="historique.quantite"
+                 name="quantite" required min="1"
+                 placeholder="Ex: 10"/>
+        </div>
+
+        <!-- Date de péremption -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-calendar-event me-1"></i> Date de péremption
+            <span class="required">*</span>
+          </label>
+          <input type="datetime-local" class="form-input"
+                 [(ngModel)]="historique.datePeremptionExacte"
+                 name="datePeremptionExacte" required/>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="form-actions mt-4">
+          <a routerLink="/donneur/historiques" class="btn-cancel">
+            <i class="bi bi-x-lg me-1"></i> Annuler
+          </a>
+          <button type="submit" class="btn-submit" [disabled]="!f.valid">
+            <i class="bi" [ngClass]="isEditMode ? 'bi-check-lg' : 'bi-plus-circle'"></i>
+            {{ isEditMode ? 'Modifier' : 'Ajouter' }}
+          </button>
+        </div>
+
+      </form>
     </div>
   </div>
+
 </div>
