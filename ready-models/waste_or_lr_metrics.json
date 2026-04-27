@@ -1,0 +1,9 @@
+{
+  "data_root": "D:\\FrontendApplication\\notebooks\\archive\\DATASET",
+  "val_fraction": 0.1,
+  "epochs": 8,
+  "test_loss": 0.1565953790935826,
+  "test_accuracy": 0.9458814166335058,
+  "device": "cpu",
+  "onnx": "D:\\FrontendApplication\\ready-models\\waste_or_lr.onnx"
+}

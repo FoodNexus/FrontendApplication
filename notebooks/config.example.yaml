@@ -1,0 +1,24 @@
+# Copy to config.yaml and adjust paths if needed
+# TRAIN/O, TRAIN/R, TEST/O, TEST/R directly under this path (relative to notebooks/)
+data_root: "archive"
+# Trained export (onnx, json) — project root. Override with: python train_and_export.py --output-dir "D:/path"
+output_dir: "../ready-models"
+
+# Optional human names for API / UI (folder names O,R stay as class ids)
+class_display_names:
+  O: "O"
+  R: "R"
+
+training:
+  image_size: 224
+  batch_size: 32
+  num_workers: 2
+  epochs: 12
+  learning_rate: 0.0003
+  val_fraction: 0.1
+  seed: 42
+  backbone: "resnet18" # resnet18 | resnet34
+
+export:
+  onnx_opset: 17
+  model_basename: "waste_or_lr"

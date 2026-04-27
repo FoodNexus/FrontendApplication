@@ -37,6 +37,7 @@
             <button class="btn btn-danger" (click)="switchTab('admin')">Gérer les Utilisateurs</button>
             <a routerLink="/audit/contracts" class="btn btn-outline-danger">Contrats Numériques</a>
             <a routerLink="/user/admin/recycler-verification" class="btn btn-outline-warning">Validation NutriFlow</a>
+            <a routerLink="/audit/nutriflow-dossier-summary" class="btn btn-outline-danger">Synthèse NutriFlow (audit)</a>
           </div>
         </div>
       </div>
@@ -77,20 +78,125 @@
         <div class="card-body">
           <p>Vérifiez les dossiers d'inspection et le statut de recyclage.</p>
           <a routerLink="/audit/inspection-cases" class="btn btn-primary me-2">Dossiers d'Inspection</a>
-          <a routerLink="/audit/recycling-products" class="btn btn-outline-primary">Produits Recyclés</a>
+          <a routerLink="/audit/recycling-products" class="btn btn-outline-primary me-2">Produits Recyclés</a>
+          <a routerLink="/audit/nutriflow-dossier-summary" class="btn btn-outline-primary">Synthèse NutriFlow</a>
         </div>
       </div>
     </div>
 
     <!-- Recycler Dashboard -->
-    <div class="col-md-6" *ngIf="hasRole('RECYCLER')">
-      <div class="card border-secondary shadow-sm mb-4">
+    <div class="col-12 recycler-dashboard-section" *ngIf="hasRole('RECYCLER')">
+      <div class="card border-secondary shadow-sm mb-3">
         <div class="card-header bg-secondary text-white">VALORISATION - Recyclage</div>
         <div class="card-body">
           <p>Suivez les demandes, crédits et flux NutriFlow (offres publiées par les donateurs).</p>
-          <a routerLink="/valorisation/nutriflow" class="btn btn-secondary">Espace NutriFlow recycleur</a>
+          <div class="d-flex flex-wrap gap-2">
+            <a routerLink="/valorisation/nutriflow" class="btn btn-secondary">Espace NutriFlow recycleur</a>
+            <a routerLink="/valorisation/nutriflow/requests" class="btn btn-outline-secondary">Mes demandes</a>
+          </div>
         </div>
       </div>
+      <div class="card border-secondary shadow-sm mb-4 recycler-dashboard-video-card">
+        <div class="card-header bg-secondary bg-opacity-10 text-secondary border-secondary">
+          Présentation NutriFlow
+        </div>
+        <div class="card-body p-0">
+          <div class="ratio ratio-16x9 recycler-dashboard-video">
+            <iframe
+              [src]="nutriflowRecyclerVideoUrl"
+              title="NutriFlow — présentation recycleur"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+              loading="eager"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+
+      <article class="recycler-article card border-0 shadow-sm mb-4 overflow-hidden">
+        <div class="recycler-article__hero px-4 py-4 px-lg-5 py-lg-5">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+              <p class="recycler-article__eyebrow text-uppercase small fw-semibold mb-2">
+                <i class="bi bi-recycle me-2"></i>Engagement recycleur
+              </p>
+              <h2 class="h3 fw-bold text-white mb-3">Pourquoi le recyclage des matières organiques compte</h2>
+              <p class="text-white opacity-75 mb-0 lead recycler-article__lead">
+                Transformer les invendus et déchets alimentaires en ressources, c’est réduire le gaspillage,
+                protéger les sols et l’eau, et créer de la valeur pour les territoires. NutriFlow vous place au
+                cœur de cette chaîne responsable.
+              </p>
+            </div>
+            <div class="col-lg-5">
+              <ul class="list-unstyled mb-0 recycler-article__highlights">
+                <li>
+                  <i class="bi bi-droplet-half"></i>
+                  <span><strong>Moins de mise en décharge</strong> — les flux valorisés limitent les émissions et la pollution des nappes.</span>
+                </li>
+                <li>
+                  <i class="bi bi-lightning-charge"></i>
+                  <span><strong>Économie circulaire</strong> — compost, méthanisation ou alimentation animale réinjectent la matière dans le vivant.</span>
+                </li>
+                <li>
+                  <i class="bi bi-people"></i>
+                  <span><strong>Confiance des donneurs</strong> — traçabilité et partenaires reconnus renforcent la qualité perçue de vos opérations.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-4 p-lg-5 recycler-article__body">
+          <p class="mb-3">
+            Chaque tonne correctement orientée évite des pertes nutritives et des GES inutiles. En tant que recycleur,
+            votre rôle est d’assurer des filières fiables, documentées et conformes — c’est exactement ce que visent les
+            échanges NutriFlow entre donateurs, transporteurs et auditeurs.
+          </p>
+          <p class="mb-0 text-muted small">
+            <i class="bi bi-info-circle me-1"></i>
+            Ces rappels s’inscrivent dans une démarche de sensibilisation ; adaptez vos procédures aux réglementations locales.
+          </p>
+        </div>
+      </article>
+
+      <section class="recycler-partners card border-0 shadow-sm mb-4" aria-labelledby="recycler-partners-heading">
+        <div class="recycler-partners__bar px-4 py-3">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <h3 id="recycler-partners-heading" class="h5 mb-0 text-white fw-bold">
+              <i class="bi bi-handshake me-2"></i>Partenaires valorisation &amp; recyclage
+            </h3>
+            <span class="badge recycler-partners__badge rounded-pill">Réseau international</span>
+          </div>
+          <p class="small text-white opacity-75 mb-0 mt-2">
+            Exemples d’acteurs majeurs avec lesquels des projets de type NutriFlow sont souvent articulés (données illustratives).
+          </p>
+        </div>
+        <div class="card-body p-3 p-md-4">
+          <div class="row g-3">
+            <div class="col-sm-6 col-xl-4" *ngFor="let p of recyclerPartners">
+              <div class="recycler-partner-card h-100">
+                <div class="recycler-partner-card__avatar" aria-hidden="true">{{ p.name.charAt(0) }}</div>
+                <div class="recycler-partner-card__main">
+                  <div class="fw-bold text-dark">{{ p.name }}</div>
+                  <div class="small text-muted mb-2">{{ p.country }}</div>
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="recycler-partner-card__stars" [attr.aria-label]="'Note ' + p.rating + ' sur 5'">
+                      <i
+                        *ngFor="let i of starIndexes"
+                        class="bi recycler-partner-card__star"
+                        [ngClass]="partnerStarClass(p.rating, i)"
+                      ></i>
+                    </span>
+                    <span class="recycler-partner-card__score">{{ p.rating | number : '1.1-1' }} / 5</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-muted small mb-0 mt-3 text-center">
+            Notes indicatives à titre d’exemple — non contractuelles.
+          </p>
+        </div>
+      </section>
     </div>
   </div>
 

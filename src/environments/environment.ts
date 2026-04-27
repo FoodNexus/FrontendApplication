@@ -8,5 +8,7 @@ export const environment = {
   apiAuditUrl: 'http://localhost:8083',
   apiReceveurUrl: 'http://localhost:8084',
   /** Hub NutriFlow (optionnel) : synchro lots / demandes / crédits entre navigateurs. Laisser vide pour désactiver. */
-  nutriflowHubBaseUrl: 'http://localhost:8095'
+  nutriflowHubBaseUrl: 'http://localhost:8095',
+  /** Service inférence ONNX (nutriflow-onnx-api). Laisser vide pour désactiver les appels. */
+  nutriflowInferenceUrl: 'http://localhost:8096'
 };

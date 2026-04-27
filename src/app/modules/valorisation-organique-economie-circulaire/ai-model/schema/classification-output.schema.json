@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nutriflow.local/schema/classification-output.json",
+  "title": "NutriFlowClassificationOutput",
+  "description": "Sortie structurée commune : assistant donateur, enrichissement lot, audit, reco recycleur.",
+  "type": "object",
+  "required": ["schemaVersion", "sourceTextHash", "categories", "filieres", "confidence"],
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1.0" },
+    "sourceTextHash": {
+      "type": "string",
+      "description": "Hash du texte source (ou id stable) pour la traçabilité"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "score"],
+        "properties": {
+          "label": { "type": "string" },
+          "score": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "filieres": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "score"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "ex. COMPOST, METHANISATION, ALIMENTATION_ANIMALE"
+          },
+          "score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confiance globale du modèle sur cette prédiction"
+    },
+    "flags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Alertes ex. REVIEW_REGLEMENTATION, MIXED_WASTE"
+    },
+    "modelVersion": { "type": "string" },
+    "validatedByUser": { "type": "boolean", "description": "Rempli côté app après validation donateur" }
+  }
+}

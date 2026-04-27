@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AuthGuard } from '../gestion-user/guards/auth.guard';
 import { ValorisationDashboardLayoutComponent } from './components/valorisation-dashboard-layout.component';
 import { ValorisationWorkspaceComponent } from './components/valorisation-workspace.component';
 import { RecyclablesCrudComponent } from './components/recyclables-crud.component';
@@ -8,6 +7,7 @@ import { StoreRecycleRequestsComponent } from './components/store-recycle-reques
 import { NutriFlowRecyclerShellComponent } from './components/nutriflow-recycler-shell.component';
 import { DonorValorisationShellComponent } from './components/donor-valorisation-shell.component';
 import { DonorValorisationWorkspaceComponent } from './components/donor-valorisation-workspace.component';
+import { NutriFlowImageClassifyComponent } from './components/nutriflow-image-classify.component';
 import { RecyclerRequestsComponent } from './components/recycler-requests.component';
 import { NutriFlowRecyclerHomeComponent } from './components/nutriflow-recycler-home.component';
 const routes: Routes = [
@@ -40,7 +40,10 @@ const routes: Routes = [
   {
     path: 'nutriflow-donor',
     component: DonorValorisationShellComponent,
-    children: [{ path: '', component: DonorValorisationWorkspaceComponent }]
+    children: [
+      { path: '', component: DonorValorisationWorkspaceComponent },
+      { path: 'classify-photo', component: NutriFlowImageClassifyComponent }
+    ]
   },
   { path: 'recycler-front', redirectTo: 'nutriflow', pathMatch: 'full' },
   { path: 'store-requests', component: StoreRecycleRequestsComponent }

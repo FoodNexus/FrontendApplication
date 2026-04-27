@@ -19,9 +19,17 @@ export interface DonorLotRecord {
   category: string;
   quantityKg: number;
   location: string;
+  /** Photo lot (aperçu recycleur) — URL ou data URL réduite. */
   imageUrl?: string;
   /** listed = visible recycleurs ; paused = masqué */
   listingStatus: 'listed' | 'paused';
+  /** Résumé texte de l’analyse image (donateur → recycleur). */
+  classificationDescription?: string;
+  /** Filières suggérées par l’IA, lignes lisibles (ex. « Méthanisation — 64 % »). */
+  classificationFilieres?: string[];
+  /** Parts estimées par l’IA (0–100), si analyse image effectuée. */
+  aiRecyclablePercent?: number;
+  aiOrganicPercent?: number;
 }
 
 function normalizeDonorLotRecord(raw: DonorLotRecord): DonorLotRecord {
@@ -35,7 +43,13 @@ function normalizeDonorLotRecord(raw: DonorLotRecord): DonorLotRecord {
     donorUserKey: raw.donorUserKey ?? '',
     name: raw.name ?? '',
     category: raw.category ?? '',
-    location: raw.location ?? ''
+    location: raw.location ?? '',
+    classificationDescription: raw.classificationDescription,
+    classificationFilieres: raw.classificationFilieres,
+    aiRecyclablePercent:
+      raw.aiRecyclablePercent != null ? Math.max(0, Math.min(100, Number(raw.aiRecyclablePercent))) : undefined,
+    aiOrganicPercent:
+      raw.aiOrganicPercent != null ? Math.max(0, Math.min(100, Number(raw.aiOrganicPercent))) : undefined
   };
 }
 

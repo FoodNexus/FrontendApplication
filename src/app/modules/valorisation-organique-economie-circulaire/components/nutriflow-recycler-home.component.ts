@@ -13,8 +13,8 @@ import { RecyclerCreditsDashboardComponent } from './recycler-credits-dashboard.
       <app-recycler-credits-dashboard *ngIf="isRecyclerCreditsUser" />
 
       <div class="row g-3 mt-1">
-        <div class="col-12" *ngIf="isRecyclerCreditsUser">
-          <div class="card border-success border-opacity-25 shadow-sm">
+        <div class="col-12 col-lg-6" *ngIf="isRecyclerCreditsUser">
+          <div class="card border-success border-opacity-25 shadow-sm h-100">
             <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
               <div>
                 <h3 class="h5 mb-1 text-success">Continuer vers vos demandes</h3>

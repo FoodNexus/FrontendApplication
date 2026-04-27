@@ -7,5 +7,7 @@ export const environment = {
   apiDonneurUrl: 'http://localhost:8082',
   apiAuditUrl: 'http://localhost:8083',
   apiReceveurUrl: 'http://localhost:8084',
-  nutriflowHubBaseUrl: ''
+  nutriflowHubBaseUrl: '',
+  /** Définir l’URL du service ONNX en prod (ou laisser vide si indisponible). */
+  nutriflowInferenceUrl: ''
 };

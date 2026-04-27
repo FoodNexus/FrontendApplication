@@ -80,6 +80,16 @@ const routes: Routes = [
       .then(m => m.DigitalContractPdfComponent)
   },
 
+  {
+    path: 'nutriflow-dossier-summary',
+    canActivate: [AuthGuard],
+    data: { roles: ['AUDITOR', 'ADMIN'] },
+    loadComponent: () =>
+      import('./components/nutriflow-dossier-summary/nutriflow-dossier-summary.component').then(
+        (m) => m.NutriflowDossierSummaryComponent
+      )
+  },
+
   // Default
   { path: '', redirectTo: 'inspection-cases', pathMatch: 'full' }
 ];

@@ -1,0 +1,8 @@
+# Drop the unpacked dataset here; do not commit images
+archive/**
+!archive/.gitkeep
+!archive/README.md
+
+# Training outputs
+artifacts/
+_smoke_dataset/

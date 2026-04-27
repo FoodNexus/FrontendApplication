@@ -1,6 +1,7 @@
 import { Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { catchError } from 'rxjs/operators';
 import { forkJoin, of } from 'rxjs';
@@ -22,6 +23,8 @@ import {
   saveRecyclerRequests
 } from '../storage/recycler-operations.storage';
 import { NUTRIFLOW_HUB_PULLED_EVENT } from '../services/nutriflow-hub-sync.service';
+import { NutriflowInferenceService } from '../services/nutriflow-inference.service';
+import type { NutriflowClassificationResult } from '../services/nutriflow-inference.service';
 
 @Component({
   selector: 'app-donor-valorisation-workspace',
@@ -30,16 +33,46 @@ import { NUTRIFLOW_HUB_PULLED_EVENT } from '../services/nutriflow-hub-sync.servi
   template: `
     <section class="mb-4">
       <div class="p-4 rounded text-white hero">
-        <h2 class="h4 mb-1">Espace donateur NutriFlow</h2>
-        <p class="mb-0 small opacity-90">
-          Choisissez un <strong>lot matching</strong> (module donneur), publiez-le pour les recycleurs, puis
-          <strong>acceptez ou refusez</strong> leurs demandes.
-        </p>
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+          <div>
+            <h2 class="h4 mb-1">Espace donateur NutriFlow</h2>
+            <p class="mb-0 small opacity-90">
+              Publiez vos lots et traitez les demandes des recycleurs.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
 
-    <div class="row g-4">
-      <div class="col-lg-5">
+    <div class="row g-4 mb-4">
+      <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100 donor-side-panel">
+          <div class="card-body p-3 d-flex flex-column">
+            <h3 class="h6 fw-semibold text-success mb-2">
+              <i class="bi bi-play-btn me-1"></i>Présentation NutriFlow
+            </h3>
+            <div class="donor-video-wrap w-100">
+              <div class="ratio ratio-16x9 rounded overflow-hidden border shadow-sm">
+                <iframe
+                  [src]="donorIntroVideoUrl"
+                  title="NutriFlow — présentation"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen
+                  loading="lazy"
+                ></iframe>
+              </div>
+            </div>
+            <div class="mt-3 p-3 rounded bg-success bg-opacity-10 border border-success border-opacity-25 flex-grow-1">
+              <p class="small text-muted mb-0">
+                Ajoutez une photo lors de la publication : nous estimons la part recyclable et organique, et les filières
+                possibles, visibles par les recycleurs.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
         <div class="card shadow-sm h-100 publish-lot-card">
           <div class="card-header bg-white fw-semibold">
             <i class="bi bi-plus-circle me-2 text-success"></i>Publier un lot pour le recyclage
@@ -48,7 +81,6 @@ import { NUTRIFLOW_HUB_PULLED_EVENT } from '../services/nutriflow-hub-sync.servi
             <div *ngIf="formError" class="alert alert-warning small py-2 mb-3">{{ formError }}</div>
             <div *ngIf="formSuccess" class="alert alert-success small py-2 mb-3">{{ formSuccess }}</div>
             <div *ngIf="matchingError" class="alert alert-danger small py-2 mb-3">{{ matchingError }}</div>
-            <div *ngIf="matchingLotsInfo" class="alert alert-info small py-2 mb-3">{{ matchingLotsInfo }}</div>
             <div *ngIf="loadingMatching" class="text-muted small mb-3">Chargement de vos lots…</div>
 
             <form novalidate (ngSubmit)="publishLot()" class="vstack gap-3" *ngIf="!loadingMatching">
@@ -108,23 +140,64 @@ import { NUTRIFLOW_HUB_PULLED_EVENT } from '../services/nutriflow-hub-sync.servi
                 />
               </div>
               <div>
-                <label class="form-label small">Image (URL, optionnel)</label>
-                <input class="form-control form-control-sm" [(ngModel)]="publishDraft.imageUrl" name="pubImg" />
+                <label class="form-label small">Photo du déchet (recommandé)</label>
+                <input
+                  type="file"
+                  class="form-control form-control-sm"
+                  accept="image/*"
+                  (change)="onWastePhotoSelected($event)"
+                />
+                <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
+                  <button
+                    type="button"
+                    class="btn btn-outline-success btn-sm"
+                    [disabled]="!photoFile || photoAnalyzing"
+                    (click)="runPhotoAnalysis()"
+                  >
+                    <span *ngIf="!photoAnalyzing"><i class="bi bi-search me-1"></i>Analyser la photo</span>
+                    <span *ngIf="photoAnalyzing" class="spinner-border spinner-border-sm" role="status"></span>
+                    <span *ngIf="photoAnalyzing" class="ms-1">Analyse…</span>
+                  </button>
+                  <span *ngIf="photoFile && !photoAnalysis && !photoAnalyzing" class="text-warning small"
+                    >Analysez la photo avant publication.</span
+                  >
+                </div>
+                <p *ngIf="photoError" class="text-danger small mt-2 mb-0">{{ photoError }}</p>
+              </div>
+              <div *ngIf="photoAnalysis" class="border rounded p-3 bg-light small">
+                <p class="fw-semibold text-success mb-2">Aperçu de l’analyse (sera visible par les recycleurs)</p>
+                <div class="mb-2">
+                  <div class="d-flex justify-content-between"><span>Recyclable</span><strong>{{ aiRecyclablePct() }} %</strong></div>
+                  <div class="progress" style="height: 8px">
+                    <div class="progress-bar bg-success" [style.width.%]="aiRecyclablePct()"></div>
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <div class="d-flex justify-content-between"><span>Organique</span><strong>{{ aiOrganicPct() }} %</strong></div>
+                  <div class="progress bg-light" style="height: 8px">
+                    <div class="progress-bar bg-secondary" [style.width.%]="aiOrganicPct()"></div>
+                  </div>
+                </div>
+                <p class="mb-0">{{ aiSummaryForDonor() }}</p>
+                <ul *ngIf="photoAnalysis.filieres?.length" class="mb-0 ps-3">
+                  <li *ngFor="let f of photoAnalysis.filieres">
+                    {{ filiereDisplay(f.code) }} — {{ filierePct(f.score) }} %
+                    <span *ngIf="f.notes" class="text-muted">({{ f.notes }})</span>
+                  </li>
+                </ul>
               </div>
               <button type="submit" class="btn btn-success btn-sm" [disabled]="matchingLots.length === 0">
                 Publier pour les recycleurs
               </button>
             </form>
-            <p class="text-muted small mt-3 mb-0">
-              Les recycleurs voient uniquement les lots <strong>publiés</strong> ici (stockage navigateur + hub
-              NutriFlow si activé). La quantité diminue après votre <strong>acceptation</strong> d’une demande.
-            </p>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="col-lg-7">
-        <div class="card shadow-sm mb-4">
+    <div class="row g-4">
+      <div class="col-12">
+        <div class="card shadow-sm">
           <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
             <span><i class="bi bi-inbox me-2 text-warning"></i>Demandes recycleurs (à traiter)</span>
             <span class="badge bg-warning text-dark">{{ pendingIncoming.length }}</span>
@@ -168,7 +241,9 @@ import { NUTRIFLOW_HUB_PULLED_EVENT } from '../services/nutriflow-hub-sync.servi
             </div>
           </div>
         </div>
+      </div>
 
+      <div class="col-12">
         <div class="card shadow-sm">
           <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
             <span><i class="bi bi-box-seam me-2 text-success"></i>Mes offres recyclage</span>
@@ -176,13 +251,15 @@ import { NUTRIFLOW_HUB_PULLED_EVENT } from '../services/nutriflow-hub-sync.servi
           </div>
           <div class="card-body p-0">
             <div *ngIf="myLots.length === 0" class="p-4 text-muted small">
-              Aucune offre publiée. Sélectionnez un lot matching à gauche.
+              Aucune offre publiée. Sélectionnez un lot matching ci-dessus.
             </div>
             <div class="table-responsive" *ngIf="myLots.length > 0">
               <table class="table table-sm mb-0 align-middle">
                 <thead class="table-light">
                   <tr>
                     <th>Nom</th>
+                    <th>Catégorie</th>
+                    <th>Filières</th>
                     <th>Matching</th>
                     <th>Stock (kg)</th>
                     <th>Lieu</th>
@@ -193,6 +270,8 @@ import { NUTRIFLOW_HUB_PULLED_EVENT } from '../services/nutriflow-hub-sync.servi
                 <tbody>
                   <tr *ngFor="let lot of myLots">
                     <td>{{ lot.name }}</td>
+                    <td class="small">{{ lot.category }}</td>
+                    <td class="small text-muted">{{ filieresLabel(lot) }}</td>
                     <td>
                       <span *ngIf="lot.matchingLotId != null" class="badge bg-light text-dark border"
                         >#{{ lot.matchingLotId }}</span
@@ -245,6 +324,17 @@ import { NUTRIFLOW_HUB_PULLED_EVENT } from '../services/nutriflow-hub-sync.servi
       .lot-picker-wrap .form-select {
         cursor: pointer;
       }
+      .donor-video-wrap {
+        max-width: 340px;
+      }
+      @media (min-width: 992px) {
+        .donor-video-wrap {
+          max-width: 100%;
+        }
+      }
+      .donor-side-panel iframe {
+        border: 0;
+      }
     `
   ]
 })
@@ -256,16 +346,27 @@ export class DonorValorisationWorkspaceComponent implements OnInit, OnDestroy {
   matchingLots: LotResponse[] = [];
   loadingMatching = false;
   matchingError = '';
-  /** Explication si on affiche tous les lots (donneurId ≠ idUser profil). */
-  matchingLotsInfo = '';
   selectedMatchingLotId: number | null = null;
+  readonly donorIntroVideoUrl: SafeResourceUrl;
   /** Native select inside grid/card can fail to open in some browsers — custom menu instead. */
   lotPickerOpen = false;
 
   publishDraft = {
     quantityKg: 1,
-    location: '',
-    imageUrl: ''
+    location: ''
+  };
+
+  /** Photo à envoyer au modèle (publication lot). */
+  photoFile: File | null = null;
+  photoAnalysis: NutriflowClassificationResult | null = null;
+  photoAnalyzing = false;
+  photoError = '';
+
+  private static readonly FILIERE_LABELS: Record<string, string> = {
+    METHANISATION: 'Méthanisation',
+    COMPOST: 'Compostage',
+    TRI_SELECTIF: 'Tri sélectif (recyclage)',
+    VALORISATION_MATIERE: 'Valorisation des matériaux'
   };
 
   formError = '';
@@ -288,8 +389,151 @@ export class DonorValorisationWorkspaceComponent implements OnInit, OnDestroy {
   constructor(
     private auth: AuthService,
     private lotService: LotService,
-    private ngZone: NgZone
-  ) {}
+    private ngZone: NgZone,
+    private inference: NutriflowInferenceService,
+    sanitizer: DomSanitizer
+  ) {
+    this.donorIntroVideoUrl = sanitizer.bypassSecurityTrustResourceUrl(
+      'https://www.youtube.com/embed/xpAnLXc_bIU?rel=0&modestbranding=1&playsinline=1'
+    );
+  }
+
+  filieresLabel(lot: DonorLotRecord): string {
+    const f = lot.classificationFilieres;
+    return f?.length ? f.join(', ') : '—';
+  }
+
+  onWastePhotoSelected(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    this.photoFile = input.files?.[0] ?? null;
+    this.photoAnalysis = null;
+    this.photoError = '';
+  }
+
+  runPhotoAnalysis(): void {
+    if (!this.photoFile) {
+      return;
+    }
+    this.photoAnalyzing = true;
+    this.photoError = '';
+    this.inference.classifyImage(this.photoFile).subscribe({
+      next: (r) => {
+        this.photoAnalysis = r;
+        this.photoAnalyzing = false;
+      },
+      error: (e) => {
+        this.photoAnalyzing = false;
+        this.photoError =
+          e?.error?.detail ?? e?.message ?? "L'analyse n'a pas pu aboutir. Réessayez plus tard.";
+      }
+    });
+  }
+
+  aiRecyclablePct(): number {
+    return this.pctFromAnalysis('R');
+  }
+
+  aiOrganicPct(): number {
+    return this.pctFromAnalysis('O');
+  }
+
+  private pctFromAnalysis(code: string): number {
+    const c = this.photoAnalysis?.categories.find((x) => x.label.toUpperCase() === code.toUpperCase());
+    return c != null ? Math.round(c.score * 1000) / 10 : 0;
+  }
+
+  filiereDisplay(code: string): string {
+    const k = (code ?? '').toUpperCase();
+    if (DonorValorisationWorkspaceComponent.FILIERE_LABELS[k]) {
+      return DonorValorisationWorkspaceComponent.FILIERE_LABELS[k];
+    }
+    return k
+      .split('_')
+      .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  filierePct(score: number): number {
+    return Math.round(Math.min(1, Math.max(0, score)) * 1000) / 10;
+  }
+
+  aiSummaryForDonor(): string {
+    const r = this.aiRecyclablePct();
+    const o = this.aiOrganicPct();
+    if (r >= o && r - o >= 15) {
+      return 'Estimation : plutôt recyclable — vérifiez l’emballage ou les consignes locales.';
+    }
+    if (o >= r && o - r >= 15) {
+      return 'Estimation : plutôt organique — évitez de mélanger avec le recyclage si vous doutez.';
+    }
+    return 'Estimation : cas limite entre recyclable et organique — demandez conseil localement.';
+  }
+
+  private buildAiForLot():
+    | {
+        description: string;
+        filieres: string[];
+        rPct: number;
+        oPct: number;
+      }
+    | undefined {
+    if (!this.photoAnalysis) {
+      return undefined;
+    }
+    const rPct = this.aiRecyclablePct();
+    const oPct = this.aiOrganicPct();
+    const filieres = (this.photoAnalysis.filieres ?? []).map(
+      (f) => `${this.filiereDisplay(f.code)} — ${this.filierePct(f.score)} %`
+    );
+    return {
+      description: this.aiSummaryForDonor(),
+      filieres,
+      rPct,
+      oPct
+    };
+  }
+
+  private async fileToResizedDataUrl(file: File): Promise<string | undefined> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const u = URL.createObjectURL(file);
+      img.onload = (): void => {
+        URL.revokeObjectURL(u);
+        const maxW = 480;
+        let w = img.naturalWidth || img.width;
+        let h = img.naturalHeight || img.height;
+        if (w <= 0 || h <= 0) {
+          resolve(undefined);
+          return;
+        }
+        if (w > maxW) {
+          h = (h * maxW) / w;
+          w = maxW;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(w);
+        canvas.height = Math.round(h);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(undefined);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.75));
+      };
+      img.onerror = (): void => {
+        URL.revokeObjectURL(u);
+        resolve(undefined);
+      };
+      img.src = u;
+    });
+  }
+
+  private clearPhotoState(): void {
+    this.photoFile = null;
+    this.photoAnalysis = null;
+    this.photoError = '';
+  }
 
   get selectedLotSummary(): string {
     if (this.selectedMatchingLotId == null) {
@@ -361,12 +605,10 @@ export class DonorValorisationWorkspaceComponent implements OnInit, OnDestroy {
     const u = this.auth.getCurrentUser();
     if (!u?.idUser) {
       this.matchingLots = [];
-      this.matchingLotsInfo = '';
       return;
     }
     this.loadingMatching = true;
     this.matchingError = '';
-    this.matchingLotsInfo = '';
     const idUser = Number(u.idUser);
 
     forkJoin({
@@ -385,9 +627,6 @@ export class DonorValorisationWorkspaceComponent implements OnInit, OnDestroy {
             rows = mine;
           } else if ((all ?? []).length > 0) {
             rows = all ?? [];
-            this.matchingLotsInfo =
-              `Vos lots en base n’utilisent pas donneurId = ${idUser} (id profil NutriFlow). ` +
-              `Tous les lots sont listés pour publication — pour un filtre automatique, créez vos lots avec « ID du Donneur » = ${idUser} dans le module donneur.`;
           }
         }
 
@@ -433,7 +672,7 @@ export class DonorValorisationWorkspaceComponent implements OnInit, OnDestroy {
       .sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
   }
 
-  publishLot(): void {
+  async publishLot(): Promise<void> {
     this.formError = '';
     this.formSuccess = '';
 
@@ -467,9 +706,32 @@ export class DonorValorisationWorkspaceComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.photoFile && !this.photoAnalysis) {
+      this.formError = 'Cliquez sur « Analyser la photo » avant de publier, ou retirez la photo.';
+      return;
+    }
+
     try {
       const lots = loadAllDonorLots();
       const existingIdx = lots.findIndex((l) => l.donorUserKey === key && l.matchingLotId === lot.idLot);
+      const prev = existingIdx >= 0 ? lots[existingIdx] : null;
+
+      let imageUrl: string | undefined;
+      if (this.photoFile) {
+        imageUrl = (await this.fileToResizedDataUrl(this.photoFile)) ?? undefined;
+      } else if (prev?.imageUrl) {
+        imageUrl = prev.imageUrl;
+      }
+
+      const ai = this.photoFile ? this.buildAiForLot() : undefined;
+
+      const aiDescription = ai?.description ?? prev?.classificationDescription;
+      const aiFilieres =
+        ai?.filieres ??
+        (prev?.classificationFilieres?.length ? [...prev.classificationFilieres] : undefined);
+      const aiRPct = ai?.rPct ?? prev?.aiRecyclablePercent;
+      const aiOPct = ai?.oPct ?? prev?.aiOrganicPercent;
+
       const name = `Lot matching #${lot.idLot} (${lot.nombreProduits} produit(s))`;
       const category = String(lot.niveauUrgence ?? 'LOT_DONATEUR');
 
@@ -481,8 +743,12 @@ export class DonorValorisationWorkspaceComponent implements OnInit, OnDestroy {
         category,
         quantityKg: qty,
         location,
-        imageUrl: (this.publishDraft.imageUrl ?? '').trim() || undefined,
-        listingStatus: 'listed'
+        imageUrl,
+        listingStatus: 'listed',
+        classificationDescription: aiDescription,
+        classificationFilieres: aiFilieres,
+        aiRecyclablePercent: aiRPct,
+        aiOrganicPercent: aiOPct
       };
 
       if (existingIdx >= 0) {
@@ -491,6 +757,7 @@ export class DonorValorisationWorkspaceComponent implements OnInit, OnDestroy {
         lots.push(record);
       }
       saveAllDonorLots(lots);
+      this.clearPhotoState();
       this.reload();
       this.formSuccess = 'Lot publié : visible par les recycleurs.';
       window.setTimeout(() => (this.formSuccess = ''), 4000);

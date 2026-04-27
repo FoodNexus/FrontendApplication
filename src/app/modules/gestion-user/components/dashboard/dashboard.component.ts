@@ -1,7 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+
+/** Grands acteurs du recyclage — données de démonstration (notes illustratives). */
+interface RecyclerPartnerHighlight {
+  name: string;
+  country: string;
+  /** Note sur 5 (ex. partenariat / qualité perçue). */
+  rating: number;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -29,11 +38,30 @@ export class DashboardComponent implements OnInit {
   passMessage = '';
   passError = '';
 
+  /** Présentation NutriFlow recycleur (lecture auto demandée au chargement du dashboard). */
+  readonly nutriflowRecyclerVideoUrl: SafeResourceUrl;
+
+  readonly recyclerPartners: RecyclerPartnerHighlight[] = [
+    { name: 'Veolia', country: 'France', rating: 4.7 },
+    { name: 'Suez', country: 'France', rating: 4.5 },
+    { name: 'Republic Services', country: 'États-Unis', rating: 4.6 },
+    { name: 'Waste Management', country: 'États-Unis', rating: 4.8 },
+    { name: 'Renewi', country: 'Pays-Bas', rating: 4.4 },
+    { name: 'Biffa', country: 'Royaume-Uni', rating: 4.3 }
+  ];
+
+  readonly starIndexes = [1, 2, 3, 4, 5] as const;
+
   constructor(
     private authService: AuthService,
     private fb: FormBuilder,
-    private router: Router
-  ) {}
+    private router: Router,
+    sanitizer: DomSanitizer
+  ) {
+    this.nutriflowRecyclerVideoUrl = sanitizer.bypassSecurityTrustResourceUrl(
+      'https://www.youtube.com/embed/xpAnLXc_bIU?autoplay=1&mute=0&rel=0&modestbranding=1&playsinline=1'
+    );
+  }
 
   ngOnInit(): void {
     if (this.authService.isLoggedIn()) {
@@ -161,5 +189,15 @@ export class DashboardComponent implements OnInit {
 
   hasRole(role: string): boolean {
     return this.roles.includes(role.toUpperCase());
+  }
+
+  partnerStarClass(rating: number, starIndex: number): string {
+    if (rating >= starIndex) {
+      return 'bi-star-fill';
+    }
+    if (rating >= starIndex - 0.5) {
+      return 'bi-star-half';
+    }
+    return 'bi-star';
   }
 }

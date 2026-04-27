@@ -1,0 +1,22 @@
+# See config.example.yaml for all options
+# Unpacked dataset: TRAIN/O, TRAIN/R, TEST/O, TEST/R under data_root (see config.yaml)
+data_root: "archive"
+output_dir: "../ready-models"
+
+class_display_names:
+  O: "O"
+  R: "R"
+
+training:
+  image_size: 224
+  batch_size: 16
+  num_workers: 0
+  epochs: 8
+  learning_rate: 0.0003
+  val_fraction: 0.1
+  seed: 42
+  backbone: "resnet18"
+
+export:
+  onnx_opset: 17
+  model_basename: "waste_or_lr"

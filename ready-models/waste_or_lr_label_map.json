@@ -1,0 +1,18 @@
+{
+  "class_to_index": {
+    "O": 0,
+    "R": 1
+  },
+  "index_to_class": {
+    "0": "O",
+    "1": "R"
+  },
+  "display_name_by_folder": {
+    "O": "O",
+    "R": "R"
+  },
+  "backbone": "resnet18",
+  "image_size": 224,
+  "input_layout": "NCHW",
+  "normalize": "imagenet"
+}

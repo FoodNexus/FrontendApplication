@@ -27,6 +27,11 @@ export interface RecyclableProduct {
   /** Lot publié par un donateur (voir donor-lots.storage). */
   donorLotId?: number;
   donorUserKey?: string;
+  /** Analyse image du donateur (affichage recycleur). */
+  donorAiRecyclablePercent?: number;
+  donorAiOrganicPercent?: number;
+  donorAiFilieres?: string[];
+  donorAiDescription?: string;
 }
 
 export interface RecyclerRequest {

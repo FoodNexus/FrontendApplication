@@ -1,6 +1,7 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { DatePipe, DecimalPipe, NgClass, NgFor, NgIf } from '@angular/common';
+import { DatePipe, DecimalPipe, NgClass, NgFor, NgIf, SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import {
   loadRecyclerRequests,
   RecyclableProduct,
@@ -31,6 +32,8 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
     FormsModule,
     DecimalPipe,
     DatePipe,
+    RouterLink,
+    SlicePipe,
     RecyclerRequestsStatsPanelComponent
   ],
   template: `
@@ -128,13 +131,42 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
 
                 <label>
                   Lot donateur disponible
-                  <select name="productId" [(ngModel)]="draft.productId" required>
+                  <select
+                    name="productId"
+                    [(ngModel)]="draft.productId"
+                    (ngModelChange)="onProductPickChange()"
+                    required
+                  >
                     <option [ngValue]="null" disabled>Sélectionnez un lot publié</option>
                     <option *ngFor="let p of requestableProducts; trackBy: trackByProductRow" [ngValue]="p.id">
                       {{ productOptionLabel(p) }}
                     </option>
                   </select>
                 </label>
+                <div *ngIf="selectedProductWithAi() as sp" class="donor-lot-ai-preview">
+                  <p class="donor-lot-ai-preview__title">Aperçu donateur (analyse photo)</p>
+                  <p *ngIf="sp.donorAiDescription" class="donor-lot-ai-preview__desc small mb-2">{{ sp.donorAiDescription }}</p>
+                  <ng-container *ngIf="sp.donorAiRecyclablePercent != null">
+                    <div class="d-flex justify-content-between align-items-baseline small mb-1">
+                      <span>Recyclable</span><strong>{{ sp.donorAiRecyclablePercent }}&nbsp;%</strong>
+                    </div>
+                    <div class="progress thin mb-2" style="height: 6px">
+                      <div class="progress-bar bg-success" [style.width.%]="sp.donorAiRecyclablePercent"></div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-baseline small mb-1">
+                      <span>Organique</span><strong>{{ sp.donorAiOrganicPercent ?? 0 }}&nbsp;%</strong>
+                    </div>
+                    <div class="progress thin mb-0 bg-light" style="height: 6px">
+                      <div
+                        class="progress-bar bg-secondary"
+                        [style.width.%]="sp.donorAiOrganicPercent ?? 0"
+                      ></div>
+                    </div>
+                  </ng-container>
+                  <ul *ngIf="sp.donorAiFilieres?.length" class="donor-lot-ai-preview__fil small mb-0">
+                    <li *ngFor="let line of sp.donorAiFilieres">{{ line }}</li>
+                  </ul>
+                </div>
                 <p *ngIf="isAdminUser" class="field-hint">
                   Liste : lots <strong>listés</strong> avec stock &gt; 0. Filtrez par donateur pour réduire la liste.
                 </p>
@@ -316,6 +348,26 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
     .page-shell {
       display: grid;
       gap: 1rem;
+    }
+
+    .donor-lot-ai-preview {
+      margin-top: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      border: 1px solid rgba(25, 135, 84, 0.28);
+      background: rgba(25, 135, 84, 0.07);
+    }
+
+    .donor-lot-ai-preview__title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin: 0 0 0.35rem;
+      color: #166534;
+    }
+
+    .donor-lot-ai-preview__fil {
+      margin-top: 0.5rem;
+      padding-left: 1.1rem;
     }
 
     .workspace-with-aside {
@@ -839,6 +891,25 @@ export class RecyclerRequestsComponent implements OnInit, OnDestroy {
     return list;
   }
 
+  protected onProductPickChange(): void {}
+
+  /** Lot sélectionné dans le formulaire, si l’offre contient une analyse IA à montrer au recycleur. */
+  protected selectedProductWithAi(): RecyclableProduct | null {
+    const id = this.draft.productId;
+    if (id == null) {
+      return null;
+    }
+    const p = this.requestableProducts.find((x) => x.id === id);
+    if (!p) {
+      return null;
+    }
+    const hasData =
+      p.donorAiRecyclablePercent != null ||
+      (p.donorAiFilieres != null && p.donorAiFilieres.length > 0) ||
+      !!p.donorAiDescription?.trim();
+    return hasData ? p : null;
+  }
+
   protected userDirectoryLabel(u: { prenom?: string; nom?: string; email?: string }): string {
     const name = `${u.prenom ?? ''} ${u.nom ?? ''}`.trim();
     return name || (u.email as string) || 'Utilisateur';
@@ -1192,7 +1263,11 @@ export class RecyclerRequestsComponent implements OnInit, OnDestroy {
       status: 'available',
       imageUrl: lot.imageUrl ?? '',
       donorLotId: lot.id,
-      donorUserKey: lot.donorUserKey
+      donorUserKey: lot.donorUserKey,
+      donorAiRecyclablePercent: lot.aiRecyclablePercent,
+      donorAiOrganicPercent: lot.aiOrganicPercent,
+      donorAiFilieres: lot.classificationFilieres,
+      donorAiDescription: lot.classificationDescription
     }));
   }
 

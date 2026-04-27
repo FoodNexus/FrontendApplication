@@ -1,0 +1,22 @@
+{
+  "data_root": "D:\\FrontendApplication\\notebooks\\archive\\DATASET",
+  "output_dir": "D:\\FrontendApplication\\ready-models",
+  "class_to_idx": {
+    "O": 0,
+    "R": 1
+  },
+  "training": {
+    "image_size": 224,
+    "batch_size": 16,
+    "num_workers": 0,
+    "epochs": 8,
+    "learning_rate": 0.0003,
+    "val_fraction": 0.1,
+    "seed": 42,
+    "backbone": "resnet18"
+  },
+  "export": {
+    "onnx_opset": 17,
+    "model_basename": "waste_or_lr"
+  }
+}
