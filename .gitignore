@@ -29,17 +29,17 @@ yarn-error.log
 .history/*
 
 # ML exports (use Git LFS if you need binaries in the repo)
-/ready-models/**/*.onnx
-/ready-models/**/*.pth
-/ready-models/**/*.pt
-/ready-models/**/*.pkl
-/ready-models/**/*.bin
+**/ai-model/ready-models/**/*.onnx
+**/ai-model/ready-models/**/*.pth
+**/ai-model/ready-models/**/*.pt
+**/ai-model/ready-models/**/*.pkl
+**/ai-model/ready-models/**/*.bin
 
 # Training data (local only)
-notebooks/archive/**/*.jpg
-notebooks/archive/**/*.jpeg
-notebooks/archive/**/*.png
-notebooks/archive/**/*.webp
+**/ai-model/notebooks/archive/**/*.jpg
+**/ai-model/notebooks/archive/**/*.jpeg
+**/ai-model/notebooks/archive/**/*.png
+**/ai-model/notebooks/archive/**/*.webp
 
 # Miscellaneous
 /.angular/cache

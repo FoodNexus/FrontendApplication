@@ -8,7 +8,7 @@ Layout (under --data-root):
 Prerequisite: run `clean_dataset.py` on the same root.
 
 Usage:
-  cd notebooks
+  cd src/app/modules/valorisation-organique-economie-circulaire/ai-model/notebooks
   copy config.example.yaml config.yaml
   python train_and_export.py
   python train_and_export.py --data-root "C:/Users/reell/Downloads/archive"

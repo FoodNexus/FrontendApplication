@@ -14,7 +14,7 @@ archive/
 ```
 
 ```powershell
-cd notebooks
+cd src/app/modules/valorisation-organique-economie-circulaire/ai-model/notebooks
 pip install -r requirements.txt
 py -3 clean_dataset.py --root ./archive
 py -3 train_and_export.py

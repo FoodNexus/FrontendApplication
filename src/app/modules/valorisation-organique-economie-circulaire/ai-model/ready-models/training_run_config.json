@@ -1,6 +1,6 @@
 {
-  "data_root": "D:\\FrontendApplication\\notebooks\\archive\\DATASET",
-  "output_dir": "D:\\FrontendApplication\\ready-models",
+  "data_root": "D:\\FrontendApplication\\src\\app\\modules\\valorisation-organique-economie-circulaire\\ai-model\\notebooks\\archive\\DATASET",
+  "output_dir": "D:\\FrontendApplication\\src\\app\\modules\\valorisation-organique-economie-circulaire\\ai-model\\ready-models",
   "class_to_idx": {
     "O": 0,
     "R": 1

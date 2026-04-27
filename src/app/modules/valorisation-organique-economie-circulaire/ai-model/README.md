@@ -1,1 +1,1 @@
-Contrat JSON pour les réponses NutriFlow (`schema/`). Modèles ONNX : `ready-models/`. Inférence HTTP : dossier `/` **`nutriflow-onnx-api`** à la racine du dépôt (voir `main.py`).
+Contrat JSON pour les réponses NutriFlow (`schema/`). Dans ce dossier : entraînement `notebooks/`, exports ONNX `ready-models/`, service HTTP `nutriflow-onnx-api/` (voir `nutriflow-onnx-api/main.py`).

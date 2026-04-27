@@ -1,9 +1,9 @@
 """
 NutriFlow — inference HTTP service (ONNX).
-Loads waste_or_lr.onnx + label map from ../ready-models by default.
+Loads waste_or_lr.onnx + label map from ready-models/ (sibling of this folder under ai-model).
 
-Run from repo root:
-  cd nutriflow-onnx-api
+Run from the FrontendApplication repo root:
+  cd src/app/modules/valorisation-organique-economie-circulaire/ai-model/nutriflow-onnx-api
   py -3 -m pip install -r requirements.txt
   py -3 -m uvicorn main:app --host 0.0.0.0 --port 8096 --reload
 """
