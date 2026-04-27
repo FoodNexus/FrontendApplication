@@ -26,6 +26,12 @@ const routes: Routes = [
     loadComponent: () => import('./components/inspection-case/inspection-case-form/inspection-case-form.component')
       .then(m => m.InspectionCaseFormComponent)
   },
+  {
+    path: 'inspection-cases/ai-scan',
+    canActivate: [AuthGuard],
+    data: { roles: ['AUDITOR'] },
+    loadComponent: () => import('./components/inspection-case/ai-scanner/ai.component').then(m => m.AiScannerComponent)
+  },
 
   // RecyclingProducts
   {
@@ -90,8 +96,18 @@ const routes: Routes = [
       )
   },
 
-  // Default
-  { path: '', redirectTo: 'inspection-cases', pathMatch: 'full' }
+  // Audit Statistics Dashboard
+  {
+    path: 'statistics',
+    canActivate: [AuthGuard],
+    data: { roles: ['AUDITOR'] },
+    loadComponent: () => import('./components/audit-stats/audit-stats.component')
+      .then(m => m.AuditStatsComponent)
+  },
+
+  // Redirect old dashboard level to main user dashboard to avoid broken links
+  { path: 'dashboard', redirectTo: '/user/dashboard', pathMatch: 'full' },
+  { path: '', redirectTo: '/user/dashboard', pathMatch: 'full' }
 ];
 
 @NgModule({

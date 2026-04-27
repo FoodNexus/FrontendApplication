@@ -12,6 +12,7 @@
       </div>
     </div>
     <div class="header-actions">
+      <app-notification-bell class="me-3"></app-notification-bell>
       <a routerLink="/user/dashboard" class="btn-back me-3">
         <i class="bi bi-arrow-left"></i> Retour au Tableau de bord
       </a>
@@ -35,9 +36,27 @@
   <div *ngIf="!loading" class="table-card">
     <div class="table-header">
       <h5><i class="bi bi-list-ul me-2"></i>Liste des produits recyclés</h5>
+      <div class="header-filters">
+        <div class="filter-box">
+          <i class="bi bi-geo-alt"></i>
+          <select [(ngModel)]="selectedDestination" (change)="onSearch()" class="filter-select">
+            <option value="">Toutes les destinations</option>
+            <option *ngFor="let d of destinationOptions" [value]="d">
+              {{ d }}
+            </option>
+          </select>
+        </div>
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input type="text"
+                 [(ngModel)]="searchTerm"
+                 (ngModelChange)="onSearch()"
+                 placeholder="Rechercher..."/>
+        </div>
+      </div>
     </div>
 
-    <table class="modern-table" *ngIf="products.length > 0">
+    <table class="modern-table" *ngIf="paginatedProducts.length > 0">
       <thead>
         <tr>
           <th>#ID</th>
@@ -49,7 +68,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let product of products; let i = index"
+        <tr *ngFor="let product of paginatedProducts; let i = index"
             [style.animation-delay]="i * 0.05 + 's'">
           <td><span class="case-id">#{{ product.logId }}</span></td>
           <td><span class="case-id">#{{ product.inspectionCase?.caseId }}</span></td>
@@ -89,11 +108,34 @@
       </tbody>
     </table>
 
+    <!-- PAGINATION -->
+    <div class="pagination-footer" *ngIf="filteredProducts.length > pageSize">
+      <div class="pagination-info">
+        Affichage de {{ (currentPage - 1) * pageSize + 1 }} à
+        {{ currentPage * pageSize > filteredProducts.length ? filteredProducts.length : currentPage * pageSize }}
+        sur {{ filteredProducts.length }} produits
+      </div>
+      <div class="pagination-nav">
+        <button [disabled]="currentPage === 1" (click)="prevPage()" class="btn-nav">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button *ngFor="let p of pages"
+                [class.active]="p === currentPage"
+                (click)="setPage(p)"
+                class="btn-page">
+          {{ p }}
+        </button>
+        <button [disabled]="currentPage === totalPages" (click)="nextPage()" class="btn-nav">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
     <div *ngIf="nutriFlowVerified.length > 0" class="table-header mt-4">
       <h5><i class="bi bi-recycle me-2"></i>Produits recyclés — NutriFlow (validés admin)</h5>
       <p class="small text-muted mb-0">
         Ces lignes proviennent du module valorisation (demandes recycleur validées sur
-        <code>/user/admin/recycler-verification</code>), pas de l’API dossiers d’inspection.
+        <code>/user/admin/recycler-verification</code>), pas de l'API dossiers d'inspection.
       </p>
     </div>
 
@@ -125,12 +167,15 @@
     </table>
 
     <!-- EMPTY STATE -->
-    <div *ngIf="products.length === 0 && nutriFlowVerified.length === 0" class="empty-state">
+    <div *ngIf="paginatedProducts.length === 0 && nutriFlowVerified.length === 0" class="empty-state">
       <div class="empty-icon">
         <i class="bi bi-box-seam"></i>
       </div>
       <h5>Aucun produit recyclé</h5>
-      <p>Soit aucun dossier d’inspection n’a encore de produit recyclé en base audit, soit aucune opération NutriFlow n’a été validée par l’admin.</p>
+      <p>
+        Soit aucun dossier d'inspection n'a encore de produit en base audit et aucune opération NutriFlow n'a été validée
+        par l'admin, soit modifiez vos filtres ou lancez un nouveau recyclage.
+      </p>
     </div>
   </div>
 

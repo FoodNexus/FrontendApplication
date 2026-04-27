@@ -1,11 +1,9 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { RecyclingProducts } 
-  from '../../../models/recycling-products.model';
-import { RecyclingProductsService } 
-  from '../../../services/recycling-products.service';
-
+import { FormsModule } from '@angular/forms';
+import { RecyclingProducts, Destination } from '../../../models/recycling-products.model';
+import { RecyclingProductsService } from '../../../services/recycling-products.service';
 import { AuthService } from '../../../../gestion-user/services/auth.service';
 import {
   loadRecyclerRequests,
@@ -13,11 +11,12 @@ import {
   RecyclerRequest
 } from '../../../../valorisation-organique-economie-circulaire/storage/recycler-operations.storage';
 import { NUTRIFLOW_HUB_PULLED_EVENT } from '../../../../valorisation-organique-economie-circulaire/services/nutriflow-hub-sync.service';
+import { NotificationBellComponent } from '../../notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-recycling-products-list',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule, NotificationBellComponent],
   templateUrl: './recycling-products-list.component.html',
   styleUrls: ['./recycling-products-list.component.scss']
 })
@@ -25,10 +24,19 @@ export class RecyclingProductsListComponent implements OnInit, OnDestroy {
 
   /** Dossiers issus du microservice audit (port 8083). */
   products: RecyclingProducts[] = [];
-  /** Opérations NutriFlow validées par l’admin app (stockage local / hub), hors API inspection. */
+  /** Opérations NutriFlow validées par l'admin (stockage local / hub), hors API inspection. */
   nutriFlowVerified: RecyclerRequest[] = [];
+  filteredProducts: RecyclingProducts[] = [];
   loading = false;
   errorMessage = '';
+  searchTerm = '';
+  selectedDestination = '';
+
+  // Pagination
+  currentPage = 1;
+  pageSize = 6;
+
+  destinationOptions = Object.values(Destination);
 
   private readonly onNutriFlowStorageChanged = (): void => {
     this.ngZone.run(() => this.refreshNutriFlow());
@@ -46,9 +54,9 @@ export class RecyclingProductsListComponent implements OnInit, OnDestroy {
       window.addEventListener(RECYCLER_REQUESTS_CHANGED_EVENT, this.onNutriFlowStorageChanged);
     }
     if (!this.authService.getCurrentUser()) {
-       this.authService.fetchUserProfile().subscribe(() => this.loadAll());
+      this.authService.fetchUserProfile().subscribe(() => this.loadAll());
     } else {
-       this.loadAll();
+      this.loadAll();
     }
   }
 
@@ -64,17 +72,21 @@ export class RecyclingProductsListComponent implements OnInit, OnDestroy {
     this.service.getAll().subscribe({
       next: (data) => {
         const user = this.authService.getCurrentUser();
-        if (this.authService.hasRole('ADMIN')) {
-          this.products = data || [];
-        } else {
-          this.products = (data || []).filter(p => p.inspectionCase?.auditorId === user?.idUser);
+        let results = data || [];
+
+        if (!this.authService.hasRole('ADMIN')) {
+          results = results.filter(p => p.inspectionCase?.auditorId === user?.idUser);
         }
+
+        this.products = results.sort((a, b) => b.logId! - a.logId!);
+        this.filter();
         this.loading = false;
         this.refreshNutriFlow();
       },
       error: () => {
         this.errorMessage = 'Erreur de chargement des produits liés aux dossiers d’inspection (API audit). Les opérations NutriFlow validées s’affichent tout de même ci‑dessous si disponibles.';
         this.products = [];
+        this.filter();
         this.loading = false;
         this.refreshNutriFlow();
       }
@@ -89,6 +101,50 @@ export class RecyclingProductsListComponent implements OnInit, OnDestroy {
           (b.verifiedAt ?? '').localeCompare(a.verifiedAt ?? '') ||
           b.requestedAt.getTime() - a.requestedAt.getTime()
       );
+  }
+
+  onSearch(): void {
+    this.currentPage = 1;
+    this.filter();
+  }
+
+  filter(): void {
+    const term = this.searchTerm.toLowerCase();
+    this.filteredProducts = this.products.filter(p => {
+      const matchSearch = p.inspectionCase?.description?.toLowerCase().includes(term) ||
+        p.logId?.toString().includes(term);
+      const matchDest = !this.selectedDestination || p.destination === this.selectedDestination;
+      return matchSearch && matchDest;
+    });
+  }
+
+  get paginatedProducts(): RecyclingProducts[] {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    return this.filteredProducts.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredProducts.length / this.pageSize) || 1;
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  setPage(page: number): void {
+    this.currentPage = page;
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
   }
 
   delete(id: number): void {

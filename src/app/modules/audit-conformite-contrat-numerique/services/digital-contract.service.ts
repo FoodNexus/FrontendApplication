@@ -32,9 +32,9 @@ export class DigitalContractService {
     );
   }
 
-  getByDelivery(deliveryId: number): Observable<DigitalContract> {
+  getByDelivery(delevry_to: string): Observable<DigitalContract> {
     return this.http.get<DigitalContract>(
-      `${this.apiUrl}/delivery/${deliveryId}`
+      `${this.apiUrl}/delivery/${delevry_to}`
     );
   }
 

@@ -42,7 +42,7 @@ export class DigitalContractFormComponent implements OnInit {
       fiscalDeductionValue: ['', [Validators.required, Validators.min(0)]],
       donorName:   ['', Validators.required],
       receiverName: ['', Validators.required],
-      deliveryId:  [null, Validators.required],
+      delevry_to:  ['', Validators.required],
       status:      [null]
     });
 

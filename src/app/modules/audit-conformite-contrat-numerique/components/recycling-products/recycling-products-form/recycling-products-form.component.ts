@@ -45,7 +45,7 @@ export class RecyclingProductsFormComponent implements OnInit {
 
     this.form = this.fb.group({
       description: [null],
-      deliveryId:  [null],
+      delevry_to:  [''],
       weight:      [null, [Validators.required, Validators.min(0.1)]],
       destination: [null, Validators.required]
     });
@@ -58,11 +58,11 @@ export class RecyclingProductsFormComponent implements OnInit {
         error: () => this.errorMessage = 'Erreur de chargement'
       });
     } else {
-      // Pour la création, description et deliveryId sont obligatoires pour générer le dossier parent
+      // Pour la création, description et delevry_to sont obligatoires pour générer le dossier parent
       this.form.get('description')?.setValidators(Validators.required);
-      this.form.get('deliveryId')?.setValidators(Validators.required);
+      this.form.get('delevry_to')?.setValidators(Validators.required);
       this.form.get('description')?.updateValueAndValidity();
-      this.form.get('deliveryId')?.updateValueAndValidity();
+      this.form.get('delevry_to')?.updateValueAndValidity();
     }
   }
 
@@ -82,10 +82,10 @@ export class RecyclingProductsFormComponent implements OnInit {
     } else {
       // 1. Créer le dossier d'inspection d'abord
       const currentUser = this.authService.getCurrentUser();
-      const inspectionData: InspectionCase = {
+      const inspectionData: any = {
         description: data.description,
         sanitaryVerdict: SanitaryVerdict.DESTRUCTION_RECYCLAGE,
-        deliveryId: data.deliveryId,
+        delevry_to: data.delevry_to,
         auditorId: currentUser?.idUser
       };
 

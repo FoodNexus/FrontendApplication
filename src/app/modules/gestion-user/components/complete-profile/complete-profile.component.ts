@@ -55,7 +55,7 @@ export class CompleteProfileComponent implements OnInit {
 
   initForm(user: any) {
     this.profileForm = this.fb.group({
-      telephone: [user?.telephone || '', Validators.required],
+      telephone: [user?.telephone || '', [Validators.required, Validators.pattern('^[0-9]{8,15}$')]],
       role: ['', Validators.required],
       
       // Donneur
@@ -93,8 +93,14 @@ export class CompleteProfileComponent implements OnInit {
 
     this.loading = true;
     this.authService.updateProfile(this.authService.getCurrentUser().idUser, this.profileForm.value).subscribe({
-      next: () => {
+      next: async () => {
         this.loading = false;
+        // Force le refresh du token Keycloak pour inclure le nouveau rôle realm
+        try {
+          await this.authService.refreshToken();
+        } catch (e) {
+          console.warn('Token refresh failed, user may need to re-login:', e);
+        }
         this.router.navigate(['/user/dashboard']);
       },
       error: (err) => {

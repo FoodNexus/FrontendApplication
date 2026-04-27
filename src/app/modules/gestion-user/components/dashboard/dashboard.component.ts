@@ -13,6 +13,10 @@ import {
   RecyclerCreditsService,
   NUTRIFLOW_CREDITS_MUTATED_EVENT
 } from '../../../valorisation-organique-economie-circulaire/services/recycler-credits.service';
+import { InspectionCaseService } from '../../../audit-conformite-contrat-numerique/services/inspection-case.service';
+import { RecyclingProductsService } from '../../../audit-conformite-contrat-numerique/services/recycling-products.service';
+import { InspectionCase } from '../../../audit-conformite-contrat-numerique/models/inspection-case.model';
+import { RecyclingProducts } from '../../../audit-conformite-contrat-numerique/models/recycling-products.model';
 
 /** Grands acteurs du recyclage — données de démonstration (notes illustratives). */
 interface RecyclerPartnerHighlight {
@@ -33,6 +37,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   currentUser: any = null;
   get isBlocked(): boolean { return this.authService.isBlocked; }
   activeTab: 'dashboard' | 'profile' | 'admin' = 'dashboard';
+
+  // Auditor Activity
+  recentInspections: InspectionCase[] = [];
+  recentRecycling: RecyclingProducts[] = [];
 
   // Profile Form
   profileForm!: FormGroup;
@@ -107,6 +115,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
+    private insCaseService: InspectionCaseService,
+    private recyclingService: RecyclingProductsService,
     private fb: FormBuilder,
     private router: Router,
     sanitizer: DomSanitizer,
@@ -135,6 +145,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.loadAllUsers();
             this.loadAdminDirectoryOverview();
             this.refreshAdminNutriSnapshot();
+          }
+          if (this.hasRole('AUDITOR')) {
+            this.loadAuditorActivity();
           }
         },
         error: (err) => console.error('Error fetching profile', err)
@@ -226,7 +239,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.profileForm = this.fb.group({
       nom: [this.currentUser.nom, Validators.required],
       prenom: [this.currentUser.prenom, Validators.required],
-      telephone: [this.currentUser.telephone, Validators.required],
+      telephone: [this.currentUser.telephone, [Validators.required, Validators.pattern('^[0-9]{8,15}$')]],
       address: [this.currentUser.address, Validators.required]
     });
   }
@@ -235,7 +248,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.passwordForm = this.fb.group({
       newPassword: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required]
-    }, { validator: this.passwordMatchValidator });
+    }, { validators: this.passwordMatchValidator }); // ✅ 'validators' (pluriel) est requis par Angular
   }
 
   passwordMatchValidator(g: FormGroup) {
@@ -266,11 +279,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   deleteAccount() {
-    if(confirm('Êtes-vous sûr de vouloir supprimer définitivement votre compte ?')) {
-      this.authService.deleteAccount(this.currentUser.idUser).subscribe({
-        next: () => {
-          this.authService.logout();
-          this.router.navigate(['/user/home']);
+    if(confirm('Voulez-vous envoyer une demande de clôture de compte à l\'administrateur ?')) {
+      this.authService.requestAccountDeletion().subscribe({
+        next: (response) => {
+          alert(response);
+          if (this.currentUser) {
+            this.currentUser.deletionRequested = true;
+          }
         },
         error: (err) => console.error(err)
       });
@@ -297,6 +312,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  approveDeletion(user: any) {
+    if (confirm(`Confirmer la clôture définitive du compte de ${user.email} ?`)) {
+      this.authService.approveAccountDeletion(user.idUser).subscribe({
+        next: (res) => {
+          this.adminMessage = res;
+          this.loadAllUsers(); // Rafraîchir la liste
+          setTimeout(() => this.adminMessage = '', 3000);
+        },
+        error: (err) => console.error(err)
+      });
+    }
+  }
+
 
   changePassword() {
     if (this.passwordForm.invalid) return;
@@ -306,12 +334,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const newPass = this.passwordForm.get('newPassword')?.value;
     this.authService.changePassword(newPass).subscribe({
       next: () => {
-        this.passMessage = 'Votre mot de passe a été mis à jour dans Keycloak.';
+        this.passMessage = '✅ Votre mot de passe a été mis à jour avec succès.';
         this.passwordForm.reset();
       },
       error: (err) => {
-        console.error(err);
-        this.passError = 'Erreur lors du changement de mot de passe.';
+        console.error('Password change error:', err);
+        // Affiche le message d'erreur réel pour faciliter le diagnostic
+        const detail = err?.error || err?.message || 'Erreur inconnue';
+        this.passError = `❌ Échec du changement de mot de passe : ${detail}`;
       }
     });
   }
@@ -333,5 +363,83 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return 'bi-star-half';
     }
     return 'bi-star';
+  }
+
+  // Auditor Activity Logic
+  loadAuditorActivity(): void {
+    const userId = this.currentUser?.idUser;
+    
+    // 1. Fetch Latest 3 Personal Inspections
+    this.insCaseService.getByAuditor(userId).subscribe(data => {
+      this.recentInspections = (data || []).sort((a, b) => b.caseId! - a.caseId!).slice(0, 3);
+    });
+
+    // 2. Fetch Latest 3 Recycling Logs (Filtré par Auditor ID)
+    this.recyclingService.getAll().subscribe(data => {
+      this.recentRecycling = (data || [])
+        .filter(r => r.inspectionCase?.auditorId === userId)
+        .sort((a, b) => b.logId! - a.logId!)
+        .slice(0, 3);
+    });
+  }
+
+  // Helpers for Status/Verdict/Destination
+  getStatusBadgeClass(status: string): string {
+    switch (status) {
+      case 'EN_COURS': return 'badge-pill status-en-cours';
+      case 'RESOLU':   return 'badge-pill status-resolu';
+      case 'FERME':    return 'badge-pill status-ferme';
+      default:         return 'badge-pill';
+    }
+  }
+
+  getStatusIcon(status: string): string {
+    switch (status) {
+      case 'EN_COURS': return 'bi-clock';
+      case 'RESOLU':   return 'bi-check-circle';
+      case 'FERME':    return 'bi-x-circle';
+      default:         return 'bi-question-circle';
+    }
+  }
+
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'EN_COURS': return 'En cours';
+      case 'RESOLU':   return 'Résolu';
+      case 'FERME':    return 'Fermé';
+      default:         return status;
+    }
+  }
+
+  getVerdictBadgeClass(verdict: string): string {
+    switch (verdict) {
+      case 'PROPRE_A_LA_CONSOMMATION': return 'badge-pill verdict-propre';
+      case 'DESTRUCTION_RECYCLAGE':    return 'badge-pill verdict-recyclage';
+      default:                          return 'badge-pill';
+    }
+  }
+
+  getVerdictIcon(verdict: string): string {
+    switch (verdict) {
+      case 'PROPRE_A_LA_CONSOMMATION': return 'bi-shield-check';
+      case 'DESTRUCTION_RECYCLAGE':    return 'bi-exclamation-triangle';
+      default:                          return 'bi-question';
+    }
+  }
+
+  getVerdictLabel(verdict: string): string {
+    switch (verdict) {
+      case 'PROPRE_A_LA_CONSOMMATION': return 'Consommable';
+      case 'DESTRUCTION_RECYCLAGE':    return 'Recyclage';
+      default:                          return verdict;
+    }
+  }
+
+  getDestLabel(dest: string): string {
+    switch (dest) {
+      case 'COMPOST': return 'Compostage';
+      case 'AGRICULTEUR': return 'Agriculteur';
+      default: return dest || 'N/A';
+    }
   }
 }

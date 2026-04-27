@@ -52,7 +52,13 @@
                   <label class="form-label small text-muted">Téléphone</label>
                   <div class="input-group">
                     <span class="input-group-text bg-white border-2 border-end-0"><i class="bi bi-telephone"></i></span>
-                    <input type="text" class="form-control form-control-lg border-2 border-start-0 shadow-sm rounded-end-3" formControlName="telephone" placeholder="Ex: +216 00 000 000">
+                    <input type="text" class="form-control form-control-lg border-2 border-start-0 shadow-sm rounded-end-3" 
+                           formControlName="telephone" placeholder="Ex: 216 00 000 000"
+                           [class.is-invalid]="profileForm.get('telephone')?.invalid && profileForm.get('telephone')?.touched">
+                  </div>
+                  <div *ngIf="profileForm.get('telephone')?.invalid && profileForm.get('telephone')?.touched" class="text-danger small mt-1">
+                    <span *ngIf="profileForm.get('telephone')?.errors?.['required']">Le téléphone est requis.</span>
+                    <span *ngIf="profileForm.get('telephone')?.errors?.['pattern']">Le numéro doit contenir uniquement des chiffres (8-15).</span>
                   </div>
                 </div>
               </div>

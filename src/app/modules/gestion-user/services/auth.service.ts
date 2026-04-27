@@ -63,8 +63,12 @@ export class AuthService {
     return this.http.put(`${this.apiUrl}/toggle-status/${id}?active=${active}`, null, { responseType: 'text' });
   }
 
-  public deleteAccount(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/delete/${id}`, { responseType: 'text' });
+  public requestAccountDeletion(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/me/request-deletion`, null, { responseType: 'text' });
+  }
+
+  public approveAccountDeletion(id: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/approve-deletion/${id}`, null, { responseType: 'text' });
   }
 
   public changePassword(newPassword: string): Observable<any> {
@@ -74,6 +78,14 @@ export class AuthService {
 
   public isLoggedIn(): boolean {
     return this.keycloak.isLoggedIn();
+  }
+
+  /**
+   * Force le rafraîchissement du token Keycloak (utile après l'assignation d'un nouveau rôle).
+   * minValidity=-1 force le refresh immédiat même si le token est encore valide.
+   */
+  public async refreshToken(): Promise<boolean> {
+    return this.keycloak.updateToken(-1);
   }
 
   public getCurrentUser(): any {

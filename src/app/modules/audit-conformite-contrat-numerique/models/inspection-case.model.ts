@@ -4,7 +4,7 @@ export interface InspectionCase {
   description: string;
   resolutionStatus?: ResolutionStatus;
   sanitaryVerdict?: SanitaryVerdict;
-  deliveryId: number;
+  delevry_to: string;
   auditorId: number;
 }
 
