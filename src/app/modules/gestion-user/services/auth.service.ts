@@ -3,11 +3,13 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { KeycloakService } from 'keycloak-angular';
 
+import { APP_CONFIG } from '../../../app.constants';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8087/api/users';
+  private apiUrl = APP_CONFIG.USER_API;
   private currentUser: any = null;
   public isBlocked = false;
 
