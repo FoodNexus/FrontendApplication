@@ -5,7 +5,8 @@ import { MatchFractionneResponse } from '../../../models/match-fractionne.model'
 
 @Component({
   selector: 'app-match-detail',
-  templateUrl: './match-detail.component.html'
+  templateUrl: './match-detail.component.html',
+  styleUrls: ['./match-detail.component.scss']
 })
 export class MatchDetailComponent implements OnInit {
 
@@ -16,5 +17,16 @@ export class MatchDetailComponent implements OnInit {
   ngOnInit(): void {
     const id = +this.route.snapshot.params['id'];
     this.matchService.getById(id).subscribe(data => this.match = data);
+  }
+
+  getStatutClass(s: string): string {
+    switch (s) {
+      case 'EN_ATTENTE_LOGISTIQUE': return 'statut-en-cours';
+      case 'CONFIRME': return 'statut-disponible';
+      case 'LIVRE': return 'statut-termine';
+      case 'REFUSE': return 'statut-refuse';
+      case 'ANNULE': return 'statut-annule';
+      default: return 'statut-default';
+    }
   }
 }

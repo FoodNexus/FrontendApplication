@@ -1,124 +1,198 @@
-<div class="row mb-3">
-  <div class="col-12">
-    <h2><i class="bi bi-cpu me-2"></i>Matching IA — Moteur de scoring</h2>
-    <hr>
-  </div>
-</div>
+<div class="page-container">
 
-<div class="row mb-4">
-  <div class="col-md-8 mx-auto">
-    <div class="card">
-      <div class="card-header bg-danger text-white">
-        <h5 class="mb-0"><i class="bi bi-archive me-2"></i>Sélectionner un lot</h5>
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon">
+        <i class="bi bi-cpu"></i>
       </div>
-      <div class="card-body">
-        <div class="alert alert-danger" *ngIf="errorMessage">
-          <i class="bi bi-exclamation-triangle me-2"></i>{{ errorMessage }}
+      <div class="title-text">
+        <h2>Matching IA — Moteur de scoring</h2>
+        <p>Simulez et lancez le matching intelligent entre lots et receveurs</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/user/dashboard" class="btn-back me-3">
+        <i class="bi bi-arrow-left"></i> Retour au Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div *ngIf="errorMessage" class="alert-error">
+    <i class="bi bi-exclamation-circle"></i> {{ errorMessage }}
+  </div>
+
+  <!-- SELECT LOT CARD -->
+  <div class="form-wrapper">
+    <div class="form-card">
+
+      <!-- HEADER -->
+      <div class="form-header">
+        <div class="header-icon">
+          <i class="bi bi-archive"></i>
+        </div>
+        <div>
+          <h3>Sélectionner un lot</h3>
+          <p>Choisissez un lot disponible pour lancer le matching</p>
+        </div>
+      </div>
+
+      <!-- FORM BODY -->
+      <div class="form-body">
+
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-box-seam me-1"></i> Lot disponible
+            <span class="required">*</span>
+          </label>
+          <div class="select-wrapper">
+            <select class="form-input" [(ngModel)]="selectedLotId">
+              <option [value]="0" disabled>-- Choisir un lot disponible --</option>
+              <option *ngFor="let lot of lotsDisponibles" [value]="lot.idLot">
+                Lot #{{ lot.idLot }} — Donneur #{{ lot.donneurId }} — {{ lot.niveauUrgence }} — {{ lot.nombreProduits }} produit(s)
+              </option>
+            </select>
+            <i class="bi bi-chevron-down select-arrow"></i>
+          </div>
         </div>
 
-        <div class="mb-3">
-          <select class="form-select form-select-lg" [(ngModel)]="selectedLotId">
-            <option [value]="0" disabled>-- Choisir un lot disponible --</option>
-            <option *ngFor="let lot of lotsDisponibles" [value]="lot.idLot">
-              Lot #{{ lot.idLot }} — Donneur #{{ lot.donneurId }} — {{ lot.niveauUrgence }} — {{ lot.nombreProduits }} produit(s)
-            </option>
-          </select>
+        <!-- INFO BOX: No lots -->
+        <div class="info-box" *ngIf="lotsDisponibles.length === 0">
+          <div class="info-icon">
+            <i class="bi bi-info-circle"></i>
+          </div>
+          <div class="info-content">
+            <strong>Aucun lot disponible</strong>
+            <p>Veuillez d'abord <a routerLink="../lots/ajouter">créer un lot</a> avant de pouvoir lancer un matching.</p>
+          </div>
         </div>
 
-        <div class="alert alert-info" *ngIf="lotsDisponibles.length === 0">
-          <i class="bi bi-info-circle me-2"></i>Aucun lot disponible.
-          <a routerLink="../lots/ajouter">Créer un lot</a>
-        </div>
-
-        <div class="d-flex gap-2">
-          <button class="btn btn-outline-primary btn-lg" (click)="simuler()" [disabled]="!selectedLotId || loading">
-            <i class="bi bi-eye me-1"></i>{{ loading ? 'Chargement...' : 'Simuler' }}
+        <!-- ACTIONS -->
+        <div class="form-actions mt-4">
+          <button type="button" (click)="simuler()" [disabled]="!selectedLotId || loading" class="btn-cancel">
+            <i class="bi bi-eye me-1"></i> {{ loading ? 'Chargement...' : 'Simuler' }}
           </button>
-          <button class="btn btn-danger btn-lg" (click)="lancer()" [disabled]="!selectedLotId || loading">
-            <i class="bi bi-cpu me-1"></i>{{ loading ? 'Chargement...' : 'Lancer' }}
+          <button type="button" (click)="lancer()" [disabled]="!selectedLotId || loading" class="btn-submit">
+            <span *ngIf="loading" class="spinner"></span>
+            <i *ngIf="!loading" class="bi bi-cpu me-1"></i>
+            {{ loading ? 'Chargement...' : 'Lancer le matching' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SIMULATION RESULT -->
+  <div *ngIf="simulationResult" class="simulation-section">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon total"><i class="bi bi-box-seam"></i></div>
+        <div class="stat-info">
+          <h4>{{ simulationResult.quantiteTotale }}</h4>
+          <p>Quantité totale</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon genere"><i class="bi bi-check2-circle"></i></div>
+        <div class="stat-info">
+          <h4>{{ simulationResult.quantiteDistribuee }}</h4>
+          <p>Distribuée</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon archive"><i class="bi bi-exclamation-diamond"></i></div>
+        <div class="stat-info">
+          <h4>{{ simulationResult.quantiteRestante }}</h4>
+          <p>Restante</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon envoye"><i class="bi bi-link-45deg"></i></div>
+        <div class="stat-info">
+          <h4>{{ simulationResult.nombreMatchs }}</h4>
+          <p>Matchs trouvés</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALLOCATIONS TABLE -->
+    <div class="table-card">
+      <div class="table-header">
+        <h5><i class="bi bi-bar-chart me-2"></i>Détail des allocations (simulation)</h5>
+      </div>
+
+      <table class="modern-table" *ngIf="simulationResult.allocations.length > 0">
+        <thead>
+          <tr>
+            <th>Receveur</th>
+            <th>Quantité</th>
+            <th>Distance</th>
+            <th>Score Final</th>
+            <th>Dist.</th>
+            <th>Urg.</th>
+            <th>Pér.</th>
+            <th>Cap.</th>
+            <th>Cat.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of paginatedAllocations; let i = index"
+              [style.animation-delay]="i * 0.05 + 's'">
+            <td>
+              <span class="receveur-name">{{ a.receveurNom }}</span><br>
+              <small class="text-muted-custom">ID: {{ a.receveurId }}</small>
+            </td>
+            <td><span class="badge-pill badge-count">{{ a.quantiteAllouee }}</span></td>
+            <td>{{ a.distanceKm }} km</td>
+            <td><span class="badge-pill statut-disponible">{{ a.scoreFinal }}</span></td>
+            <td><span class="badge-pill badge-score-info">{{ a.scoreDistance }}</span></td>
+            <td><span class="badge-pill badge-score-danger">{{ a.scoreUrgence }}</span></td>
+            <td><span class="badge-pill badge-score-warning">{{ a.scorePeremption }}</span></td>
+            <td><span class="badge-pill badge-score-primary">{{ a.scoreCapacite }}</span></td>
+            <td><span class="badge-pill badge-score-secondary">{{ a.scoreCategorie }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- PAGINATION -->
+      <div class="pagination-container" *ngIf="totalPages > 1">
+        <div class="pagination-info">
+          Affichage de <b>{{ (currentPage - 1) * pageSize + 1 }}</b> à <b>{{ Math.min(currentPage * pageSize, simulationResult.allocations.length) }}</b> sur <b>{{ simulationResult.allocations.length }}</b> allocations
+        </div>
+        <div class="pagination-controls">
+          <button class="page-nav-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          
+          <div class="page-numbers">
+            <button *ngFor="let p of pages" 
+                    class="page-number-btn" 
+                    [class.active]="p === currentPage"
+                    (click)="goToPage(p)">
+              {{ p }}
+            </button>
+          </div>
+
+          <button class="page-nav-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+            <i class="bi bi-chevron-right"></i>
           </button>
         </div>
       </div>
+
+      <!-- EMPTY STATE -->
+      <div *ngIf="simulationResult.allocations.length === 0" class="empty-state">
+        <div class="empty-icon">
+          <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <h5>Aucun receveur compatible</h5>
+        <p>Le lot sera orienté vers le recyclage</p>
+      </div>
     </div>
+
   </div>
-</div>
 
-<!-- Résultat simulation -->
-<div class="row" *ngIf="simulationResult">
-  <div class="col-md-10 mx-auto">
-
-    <div class="row mb-3">
-      <div class="col-md-3 mb-2">
-        <div class="card text-center bg-light">
-          <div class="card-body py-3">
-            <h6 class="text-muted">Quantité totale</h6>
-            <h2 class="text-primary mb-0">{{ simulationResult.quantiteTotale }}</h2>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3 mb-2">
-        <div class="card text-center bg-light">
-          <div class="card-body py-3">
-            <h6 class="text-muted">Distribuée</h6>
-            <h2 class="text-success mb-0">{{ simulationResult.quantiteDistribuee }}</h2>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3 mb-2">
-        <div class="card text-center bg-light">
-          <div class="card-body py-3">
-            <h6 class="text-muted">Restante</h6>
-            <h2 class="text-danger mb-0">{{ simulationResult.quantiteRestante }}</h2>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3 mb-2">
-        <div class="card text-center bg-light">
-          <div class="card-body py-3">
-            <h6 class="text-muted">Matchs trouvés</h6>
-            <h2 class="text-info mb-0">{{ simulationResult.nombreMatchs }}</h2>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header bg-success text-white">
-        <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Détail des allocations (simulation)</h5>
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead class="table-dark">
-              <tr>
-                <th>Receveur</th><th>Quantité</th><th>Distance</th><th>Score Final</th>
-                <th>Dist.</th><th>Urg.</th><th>Pér.</th><th>Cap.</th><th>Cat.</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let a of simulationResult.allocations">
-                <td>
-                  <strong>{{ a.receveurNom }}</strong><br>
-                  <small class="text-muted">ID: {{ a.receveurId }}</small>
-                </td>
-                <td><span class="badge bg-dark fs-6">{{ a.quantiteAllouee }}</span></td>
-                <td>{{ a.distanceKm }} km</td>
-                <td><span class="badge bg-success fs-6">{{ a.scoreFinal }}</span></td>
-                <td><span class="badge bg-info">{{ a.scoreDistance }}</span></td>
-                <td><span class="badge bg-danger">{{ a.scoreUrgence }}</span></td>
-                <td><span class="badge bg-warning text-dark">{{ a.scorePeremption }}</span></td>
-                <td><span class="badge bg-primary">{{ a.scoreCapacite }}</span></td>
-                <td><span class="badge bg-secondary">{{ a.scoreCategorie }}</span></td>
-              </tr>
-              <tr *ngIf="simulationResult.allocations.length === 0">
-                <td colspan="9" class="text-center text-danger py-4">
-                  <i class="bi bi-exclamation-triangle me-2"></i>Aucun receveur compatible — lot orienté recyclage
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>

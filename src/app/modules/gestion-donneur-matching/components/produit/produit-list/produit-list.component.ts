@@ -5,7 +5,8 @@ import { CategorieProduit } from '../../../models/enums.model';
 
 @Component({
   selector: 'app-produit-list',
-  templateUrl: './produit-list.component.html'
+  templateUrl: './produit-list.component.html',
+  styleUrls: ['./produit-list.component.scss']
 })
 export class ProduitListComponent implements OnInit {
 
@@ -14,6 +15,30 @@ export class ProduitListComponent implements OnInit {
   selectedCategorie = '';
   categories = Object.values(CategorieProduit);
   successMessage = '';
+  Math = Math;
+
+  // Pagination
+  currentPage = 1;
+  pageSize = 10;
+
+  get totalPages(): number {
+    return Math.ceil(this.produits.length / this.pageSize);
+  }
+
+  get paginatedProduits(): ProduitResponse[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.produits.slice(start, start + this.pageSize);
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
 
   constructor(private produitService: ProduitService) {}
 
@@ -22,13 +47,19 @@ export class ProduitListComponent implements OnInit {
   }
 
   loadProduits(): void {
-    this.produitService.getAll().subscribe(data => this.produits = data);
+    this.produitService.getAll().subscribe(data => {
+      this.produits = data;
+      this.currentPage = 1;
+    });
   }
 
   rechercher(): void {
     if (this.searchKeyword.trim()) {
       this.produitService.rechercher(this.searchKeyword)
-        .subscribe(data => this.produits = data);
+        .subscribe(data => {
+          this.produits = data;
+          this.currentPage = 1;
+        });
     } else {
       this.loadProduits();
     }
@@ -37,7 +68,10 @@ export class ProduitListComponent implements OnInit {
   filtrerParCategorie(): void {
     if (this.selectedCategorie) {
       this.produitService.getByCategorie(this.selectedCategorie as CategorieProduit)
-        .subscribe(data => this.produits = data);
+        .subscribe(data => {
+          this.produits = data;
+          this.currentPage = 1;
+        });
     } else {
       this.loadProduits();
     }
@@ -53,12 +87,12 @@ export class ProduitListComponent implements OnInit {
     }
   }
 
-  getBadgeClass(categorie: string): string {
+  getCategorieClass(categorie: string): string {
     switch (categorie) {
-      case 'FRAIS': return 'bg-success';
-      case 'SURGELE': return 'bg-info';
-      case 'SEC': return 'bg-warning text-dark';
-      default: return 'bg-secondary';
+      case 'FRAIS':   return 'cat-frais';
+      case 'SURGELE': return 'cat-surgele';
+      case 'SEC':     return 'cat-sec';
+      default:        return 'cat-default';
     }
   }
 

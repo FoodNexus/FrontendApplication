@@ -21,6 +21,8 @@ export class LotDetailComponent implements OnInit {
   historiques: HistoriqueResponse[] = [];
   matchs: MatchFractionneResponse[] = [];
   errorMessage = '';
+  successMessage = '';
+  isLoadingIA = false;
 
   constructor(
     private lotService: LotService,
@@ -50,7 +52,7 @@ export class LotDetailComponent implements OnInit {
 
   lancerMatching(): void {
     if (this.lot) {
-      this.router.navigate(['donneur/matching/lancer'], { queryParams: { lotId: this.lot.idLot } });
+      this.router.navigate(['donneur/matching'], { queryParams: { lotId: this.lot.idLot } });
     }
   }
 
@@ -71,6 +73,28 @@ export class LotDetailComponent implements OnInit {
       case 'NORMALE':  return 'urgence-normale';
       case 'BASSE':    return 'urgence-basse';
       default:         return 'urgence-normale';
+    }
+  }
+  fractionnerIntelligemment(): void {
+    if (this.lot) {
+      this.isLoadingIA = true;
+      this.errorMessage = '';
+      this.successMessage = '';
+
+      this.lotService.lancerSmartBatching(this.lot.idLot).subscribe({
+        next: (responseMessage) => {
+          this.successMessage = responseMessage; // Affiche le message du backend
+          this.isLoadingIA = false;
+          
+          // Magie : On rappelle ngOnInit() pour recharger le lot (qui passe en EN_COURS_MATCHING)
+          // et pour rafraîchir la liste des matchs (qui vient de se remplir !)
+          this.ngOnInit(); 
+        },
+        error: (err) => {
+          this.errorMessage = err.error || "Erreur lors du calcul de l'IA pour le fractionnement.";
+          this.isLoadingIA = false;
+        }
+      });
     }
   }
 }

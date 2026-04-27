@@ -7,7 +7,8 @@ import { LotResponse } from '../../../models/lot.model';
 
 @Component({
   selector: 'app-matching-resultat',
-  templateUrl: './matching-resultat.component.html'
+  templateUrl: './matching-resultat.component.html',
+  styleUrls: ['./matching-resultat.component.scss']
 })
 export class MatchingResultatComponent implements OnInit {
 
@@ -26,12 +27,13 @@ export class MatchingResultatComponent implements OnInit {
     this.matchService.getByLotId(lotId).subscribe(data => this.matchs = data);
   }
 
-  getStatutBadge(s: string): string {
+  getStatutClass(s: string): string {
     switch (s) {
-      case 'EN_ATTENTE_LOGISTIQUE': return 'bg-warning text-dark';
-      case 'CONFIRME': return 'bg-primary';
-      case 'LIVRE': return 'bg-success';
-      default: return 'bg-secondary';
+      case 'EN_ATTENTE_LOGISTIQUE': return 'statut-en-cours';
+      case 'CONFIRME': return 'statut-disponible';
+      case 'LIVRE': return 'statut-termine';
+      case 'REFUSE': return 'statut-refuse';
+      default: return 'statut-default';
     }
   }
 }
