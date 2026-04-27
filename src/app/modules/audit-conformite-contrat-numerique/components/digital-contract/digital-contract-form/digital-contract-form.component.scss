@@ -1,0 +1,17 @@
+/* digital-contract-form placeholder scss */
+@import "../../../../../../../styles.scss";
+
+:host { display: block; }
+
+.premium-form {
+  .form-label {
+    display: flex; align-items: center; gap: 0.5rem;
+    i { color: var(--primary); }
+    .required { color: var(--danger); }
+  }
+}
+
+.form-actions-premium {
+  display: flex; justify-content: flex-end; gap: 1rem;
+  padding-top: 1rem; border-top: 1px solid #f1f5f9;
+}

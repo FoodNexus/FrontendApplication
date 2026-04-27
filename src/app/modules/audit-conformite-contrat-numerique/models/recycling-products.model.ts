@@ -8,6 +8,7 @@ export interface RecyclingProducts {
   weight: number;
   destination: Destination;
   logDate?: string;
+  transferDate?: string;
   inspectionCase?: {
     caseId?: number;
     description?: string;
