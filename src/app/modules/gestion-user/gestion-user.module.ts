@@ -9,6 +9,8 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { CompleteProfileComponent } from './components/complete-profile/complete-profile.component';
 import { DashboardDonneurComponent } from '../gestion-donneur-matching/components/dashboard-donneur/dashboard-donneur.component';
 import { GestionDonneurMatchingModule } from '../gestion-donneur-matching/gestion-donneur-matching.module';
+import { RecyclerRequestsStatsPanelComponent } from '../valorisation-organique-economie-circulaire/components/recycler-requests-stats-panel.component';
+
 @NgModule({
   declarations: [
     HomeComponent,
@@ -21,7 +23,8 @@ import { GestionDonneurMatchingModule } from '../gestion-donneur-matching/gestio
     FormsModule,
     RouterModule,
     GestionUserRoutingModule,
-    GestionDonneurMatchingModule
+    GestionDonneurMatchingModule,
+    RecyclerRequestsStatsPanelComponent
   ]
 })
 export class GestionUserModule { }

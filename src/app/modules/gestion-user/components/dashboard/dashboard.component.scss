@@ -149,3 +149,100 @@
   font-weight: 700;
   color: #166534;
 }
+
+/* —— Admin NutriFlow dashboard —— */
+.admin-dash-hero {
+  background: linear-gradient(125deg, #022c22 0%, #065f46 42%, #0d9488 100%);
+  border: 1px solid rgba(167, 243, 208, 0.25);
+}
+
+.admin-dash-lead {
+  max-width: 38rem;
+  line-height: 1.55;
+  font-size: 0.98rem;
+}
+
+.admin-dash-hero-visual img {
+  max-height: 220px;
+  width: 100%;
+  object-fit: cover;
+}
+
+.admin-metric-card:hover,
+.admin-control-card:hover,
+.admin-spotlight-row .admin-spotlight-fig:hover {
+  transform: none;
+}
+
+.admin-metric-card .card-body {
+  padding: 1.15rem 1.25rem;
+}
+
+.admin-mini-kpis .admin-kpi-tile {
+  background: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 0.65rem 0.8rem;
+  min-height: 4.1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.admin-kpi-tile span {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  margin-bottom: 0.15rem;
+}
+
+.admin-kpi-tile strong {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #047857;
+  line-height: 1.2;
+}
+
+.admin-kpi-tile--wide {
+  min-height: auto;
+}
+
+.admin-summary-chips .badge {
+  font-weight: 500;
+}
+
+.admin-role-bars .admin-role-bar-item + .admin-role-bar-item {
+  margin-top: 0.65rem;
+}
+
+.admin-role-track {
+  height: 9px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.admin-role-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #059669, #34d399);
+  min-width: 4px;
+  transition: width 0.35s ease;
+}
+
+.admin-spotlight-img-wrap {
+  aspect-ratio: 4 / 3;
+  background: #f3f4f6;
+}
+
+.admin-spotlight-img-wrap .admin-spotlight-img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-spotlight-row--below-metrics {
+  position: relative;
+  z-index: 0;
+}

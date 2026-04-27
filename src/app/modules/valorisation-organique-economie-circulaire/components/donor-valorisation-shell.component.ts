@@ -25,7 +25,7 @@ import { AuthService } from '../../gestion-user/services/auth.service';
           </a>
           <a
             *ngIf="canOpenRecyclerArea"
-            routerLink="/valorisation/nutriflow"
+            routerLink="/valorisation/nutriflow/requests"
             class="btn btn-outline-secondary btn-sm"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }"

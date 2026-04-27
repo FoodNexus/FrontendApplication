@@ -1,8 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import {
+  isNutriflowAdminCreditVerifiableStatus,
+  loadRecyclerRequests,
+  RECYCLER_REQUESTS_CHANGED_EVENT
+} from '../../../valorisation-organique-economie-circulaire/storage/recycler-operations.storage';
+import { DONOR_LOTS_MUTATED_EVENT } from '../../../valorisation-organique-economie-circulaire/storage/donor-lots.storage';
+import {
+  RecyclerCreditsService,
+  NUTRIFLOW_CREDITS_MUTATED_EVENT
+} from '../../../valorisation-organique-economie-circulaire/services/recycler-credits.service';
 
 /** Grands acteurs du recyclage — données de démonstration (notes illustratives). */
 interface RecyclerPartnerHighlight {
@@ -17,7 +27,7 @@ interface RecyclerPartnerHighlight {
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   roles: string[] = [];
   username: string = '';
   currentUser: any = null;
@@ -32,6 +42,49 @@ export class DashboardComponent implements OnInit {
   // Admin
   allUsers: any[] = [];
   adminMessage = '';
+
+  /** Vue agrégée annuaire (tous rôles) pour graphiques admin. */
+  adminUserOverview: {
+    total: number;
+    active: number;
+    blocked: number;
+    byRole: Record<string, number>;
+  } = { total: 0, active: 0, blocked: 0, byRole: {} };
+
+  adminRoleBarRows: { label: string; count: number; pct: number }[] = [];
+
+  /** Instantané NutriFlow (stockage local) pour tuiles admin. */
+  adminNutriSnap = {
+    pendingVerification: 0,
+    verified: 0,
+    awaitingDonor: 0,
+    totalCredits: 0,
+    creditEvents: 0
+  };
+
+  readonly adminSpotlightImages: { src: string; alt: string; caption: string }[] = [
+    {
+      src: 'https://images.unsplash.com/photo-1604187351574-c75ca79f5807?auto=format&fit=crop&w=720&q=80',
+      alt: 'Tri sélectif et bacs de collecte',
+      caption: 'Tri et préparation des flux vers les filières adaptées.'
+    },
+    {
+      src: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=720&q=80',
+      alt: 'Bacs de collecte sélective',
+      caption: 'Collecte sélective et traçabilité des matières.'
+    },
+    {
+      src: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=720&q=80',
+      alt: 'Feuillage et matière organique',
+      caption: 'Valorisation organique — compost, méthanisation, circuits courts.'
+    }
+  ];
+
+  private readonly boundNutriRefresh = (): void => {
+    if (this.hasRole('ADMIN')) {
+      this.refreshAdminNutriSnapshot();
+    }
+  };
 
   // Password Change
   passwordForm!: FormGroup;
@@ -56,7 +109,8 @@ export class DashboardComponent implements OnInit {
     private authService: AuthService,
     private fb: FormBuilder,
     private router: Router,
-    sanitizer: DomSanitizer
+    sanitizer: DomSanitizer,
+    private creditsService: RecyclerCreditsService
   ) {
     this.nutriflowRecyclerVideoUrl = sanitizer.bypassSecurityTrustResourceUrl(
       'https://www.youtube.com/embed/xpAnLXc_bIU?autoplay=1&mute=0&rel=0&modestbranding=1&playsinline=1'
@@ -67,6 +121,10 @@ export class DashboardComponent implements OnInit {
     if (this.authService.isLoggedIn()) {
       // Rôles Keycloak disponibles tout de suite ; le profil /me affine (rôle DB).
       this.syncRolesFromAuth();
+      if (this.hasRole('ADMIN')) {
+        this.refreshAdminNutriSnapshot();
+        this.loadAdminDirectoryOverview();
+      }
       this.authService.fetchUserProfile().subscribe({
         next: (user) => {
           this.currentUser = user;
@@ -75,12 +133,88 @@ export class DashboardComponent implements OnInit {
           this.initProfileForm();
           if (this.hasRole('ADMIN')) {
             this.loadAllUsers();
+            this.loadAdminDirectoryOverview();
+            this.refreshAdminNutriSnapshot();
           }
         },
         error: (err) => console.error('Error fetching profile', err)
       });
       this.initPasswordForm();
+      if (typeof window !== 'undefined') {
+        window.addEventListener(RECYCLER_REQUESTS_CHANGED_EVENT, this.boundNutriRefresh);
+        window.addEventListener(DONOR_LOTS_MUTATED_EVENT, this.boundNutriRefresh);
+        window.addEventListener(NUTRIFLOW_CREDITS_MUTATED_EVENT, this.boundNutriRefresh);
+      }
     }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener(RECYCLER_REQUESTS_CHANGED_EVENT, this.boundNutriRefresh);
+      window.removeEventListener(DONOR_LOTS_MUTATED_EVENT, this.boundNutriRefresh);
+      window.removeEventListener(NUTRIFLOW_CREDITS_MUTATED_EVENT, this.boundNutriRefresh);
+    }
+  }
+
+  @HostListener('window:storage', ['$event'])
+  onWindowStorage(ev: StorageEvent): void {
+    if (!this.hasRole('ADMIN')) {
+      return;
+    }
+    if (ev.key == null || ev.key.includes('nutriflow') || ev.key.includes('receveur')) {
+      this.refreshAdminNutriSnapshot();
+    }
+  }
+
+  private loadAdminDirectoryOverview(): void {
+    this.authService.getAllUsers().subscribe({
+      next: (users) => {
+        const list = users ?? [];
+        const byRole: Record<string, number> = {};
+        let active = 0;
+        let blocked = 0;
+        for (const u of list) {
+          const r = String(u.role ?? '—')
+            .toUpperCase()
+            .replace(/^ROLE_/, '');
+          byRole[r] = (byRole[r] ?? 0) + 1;
+          if (u.actif) {
+            active++;
+          } else {
+            blocked++;
+          }
+        }
+        this.adminUserOverview = { total: list.length, active, blocked, byRole };
+        const entries = Object.entries(byRole);
+        const max = Math.max(...entries.map(([, c]) => c), 1);
+        this.adminRoleBarRows = entries
+          .map(([label, count]) => ({ label, count, pct: Math.round((count / max) * 100) }))
+          .sort((a, b) => b.count - a.count);
+      },
+      error: () => {
+        this.adminUserOverview = { total: 0, active: 0, blocked: 0, byRole: {} };
+        this.adminRoleBarRows = [];
+      }
+    });
+  }
+
+  private refreshAdminNutriSnapshot(): void {
+    const req = loadRecyclerRequests();
+    this.adminNutriSnap.pendingVerification = req.filter((r) =>
+      isNutriflowAdminCreditVerifiableStatus(r.status)
+    ).length;
+    this.adminNutriSnap.verified = req.filter((r) => r.status === 'verified').length;
+    this.adminNutriSnap.awaitingDonor = req.filter((r) => r.status === 'awaiting_donor').length;
+    const ledger = this.creditsService.getAllLedger();
+    this.adminNutriSnap.creditEvents = ledger.length;
+    this.adminNutriSnap.totalCredits = ledger.reduce((s, e) => s + e.amount, 0);
+  }
+
+  protected adminRolePercent(_role: string, count: number): number {
+    if (this.adminUserOverview.total < 1) {
+      return 0;
+    }
+    return Math.round((count / this.adminUserOverview.total) * 100);
   }
 
   private syncRolesFromAuth(): void {

@@ -118,8 +118,8 @@ const PLAN_DISCOUNT_PCT_CAP = 35;
         <ul class="ledger-mini">
           <li *ngFor="let e of recentLedger">
             <span class="ledger-date">{{ e.createdAt | date: 'short' }}</span>
-            <span class="ledger-req">Demande #{{ e.requestId }}</span>
-            <span class="ledger-amt">+{{ e.amount }}</span>
+            <span class="ledger-req">{{ e.note || 'Crédit recyclage validé' }}</span>
+            <span class="ledger-amt">{{ e.amount > 0 ? '+' : '' }}{{ e.amount }}</span>
           </li>
         </ul>
       </article>

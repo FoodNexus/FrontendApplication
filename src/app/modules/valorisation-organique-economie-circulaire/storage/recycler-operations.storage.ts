@@ -61,6 +61,18 @@ export const RECYCLER_REQUESTS_STORAGE_KEY = 'gestion-receveur-requests';
 /** Même onglet / même document (l’événement <code>storage</code> ne se déclenche pas en interne). */
 export const RECYCLER_REQUESTS_CHANGED_EVENT = 'nutriflow-recycler-requests-changed';
 
+/** preferred_username Keycloak par clé NutriFlow (affichage mini-jeu, même navigateur). */
+export const NUTRIFLOW_KEY_DISPLAY_NAMES_STORAGE_KEY = 'nutriflow-key-display-names:v1';
+
+/**
+ * Statuts pour lesquels l’admin peut valider l’opération et attribuer le crédit recycleur.
+ * Le flux donateur met la demande en <code>available</code> après acceptation ; la file
+ * <code>pending_verification</code> reste prise en charge si elle est utilisée ailleurs.
+ */
+export function isNutriflowAdminCreditVerifiableStatus(status: RequestStatus): boolean {
+  return status === 'pending_verification' || status === 'available' || status === 'approved';
+}
+
 type SerializedRequest = Omit<RecyclerRequest, 'requestedAt'> & { requestedAt: string };
 
 export function loadRecyclerRequests(): RecyclerRequest[] {

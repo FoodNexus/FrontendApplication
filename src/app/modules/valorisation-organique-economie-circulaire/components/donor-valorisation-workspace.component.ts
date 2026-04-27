@@ -109,8 +109,7 @@ import type { NutriflowClassificationResult } from '../services/nutriflow-infere
                       *ngFor="let l of matchingLots"
                       (click)="pickLot(l, $event)"
                     >
-                      <strong>#{{ l.idLot }}</strong> — {{ l.nombreProduits }} produit(s) — {{ l.statut }} —
-                      {{ l.niveauUrgence }}
+                      <strong>{{ l.nombreProduits }} produit(s)</strong> — {{ l.statut }} — {{ l.niveauUrgence }}
                     </button>
                   </div>
                 </div>
@@ -210,7 +209,6 @@ import type { NutriflowClassificationResult } from '../services/nutriflow-infere
               <table class="table table-sm table-hover mb-0 align-middle">
                 <thead class="table-light">
                   <tr>
-                    <th>#</th>
                     <th>Produit</th>
                     <th>Qté</th>
                     <th>Recycleur</th>
@@ -221,7 +219,6 @@ import type { NutriflowClassificationResult } from '../services/nutriflow-infere
                 </thead>
                 <tbody>
                   <tr *ngFor="let r of pendingIncoming">
-                    <td>{{ r.id }}</td>
                     <td>{{ r.productName }}</td>
                     <td>{{ r.quantityKg }} kg</td>
                     <td><code class="small">{{ r.recyclerUserKey || '—' }}</code></td>
@@ -273,9 +270,7 @@ import type { NutriflowClassificationResult } from '../services/nutriflow-infere
                     <td class="small">{{ lot.category }}</td>
                     <td class="small text-muted">{{ filieresLabel(lot) }}</td>
                     <td>
-                      <span *ngIf="lot.matchingLotId != null" class="badge bg-light text-dark border"
-                        >#{{ lot.matchingLotId }}</span
-                      >
+                      <span *ngIf="lot.matchingLotId != null" class="badge bg-light text-dark border">Lot matching</span>
                       <span *ngIf="lot.matchingLotId == null" class="text-muted small">—</span>
                     </td>
                     <td>{{ lot.quantityKg }}</td>
@@ -543,7 +538,7 @@ export class DonorValorisationWorkspaceComponent implements OnInit, OnDestroy {
     if (!l) {
       return 'Choisir un lot…';
     }
-    return `#${l.idLot} — ${l.nombreProduits} prod. — ${l.statut}`;
+    return `${l.nombreProduits} produit(s) — ${l.statut} — ${l.niveauUrgence}`;
   }
 
   toggleLotPicker(event: MouseEvent): void {
@@ -732,7 +727,7 @@ export class DonorValorisationWorkspaceComponent implements OnInit, OnDestroy {
       const aiRPct = ai?.rPct ?? prev?.aiRecyclablePercent;
       const aiOPct = ai?.oPct ?? prev?.aiOrganicPercent;
 
-      const name = `Lot matching #${lot.idLot} (${lot.nombreProduits} produit(s))`;
+      const name = `Offre recyclage — ${lot.nombreProduits} produit(s) — ${lot.statut}`;
       const category = String(lot.niveauUrgence ?? 'LOT_DONATEUR');
 
       const record: DonorLotRecord = {

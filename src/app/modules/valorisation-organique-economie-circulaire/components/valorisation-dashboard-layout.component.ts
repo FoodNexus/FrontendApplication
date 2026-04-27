@@ -19,7 +19,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
           <div class="metrics">
             <article>
               <span>Outils</span>
-              <strong>4</strong>
+              <strong>2</strong>
             </article>
           </div>
         </div>
@@ -213,9 +213,7 @@ export class ValorisationDashboardLayoutComponent {
 
   protected readonly navItems: { label: string; path: string; exact?: boolean }[] = [
     { label: "Vue d'ensemble", path: 'workspace', exact: true },
-    { label: 'CRUD recyclables', path: 'recyclables' },
     { label: 'NutriFlow — recycleur (catalogue admin si ADMIN)', path: 'nutriflow' },
-    { label: 'NutriFlow — donateur (lots)', path: 'nutriflow-donor' },
-    { label: 'Validation demandes (store)', path: 'store-requests' }
+    { label: 'NutriFlow — donateur (lots)', path: 'nutriflow-donor' }
   ];
 }

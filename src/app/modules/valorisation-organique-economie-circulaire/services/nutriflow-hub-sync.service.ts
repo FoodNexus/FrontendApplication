@@ -18,7 +18,11 @@ import {
   RecyclerRequest,
   saveRecyclerRequests
 } from '../storage/recycler-operations.storage';
-import { NUTRIFLOW_CREDITS_MUTATED_EVENT, NUTRIFLOW_CREDITS_STORAGE_KEY } from './recycler-credits.service';
+import {
+  CreditLedgerEntry,
+  NUTRIFLOW_CREDITS_MUTATED_EVENT,
+  NUTRIFLOW_CREDITS_STORAGE_KEY
+} from './recycler-credits.service';
 
 /** Après un pull réussi depuis le hub (même onglet). Les vues doivent recharger depuis localStorage. */
 export const NUTRIFLOW_HUB_PULLED_EVENT = 'nutriflow-hub-pulled';
@@ -181,8 +185,71 @@ export class NutriflowHubSyncService {
       this.applyRecyclerRequestsFromServer(data.req);
     }
     if (data.cred != null && data.cred.trim() !== '') {
-      localStorage.setItem(NUTRIFLOW_CREDITS_STORAGE_KEY, data.cred);
+      this.applyRecyclerCreditsFromServer(data.cred);
     }
+  }
+
+  /** Union des écritures locales et du hub (évite d’effacer l’autre recycleur sur le même navigateur). */
+  private applyRecyclerCreditsFromServer(remoteRaw: string): void {
+    const localRaw = localStorage.getItem(NUTRIFLOW_CREDITS_STORAGE_KEY);
+    let remoteLedger: CreditLedgerEntry[] = [];
+    try {
+      const p = JSON.parse(remoteRaw) as { ledger?: CreditLedgerEntry[] };
+      remoteLedger = Array.isArray(p.ledger) ? p.ledger : [];
+    } catch {
+      return;
+    }
+    if (remoteLedger.length === 0 && this.ledgerJsonLength(localRaw) > 0) {
+      return;
+    }
+    const merged = this.mergeCreditLedgerJson(localRaw, remoteRaw);
+    localStorage.setItem(NUTRIFLOW_CREDITS_STORAGE_KEY, merged);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(NUTRIFLOW_CREDITS_MUTATED_EVENT));
+    }
+  }
+
+  private ledgerJsonLength(raw: string | null): number {
+    if (raw == null || raw.trim() === '') {
+      return 0;
+    }
+    try {
+      const p = JSON.parse(raw) as { ledger?: unknown[] };
+      return Array.isArray(p.ledger) ? p.ledger.length : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  private mergeCreditLedgerJson(localRaw: string | null, remoteRaw: string): string {
+    const byId = new Map<string, CreditLedgerEntry>();
+    const ingest = (raw: string | null): void => {
+      if (raw == null || raw.trim() === '') {
+        return;
+      }
+      try {
+        const p = JSON.parse(raw) as { ledger?: CreditLedgerEntry[] };
+        const arr = Array.isArray(p.ledger) ? p.ledger : [];
+        for (const e of arr) {
+          if (!e || typeof e.userKey !== 'string') {
+            continue;
+          }
+          const dk =
+            typeof e.id === 'string' && e.id.length > 0
+              ? e.id
+              : `${e.userKey}:${String(e.requestId ?? '')}`;
+          if (dk.length > 0) {
+            byId.set(dk, e);
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+    ingest(localRaw);
+    ingest(remoteRaw);
+    const merged = [...byId.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return JSON.stringify({ ledger: merged });
   }
 
   private applyRecyclerRequestsFromServer(serverRaw: string): void {

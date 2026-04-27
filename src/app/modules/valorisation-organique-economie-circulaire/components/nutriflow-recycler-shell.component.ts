@@ -3,6 +3,7 @@ import { NgIf } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../gestion-user/services/auth.service';
 import { RecyclerCreditsService } from '../services/recycler-credits.service';
+import { NUTRIFLOW_KEY_DISPLAY_NAMES_STORAGE_KEY } from '../storage/recycler-operations.storage';
 
 @Component({
   selector: 'app-nutriflow-recycler-shell',
@@ -26,14 +27,6 @@ import { RecyclerCreditsService } from '../services/recycler-credits.service';
             [routerLinkActiveOptions]="{ exact: true }"
           >
             <i class="bi bi-speedometer2"></i> Dashboard
-          </a>
-          <a
-            routerLink="/valorisation/nutriflow"
-            class="btn btn-outline-secondary btn-sm"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }"
-          >
-            <i class="bi bi-house-door"></i> Accueil
           </a>
           <a
             routerLink="/valorisation/nutriflow/requests"
@@ -71,6 +64,8 @@ export class NutriFlowRecyclerShellComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.creditsService.maybeApplyDevNutriflowCreditSeed();
+    this.rememberNutriflowDisplayNamesForRoster();
     const roles = this.authService.getUserRoles();
     const canRecycler = roles.some((r) => ['RECYCLER', 'ADMIN'].includes(r));
     const isDonor = roles.includes('DONOR');
@@ -90,5 +85,37 @@ export class NutriFlowRecyclerShellComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  /** Associe preferred_username aux clés id:/sub: pour le mini-jeu (plusieurs comptes, même Edge). */
+  private rememberNutriflowDisplayNamesForRoster(): void {
+    const label = this.authService.getKeycloakPreferredUsername();
+    if (!label || typeof localStorage === 'undefined') {
+      return;
+    }
+    let map: Record<string, string> = {};
+    try {
+      const raw = localStorage.getItem(NUTRIFLOW_KEY_DISPLAY_NAMES_STORAGE_KEY);
+      if (raw) {
+        map = JSON.parse(raw) as Record<string, string>;
+        if (map == null || typeof map !== 'object') {
+          map = {};
+        }
+      }
+    } catch {
+      map = {};
+    }
+    const keys = new Set<string>(this.authService.getNutriflowUserKeyAliases());
+    keys.add(this.authService.getCreditsUserKey());
+    for (const k of keys) {
+      if (k && k !== 'local:anonymous') {
+        map[k] = label;
+      }
+    }
+    try {
+      localStorage.setItem(NUTRIFLOW_KEY_DISPLAY_NAMES_STORAGE_KEY, JSON.stringify(map));
+    } catch {
+      /* ignore */
+    }
   }
 }

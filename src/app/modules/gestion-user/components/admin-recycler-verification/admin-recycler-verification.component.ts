@@ -1,9 +1,10 @@
 import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { DatePipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
+import { DatePipe, DecimalPipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import {
+  isNutriflowAdminCreditVerifiableStatus,
   loadRecyclerRequests,
   RECYCLER_REQUESTS_CHANGED_EVENT,
   RECYCLER_REQUESTS_STORAGE_KEY,
@@ -21,7 +22,6 @@ import {
   DonorLotRecord,
   loadAllDonorLots
 } from '../../../valorisation-organique-economie-circulaire/storage/donor-lots.storage';
-import { RecyclerRequestsStatsPanelComponent } from '../../../valorisation-organique-economie-circulaire/components/recycler-requests-stats-panel.component';
 
 const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
   'awaiting_donor',
@@ -34,15 +34,7 @@ const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
 @Component({
   selector: 'app-admin-recycler-verification',
   standalone: true,
-  imports: [
-    NgFor,
-    NgIf,
-    FormsModule,
-    DatePipe,
-    DecimalPipe,
-    RouterLink,
-    RecyclerRequestsStatsPanelComponent
-  ],
+  imports: [NgFor, NgIf, NgClass, FormsModule, DatePipe, DecimalPipe, RouterLink],
   template: `
     <div class="admin-hub py-4">
       <div class="container">
@@ -53,124 +45,156 @@ const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
                 <i class="bi bi-recycle me-2"></i>Back-office NutriFlow — recyclage
               </h1>
               <p class="text-muted small mb-0 max-w-prose">
-                Vue consolidée : lots donateurs, demandes recycleurs, statistiques, crédits par utilisateur et validation des
-                opérations. Hub local (port 8095) pour synchroniser les sessions.
+                Toutes les demandes et validations au même endroit. Données locales (navigateur). Les actions
+                <strong>Approuver / Rejeter</strong> s’affichent uniquement pour les lignes en attente de vérification.
               </p>
             </div>
             <div class="d-flex flex-wrap gap-2">
               <a routerLink="/user/dashboard" class="btn btn-outline-secondary btn-sm">Dashboard</a>
-              <a routerLink="/valorisation/nutriflow" class="btn btn-outline-success btn-sm">NutriFlow recycleur</a>
-              <a routerLink="/valorisation/store-requests" class="btn btn-outline-dark btn-sm">Store validation</a>
+              <a routerLink="/valorisation/nutriflow/requests" class="btn btn-outline-success btn-sm">NutriFlow recycleur</a>
             </div>
           </div>
         </header>
 
-        <!-- 1. Statistiques -->
-        <section class="mb-4" aria-labelledby="sec-stats">
-          <div class="section-label" id="sec-stats">
-            <span class="section-num">1</span>
-            Statistiques &amp; répartition
-          </div>
-          <app-recycler-requests-stats-panel />
-        </section>
-
-        <div class="row g-4 mb-4">
-          <!-- 2. Lots donateurs -->
-          <div class="col-lg-6">
-            <section aria-labelledby="sec-lots">
-              <div class="section-label" id="sec-lots">
-                <span class="section-num">2</span>
-                Lots valorisation (donateurs)
-              </div>
-              <div class="card shadow-sm border-0 h-100">
-                <div class="card-body p-0">
-                  <div class="table-responsive" style="max-height: 320px">
-                    <table class="table table-sm table-hover mb-0 align-middle">
-                      <thead class="table-light sticky-top">
-                        <tr>
-                          <th>Donateur</th>
-                          <th>Produit</th>
-                          <th class="text-end">kg</th>
-                          <th>Liste</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let lot of donorLots">
-                          <td>{{ displayNameForNutriflowKey(lot.donorUserKey) }}</td>
-                          <td>{{ lot.name }}</td>
-                          <td class="text-end">{{ lot.quantityKg | number: '1.0-0' }}</td>
-                          <td>
-                            <span
-                              class="badge"
-                              [class.bg-success]="lot.listingStatus === 'listed'"
-                              [class.bg-secondary]="lot.listingStatus !== 'listed'"
-                            >
-                              {{ lot.listingStatus }}
-                            </span>
-                          </td>
-                        </tr>
-                        <tr *ngIf="donorLots.length === 0">
-                          <td colspan="4" class="text-center text-muted py-4 small">Aucun lot en stockage local.</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+        <div class="metrics-row card border-0 shadow-sm mb-4">
+          <div class="card-body py-3">
+            <div class="row g-2 g-md-3 text-center text-md-start">
+              <div class="col-6 col-md">
+                <div class="metric-pill">
+                  <span class="metric-val">{{ overview.totalRequests }}</span>
+                  <span class="metric-lbl">Demandes</span>
                 </div>
               </div>
-            </section>
-          </div>
-
-          <!-- 3. Crédits par recycleur -->
-          <div class="col-lg-6">
-            <section aria-labelledby="sec-credits">
-              <div class="section-label" id="sec-credits">
-                <span class="section-num">3</span>
-                Crédits par recycleur
-              </div>
-              <div class="card shadow-sm border-0 h-100">
-                <div class="card-body p-0">
-                  <div class="table-responsive" style="max-height: 320px">
-                    <table class="table table-sm table-hover mb-0 align-middle">
-                      <thead class="table-light sticky-top">
-                        <tr>
-                          <th>Recycleur</th>
-                          <th class="text-end">Solde</th>
-                          <th class="text-end">Écritures</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let row of creditsByUser">
-                          <td>{{ displayNameForNutriflowKey(row.userKey) }}</td>
-                          <td class="text-end fw-semibold">{{ row.balance | number: '1.0-0' }}</td>
-                          <td class="text-end text-muted small">{{ row.entryCount }}</td>
-                        </tr>
-                        <tr *ngIf="creditsByUser.length === 0">
-                          <td colspan="3" class="text-center text-muted py-4 small">Aucun crédit enregistré.</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <p class="small text-muted mb-0 px-3 py-2 border-top bg-light">
-                    +1 crédit par opération validée ci-dessous (une seule fois par demande).
-                  </p>
+              <div class="col-6 col-md">
+                <div class="metric-pill">
+                  <span class="metric-val">{{ overview.totalKg | number: '1.0-0' }} kg</span>
+                  <span class="metric-lbl">Volume demandé</span>
                 </div>
               </div>
-            </section>
+              <div class="col-6 col-md">
+                <div class="metric-pill">
+                  <span class="metric-val">{{ overview.listedLots }}</span>
+                  <span class="metric-lbl">Lots listés</span>
+                </div>
+              </div>
+              <div class="col-6 col-md">
+                <div class="metric-pill">
+                  <span class="metric-val text-warning">{{ overview.pendingAdmin }}</span>
+                  <span class="metric-lbl">À valider</span>
+                </div>
+              </div>
+              <div class="col-6 col-md">
+                <div class="metric-pill">
+                  <span class="metric-val">{{ overview.creditGrants }}</span>
+                  <span class="metric-lbl">Crédits attribués</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- 4. Demandes recycleurs actives -->
-        <section class="mb-4" aria-labelledby="sec-requests">
-          <div class="section-label" id="sec-requests">
-            <span class="section-num">4</span>
-            Demandes recycleurs (en cours)
+        <details class="card border-0 shadow-sm mb-3 collapsible-more">
+          <summary class="card-header bg-white py-2 px-3 small fw-semibold user-select-none">
+            Lots donateurs publiés ({{ donorLots.length }}) — afficher le détail
+          </summary>
+          <div class="card-body p-0 border-top">
+            <div class="table-responsive" style="max-height: 240px">
+              <table class="table table-sm mb-0">
+                <thead class="table-light sticky-top">
+                  <tr>
+                    <th>Donateur</th>
+                    <th>Produit</th>
+                    <th class="text-end">kg</th>
+                    <th>Liste</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let lot of donorLots">
+                    <td>{{ displayNameForNutriflowKey(lot.donorUserKey) }}</td>
+                    <td>{{ lot.name }}</td>
+                    <td class="text-end">{{ lot.quantityKg | number: '1.0-0' }}</td>
+                    <td>
+                      <span
+                        class="badge"
+                        [class.bg-success]="lot.listingStatus === 'listed'"
+                        [class.bg-secondary]="lot.listingStatus !== 'listed'"
+                      >
+                        {{ lot.listingStatus }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="donorLots.length === 0">
+                    <td colspan="4" class="text-center text-muted py-3 small">Aucun lot.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <p class="small text-muted mb-2">
-            Statuts : attente donateur, pending store, approuvé, disponible, ou en attente de votre validation.
-          </p>
+        </details>
+
+        <details class="card border-0 shadow-sm mb-4 collapsible-more">
+          <summary class="card-header bg-white py-2 px-3 small fw-semibold user-select-none">
+            Crédits par recycleur ({{ creditsByUser.length }} compte(s)) — afficher le détail
+          </summary>
+          <div class="card-body p-0 border-top">
+            <p class="small text-muted mb-0 px-3 py-2 bg-light border-bottom">
+              +1 crédit par opération approuvée (idempotent par demande).
+            </p>
+            <div class="table-responsive" style="max-height: 220px">
+              <table class="table table-sm mb-0">
+                <thead class="table-light sticky-top">
+                  <tr>
+                    <th>Recycleur</th>
+                    <th class="text-end">Solde</th>
+                    <th class="text-end">Écritures</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of creditsByUser">
+                    <td>{{ displayNameForNutriflowKey(row.userKey) }}</td>
+                    <td class="text-end fw-semibold">{{ row.balance | number: '1.0-0' }}</td>
+                    <td class="text-end text-muted small">{{ row.entryCount }}</td>
+                  </tr>
+                  <tr *ngIf="creditsByUser.length === 0">
+                    <td colspan="3" class="text-center text-muted py-3 small">Aucun crédit.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <section aria-labelledby="main-table-title">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+            <h2 id="main-table-title" class="h6 mb-0 fw-semibold">
+              <i class="bi bi-list-task me-1"></i>Toutes les demandes recycleurs
+            </h2>
+            <label class="small text-muted mb-0 d-flex align-items-center gap-1">
+              Filtrer
+              <select
+                class="form-select form-select-sm"
+                style="width: auto"
+                [(ngModel)]="requestFilter"
+                name="requestFilter"
+              >
+                <option value="all">Toutes ({{ all.length }})</option>
+                <option value="action">À valider ({{ pendingList.length }})</option>
+                <option value="active">En cours ({{ activeCount }})</option>
+                <option value="closed">Clôturées ({{ closedCount }})</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="alert alert-warning py-2 px-3 small mb-2" *ngIf="pendingList.length > 0 && requestFilter !== 'action'">
+            <strong>{{ pendingList.length }}</strong> opération(s) en attente de votre validation —
+            <button type="button" class="btn btn-link btn-sm p-0 align-baseline" (click)="requestFilter = 'action'">
+              n’afficher que celles-ci
+            </button>
+          </div>
+
           <div class="card shadow-sm border-0">
             <div class="card-body p-0">
-              <div class="table-responsive" style="max-height: 380px">
+              <div class="table-responsive main-requests-scroll">
                 <table class="table table-sm table-hover mb-0 align-middle">
                   <thead class="table-light sticky-top">
                     <tr>
@@ -178,79 +202,47 @@ const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
                       <th>Produit</th>
                       <th class="text-end">kg</th>
                       <th>Recycleur</th>
-                      <th>Lot donateur</th>
-                      <th>Demandé</th>
+                      <th>Lot / donateur</th>
+                      <th>Logistique</th>
+                      <th class="text-nowrap">Demandé</th>
+                      <th class="text-nowrap">Vérif.</th>
+                      <th class="text-nowrap">Clôture</th>
                       <th>Note</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let r of activeRecyclerRequests">
-                      <td>{{ requestStatusBadge(r.status) }}</td>
-                      <td>{{ r.productName }}</td>
-                      <td class="text-end">{{ r.quantityKg }}</td>
-                      <td>{{ displayNameForNutriflowKey(r.recyclerUserKey) }}</td>
-                      <td class="small">{{ donorLotSummary(r.donorLotId) }}</td>
-                      <td class="text-nowrap small">{{ r.requestedAt | date: 'short' }}</td>
-                      <td class="small text-muted">{{ r.note || '—' }}</td>
-                    </tr>
-                    <tr *ngIf="activeRecyclerRequests.length === 0">
-                      <td colspan="7" class="text-center text-muted py-4 small">Aucune demande active.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 5. Validation admin -->
-        <section class="mb-4" aria-labelledby="sec-validation">
-          <div class="section-label" id="sec-validation">
-            <span class="section-num">5</span>
-            Validation des opérations (en attente de vérification)
-          </div>
-          <p class="text-muted small mb-2">
-            Après « Declare done » côté recycleur. Approuver attribue le crédit (+1) de façon idempotente.
-          </p>
-
-          <div class="alert alert-info mb-3" *ngIf="pendingList.length === 0">
-            Aucune opération en attente de validation.
-          </div>
-
-          <div class="card shadow-sm border-0" *ngIf="pendingList.length > 0">
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-hover mb-0 align-middle">
-                  <thead class="table-light">
-                    <tr>
-                      <th>Recycleur</th>
-                      <th>Produit</th>
-                      <th>Qté (kg)</th>
-                      <th>Soumis</th>
-                      <th>Note recycleur</th>
-                      <th>Commentaire admin</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let r of pendingList">
-                      <td>{{ displayNameForNutriflowKey(r.recyclerUserKey) }}</td>
-                      <td>{{ r.productName }}</td>
-                      <td>{{ r.quantityKg }}</td>
-                      <td>{{ r.verificationSubmittedAt | date: 'short' }}</td>
-                      <td>{{ r.note || '—' }}</td>
-                      <td style="min-width: 200px">
-                        <input
-                          type="text"
-                          class="form-control form-control-sm"
-                          [(ngModel)]="rejectNotes[r.id]"
-                          placeholder="Si rejet : motif"
-                        />
+                    <tr *ngFor="let r of filteredRequests" [class.table-warning]="isNutriflowAdminCreditVerifiableStatus(r.status)">
+                      <td>
+                        <span class="badge" [ngClass]="statusRowClass(r.status)">{{ requestStatusBadge(r.status) }}</span>
                       </td>
+                      <td class="small fw-semibold">{{ r.productName }}</td>
+                      <td class="text-end">{{ r.quantityKg }}</td>
+                      <td class="small">{{ displayNameForNutriflowKey(r.recyclerUserKey) }}</td>
+                      <td class="small">{{ donorLotSummary(r.donorLotId) }}</td>
+                      <td class="small text-muted">{{ logistiqueCell(r) }}</td>
+                      <td class="small text-nowrap">{{ r.requestedAt | date: 'short' }}</td>
+                      <td class="small text-nowrap text-muted">{{ verificationSubmittedLabel(r) }}</td>
+                      <td class="small text-muted">{{ closureCell(r) }}</td>
+                      <td class="small">{{ r.note || '—' }}</td>
                       <td class="text-nowrap">
-                        <button type="button" class="btn btn-success btn-sm me-1" (click)="approve(r)">Approuver</button>
-                        <button type="button" class="btn btn-outline-danger btn-sm" (click)="reject(r)">Rejeter</button>
+                        <ng-container *ngIf="isNutriflowAdminCreditVerifiableStatus(r.status)">
+                          <input
+                            type="text"
+                            class="form-control form-control-sm mb-1"
+                            style="min-width: 140px"
+                            [(ngModel)]="rejectNotes[r.id]"
+                            [ngModelOptions]="{ standalone: true }"
+                            placeholder="Motif si rejet"
+                          />
+                          <button type="button" class="btn btn-success btn-sm me-1" (click)="approve(r)">Approuver</button>
+                          <button type="button" class="btn btn-outline-danger btn-sm" (click)="reject(r)">Rejeter</button>
+                        </ng-container>
+                        <span *ngIf="!isNutriflowAdminCreditVerifiableStatus(r.status)" class="text-muted small">—</span>
                       </td>
+                    </tr>
+                    <tr *ngIf="filteredRequests.length === 0">
+                      <td colspan="11" class="text-center text-muted py-5 small">Aucune demande pour ce filtre.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -258,91 +250,6 @@ const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
             </div>
           </div>
         </section>
-
-        <!-- 6. Validées + historique -->
-        <div class="row g-4">
-          <div class="col-lg-6">
-            <section aria-labelledby="sec-verified">
-              <div class="section-label" id="sec-verified">
-                <span class="section-num">6</span>
-                Opérations validées (créditées)
-              </div>
-              <div class="card shadow-sm border-0">
-                <div class="card-body p-0">
-                  <div class="table-responsive" style="max-height: 280px">
-                    <table class="table table-sm mb-0 align-middle">
-                      <thead class="table-light sticky-top">
-                        <tr>
-                          <th>Produit</th>
-                          <th>kg</th>
-                          <th>Recycleur</th>
-                          <th>Validé</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let r of verifiedNutriFlowRows">
-                          <td>{{ r.productName }}</td>
-                          <td>{{ r.quantityKg }}</td>
-                          <td>{{ displayNameForNutriflowKey(r.recyclerUserKey) }}</td>
-                          <td class="small">{{ r.verifiedAt | date: 'short' }}</td>
-                        </tr>
-                        <tr *ngIf="verifiedNutriFlowRows.length === 0">
-                          <td colspan="4" class="text-center text-muted py-3 small">Aucune.</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-          <div class="col-lg-6">
-            <section aria-labelledby="sec-history">
-              <div class="section-label" id="sec-history">
-                <span class="section-num">7</span>
-                Historique vérifications (aperçu)
-              </div>
-              <div class="card shadow-sm border-0">
-                <div class="card-body p-0">
-                  <div class="table-responsive" style="max-height: 280px">
-                    <table class="table table-sm mb-0">
-                      <thead class="table-light sticky-top">
-                        <tr>
-                          <th>Statut</th>
-                          <th>Produit</th>
-                          <th>Recycleur</th>
-                          <th>Date</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let r of recentVerificationRows">
-                          <td>
-                            <span
-                              class="badge"
-                              [class.bg-success]="r.status === 'verified'"
-                              [class.bg-warning]="r.status === 'pending_verification'"
-                              [class.bg-danger]="r.status === 'verification_rejected'"
-                            >
-                              {{ r.status }}
-                            </span>
-                          </td>
-                          <td class="small">{{ r.productName }}</td>
-                          <td>{{ displayNameForNutriflowKey(r.recyclerUserKey) }}</td>
-                          <td class="small text-nowrap">
-                            {{ (r.verifiedAt || r.verificationSubmittedAt || r.requestedAt) | date: 'short' }}
-                          </td>
-                        </tr>
-                        <tr *ngIf="recentVerificationRows.length === 0">
-                          <td colspan="4" class="text-center text-muted py-3 small">Aucune.</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-        </div>
       </div>
     </div>
   `,
@@ -358,38 +265,42 @@ const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
       .hub-header {
         border-left: 4px solid #198754 !important;
       }
-      .section-label {
+      .metric-pill {
         display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-weight: 600;
-        font-size: 0.95rem;
-        color: #0f172a;
-        margin-bottom: 0.5rem;
+        flex-direction: column;
+        gap: 0.1rem;
       }
-      .section-num {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 1.65rem;
-        height: 1.65rem;
-        border-radius: 999px;
-        background: #198754;
-        color: #fff;
-        font-size: 0.75rem;
+      .metric-val {
+        font-size: 1.15rem;
         font-weight: 700;
+        color: #0f172a;
+      }
+      .metric-lbl {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+      }
+      .collapsible-more summary {
+        cursor: pointer;
+        list-style: none;
+      }
+      .collapsible-more summary::-webkit-details-marker {
+        display: none;
+      }
+      .main-requests-scroll {
+        max-height: min(70vh, 900px);
       }
     `
   ]
 })
 export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
+  protected readonly isNutriflowAdminCreditVerifiableStatus = isNutriflowAdminCreditVerifiableStatus;
   protected rejectNotes: Record<number, string> = {};
-  private all: RecyclerRequest[] = [];
+  protected all: RecyclerRequest[] = [];
   protected pendingList: RecyclerRequest[] = [];
-  protected recentVerificationRows: RecyclerRequest[] = [];
-  protected verifiedNutriFlowRows: RecyclerRequest[] = [];
   protected donorLots: DonorLotRecord[] = [];
-  protected activeRecyclerRequests: RecyclerRequest[] = [];
+  protected requestFilter: 'all' | 'action' | 'active' | 'closed' = 'all';
 
   /** Correspondance clé NutriFlow (id: / sub:) → nom affiché (API utilisateurs). */
   private nameByNutriflowKey = new Map<string, string>();
@@ -423,6 +334,46 @@ export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef
   ) {}
+
+  protected get overview(): {
+    totalRequests: number;
+    totalKg: number;
+    listedLots: number;
+    pendingAdmin: number;
+    creditGrants: number;
+  } {
+    const totalKg = this.all.reduce((s, r) => s + (Number(r.quantityKg) || 0), 0);
+    const listedLots = this.donorLots.filter((l) => l.listingStatus === 'listed').length;
+    return {
+      totalRequests: this.all.length,
+      totalKg,
+      listedLots,
+      pendingAdmin: this.pendingList.length,
+      creditGrants: this.creditsService.getAllLedger().length
+    };
+  }
+
+  protected get activeCount(): number {
+    return this.all.filter((r) => ACTIVE_REQUEST_STATUSES.includes(r.status)).length;
+  }
+
+  protected get closedCount(): number {
+    return this.all.filter((r) => !ACTIVE_REQUEST_STATUSES.includes(r.status)).length;
+  }
+
+  protected get filteredRequests(): RecyclerRequest[] {
+    const sorted = [...this.all].sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
+    switch (this.requestFilter) {
+      case 'action':
+        return sorted.filter((r) => isNutriflowAdminCreditVerifiableStatus(r.status));
+      case 'active':
+        return sorted.filter((r) => ACTIVE_REQUEST_STATUSES.includes(r.status));
+      case 'closed':
+        return sorted.filter((r) => !ACTIVE_REQUEST_STATUSES.includes(r.status));
+      default:
+        return sorted;
+    }
+  }
 
   /**
    * Libellé lisible pour une clé stockée (id:123, sub:…). Ne renvoie jamais la clé brute.
@@ -459,6 +410,70 @@ export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
     }
     const who = this.displayNameForNutriflowKey(lot.donorUserKey);
     return `${lot.name} — ${who}`;
+  }
+
+  protected logistiqueCell(r: RecyclerRequest): string {
+    const parts: string[] = [];
+    if (r.lotCode) {
+      parts.push(r.lotCode);
+    }
+    if (r.treatmentPlan) {
+      const short =
+        r.treatmentPlan.length > 40 ? `${r.treatmentPlan.slice(0, 37)}…` : r.treatmentPlan;
+      parts.push(short);
+    }
+    if (r.pickupWindow) {
+      parts.push(`Enl.: ${r.pickupWindow}`);
+    }
+    return parts.length ? parts.join(' · ') : '—';
+  }
+
+  protected verificationSubmittedLabel(r: RecyclerRequest): string {
+    const raw = r.verificationSubmittedAt;
+    if (raw == null || raw === '') {
+      return '—';
+    }
+    const d = typeof raw === 'string' ? new Date(raw) : null;
+    if (d && !Number.isNaN(d.getTime())) {
+      return d.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+    }
+    return String(raw);
+  }
+
+  protected closureCell(r: RecyclerRequest): string {
+    if (r.status === 'verified' && r.verifiedAt) {
+      const d = new Date(r.verifiedAt);
+      return Number.isNaN(d.getTime()) ? r.verifiedAt : d.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+    }
+    if (r.status === 'verification_rejected') {
+      return r.adminVerificationComment || 'Rejet';
+    }
+    if (r.status === 'done') {
+      return 'Terminé';
+    }
+    return '—';
+  }
+
+  protected statusRowClass(status: RequestStatus): string {
+    switch (status) {
+      case 'verified':
+        return 'bg-success';
+      case 'available':
+      case 'approved':
+        return 'bg-info text-dark';
+      case 'pending_verification':
+        return 'bg-warning text-dark';
+      case 'verification_rejected':
+      case 'rejected':
+        return 'bg-danger';
+      case 'awaiting_donor':
+      case 'pending':
+        return 'bg-secondary';
+      case 'done':
+        return 'bg-dark';
+      default:
+        return 'bg-secondary';
+    }
   }
 
   private loadUserDirectory(): void {
@@ -543,9 +558,12 @@ export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
 
   approve(r: RecyclerRequest): void {
     this.reloadFromStorage();
+    if (!isNutriflowAdminCreditVerifiableStatus(r.status)) {
+      return;
+    }
     const userKey = r.recyclerUserKey ?? 'local:anonymous';
     this.all = this.all.map((x) =>
-      x.id === r.id && x.status === 'pending_verification'
+      x.id === r.id && isNutriflowAdminCreditVerifiableStatus(x.status)
         ? {
             ...x,
             status: 'verified',
@@ -561,9 +579,12 @@ export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
 
   reject(r: RecyclerRequest): void {
     this.reloadFromStorage();
+    if (!isNutriflowAdminCreditVerifiableStatus(r.status)) {
+      return;
+    }
     const note = (this.rejectNotes[r.id] ?? '').trim() || 'Rejected by administrator';
     this.all = this.all.map((x) =>
-      x.id === r.id && x.status === 'pending_verification'
+      x.id === r.id && isNutriflowAdminCreditVerifiableStatus(x.status)
         ? {
             ...x,
             status: 'verification_rejected',
@@ -580,27 +601,12 @@ export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
   private reloadFromStorage(): void {
     this.all = loadRecyclerRequests();
     this.donorLots = [...loadAllDonorLots()].sort((a, b) => b.id - a.id);
-
-    this.activeRecyclerRequests = this.all
-      .filter((r) => ACTIVE_REQUEST_STATUSES.includes(r.status))
-      .sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
-
     this.pendingList = this.all
-      .filter((r) => r.status === 'pending_verification')
+      .filter((r) => isNutriflowAdminCreditVerifiableStatus(r.status))
       .sort(
         (a, b) =>
           (b.verificationSubmittedAt ?? '').localeCompare(a.verificationSubmittedAt ?? '')
       );
-    this.recentVerificationRows = this.all
-      .filter((r) =>
-        ['pending_verification', 'verified', 'verification_rejected'].includes(r.status)
-      )
-      .sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime())
-      .slice(0, 40);
-    this.verifiedNutriFlowRows = this.all
-      .filter((r) => r.status === 'verified')
-      .sort((a, b) => (b.verifiedAt ?? '').localeCompare(a.verifiedAt ?? ''))
-      .slice(0, 200);
     this.cdr.markForCheck();
   }
 }

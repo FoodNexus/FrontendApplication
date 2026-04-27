@@ -1,4 +1,4 @@
-import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { DecimalPipe, NgFor, NgIf } from '@angular/common';
 import {
   loadRecyclerRequests,
@@ -37,10 +37,8 @@ const STATUS_META: Record<
   template: `
     <section class="stats-panel" aria-label="Statistiques demandes NutriFlow">
       <div class="stats-head">
-        <h2 class="stats-title">Statistiques &amp; répartition</h2>
-        <p class="stats-sub small mb-0">
-          Données locales (navigateur) — toutes les demandes recycleurs.
-        </p>
+        <h2 class="stats-title">{{ panelTitle }}</h2>
+        <p class="stats-sub small mb-0">{{ panelSubtitle }}</p>
       </div>
 
       <div class="stats-grid">
@@ -219,6 +217,9 @@ const STATUS_META: Record<
   `]
 })
 export class RecyclerRequestsStatsPanelComponent implements OnInit, OnDestroy {
+  @Input() panelTitle = 'Statistiques & répartition';
+  @Input() panelSubtitle = 'Données locales (navigateur) — toutes les demandes recycleurs.';
+
   protected totalRequests = 0;
   protected totalKg = 0;
   protected listedLotsCount = 0;

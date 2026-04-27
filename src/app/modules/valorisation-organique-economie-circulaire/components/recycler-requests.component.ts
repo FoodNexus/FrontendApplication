@@ -1,9 +1,10 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { DatePipe, DecimalPipe, NgClass, NgFor, NgIf, SlicePipe } from '@angular/common';
+import { DatePipe, DecimalPipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import {
+  isNutriflowAdminCreditVerifiableStatus,
   loadRecyclerRequests,
+  RECYCLER_REQUESTS_CHANGED_EVENT,
   RecyclableProduct,
   RecyclerRequest,
   RequestStatus,
@@ -21,6 +22,7 @@ import { RecyclerCreditsService } from '../services/recycler-credits.service';
 import { NUTRIFLOW_HUB_PULLED_EVENT } from '../services/nutriflow-hub-sync.service';
 import { AuthService } from '../../gestion-user/services/auth.service';
 import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-panel.component';
+import { NutriflowRecyclerPlanetStairsComponent } from './nutriflow-recycler-planet-stairs.component';
 
 @Component({
   selector: 'app-recycler-requests',
@@ -32,20 +34,104 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
     FormsModule,
     DecimalPipe,
     DatePipe,
-    RouterLink,
-    SlicePipe,
-    RecyclerRequestsStatsPanelComponent
+    RecyclerRequestsStatsPanelComponent,
+    NutriflowRecyclerPlanetStairsComponent
   ],
   template: `
     <section class="page-shell">
+      <header class="hero hero--top" aria-label="Résumé NutriFlow">
+        <div class="hero-intro">
+          <p class="eyebrow">{{ isAdminUser ? 'Admin — inventaire NutriFlow' : 'Recycler Front Office' }}</p>
+          <h2>Demandes de recyclage — lots donateurs</h2>
+          <p class="subtitle" *ngIf="isRecyclerCreditsUser">
+            Produits proposés par les <strong>donateurs</strong> (lots publiés). Les demandes sur lot donateur restent
+            <strong>en attente donateur</strong> jusqu’à acceptation, puis validation admin et vos
+            <strong>crédits fidélité</strong>.
+          </p>
+          <p class="subtitle" *ngIf="!isRecyclerCreditsUser">
+            Vue administrateur : lots donateurs et demandes. Les <strong>crédits NutriFlow</strong> sont réservés aux
+            comptes recycleur (pas au back-office).
+          </p>
+        </div>
+        <div class="hero-metrics">
+          <article>
+            <span>Available inventory</span>
+            <strong>{{ totalAvailableKg | number: '1.0-0' }} kg</strong>
+          </article>
+          <article>
+            <span>Open requests</span>
+            <strong>{{ openRequestsCount }}</strong>
+          </article>
+          <article>
+            <span>Completed</span>
+            <strong>{{ doneRequestsCount }}</strong>
+          </article>
+          <article *ngIf="isRecyclerCreditsUser">
+            <span>Mes crédits</span>
+            <strong>{{ creditsService.getBalance() }}</strong>
+          </article>
+        </div>
+      </header>
+
       <app-recycler-requests-stats-panel *ngIf="isAdminUser" />
 
-      <section *ngIf="isAdminUser" class="admin-donor-lots-panel">
-        <h2 class="admin-donor-title">Lots donateurs — gestion (CRUD)</h2>
-        <p class="admin-donor-hint">
-          Contrôlez la visibilité recycleur (listé / pausé), la quantité (kg) et supprimez une entrée locale. Les lots
-          <strong>listés</strong> avec kg &gt; 0 sont proposés dans le formulaire « Create Request » ci-dessous.
+      <section *ngIf="isAdminUser" class="admin-requests-panel">
+        <h2 class="admin-requests-title">Demandes recycleurs</h2>
+        <p class="admin-requests-hint small">
+          <strong>Valider</strong> lorsque la demande est <strong>Dispo.</strong> (lot accepté par le donateur),
+          <strong>Approuvé</strong> ou <strong>Vérif. admin</strong> : passage en vérifié et
+          <strong>+1 crédit fidélité</strong> pour le recycleur (idempotent par n° de demande).
         </p>
+        <div class="table-wrap admin-requests-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Statut</th>
+                <th>Produit</th>
+                <th class="numeric">kg</th>
+                <th>Recycleur</th>
+                <th>Donateur</th>
+                <th>Demandé</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of adminRequestsSorted; trackBy: trackByRequestId">
+                <td>
+                  <span [ngClass]="['req-status-badge', adminRequestStatusClass(r.status)]">{{
+                    adminRequestStatusLabel(r.status)
+                  }}</span>
+                </td>
+                <td>{{ r.productName }}</td>
+                <td class="numeric">{{ r.quantityKg }}</td>
+                <td>{{ displayNameForNutriflowKey(r.recyclerUserKey) }}</td>
+                <td>{{ displayNameForNutriflowKey(r.donorUserKey) }}</td>
+                <td>{{ r.requestedAt | date : 'short' }}</td>
+                <td class="actions admin-request-actions">
+                  <ng-container *ngIf="isNutriflowAdminCreditVerifiableStatus(r.status)">
+                    <input
+                      type="text"
+                      class="reject-note"
+                      [(ngModel)]="adminRejectNotes[r.id]"
+                      [ngModelOptions]="{ standalone: true }"
+                      placeholder="Motif si rejet"
+                    />
+                    <button type="button" class="success" (click)="adminApproveRequest(r)">Valider (crédit)</button>
+                    <button type="button" class="secondary" (click)="adminRejectRequest(r)">Rejeter</button>
+                  </ng-container>
+                  <span *ngIf="!isNutriflowAdminCreditVerifiableStatus(r.status)" class="muted">—</span>
+                </td>
+              </tr>
+              <tr *ngIf="adminRequestsSorted.length === 0">
+                <td colspan="7" class="empty">Aucune demande enregistrée.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section *ngIf="isAdminUser" class="admin-donor-lots-panel">
+        <h2 class="admin-donor-title">Lots donateurs</h2>
         <div class="table-wrap admin-donor-table-wrap">
           <table>
             <thead>
@@ -92,8 +178,15 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
         </div>
       </section>
 
-      <div class="workspace-with-aside">
-        <div class="workspace-main">
+      <div
+        class="workspace-main-column"
+        [class.workspace-main-column--recycler-split]="isRecyclerCreditsUser"
+      >
+        <app-nutriflow-recycler-planet-stairs
+          *ngIf="isRecyclerCreditsUser"
+          class="workspace-col workspace-col--game"
+        />
+        <div class="workspace-col workspace-col--form">
           <div class="layout-grid layout-grid-single">
             <article class="card card-request">
               <h3>Create Request</h3>
@@ -167,9 +260,6 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
                     <li *ngFor="let line of sp.donorAiFilieres">{{ line }}</li>
                   </ul>
                 </div>
-                <p *ngIf="isAdminUser" class="field-hint">
-                  Liste : lots <strong>listés</strong> avec stock &gt; 0. Filtrez par donateur pour réduire la liste.
-                </p>
 
                 <label>
                   Quantity (kg)
@@ -189,103 +279,17 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
 
                 <button type="submit">Submit Request</button>
               </form>
-              <p class="hint">
-                Tip: approved items are validated by the back office, available items can be collected immediately.
-              </p>
             </article>
           </div>
+        </div>
 
-          <article class="card requests-card">
-            <div class="requests-header">
-              <h3>My Requests</h3>
-              <button type="button" class="secondary" (click)="showOnlyOpen = !showOnlyOpen">
-                {{ showOnlyOpen ? 'Show all' : 'Show open only' }}
-              </button>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Product</th>
-                    <th *ngIf="isAdminUser">Recycleur</th>
-                    <th *ngIf="isAdminUser">Donateur</th>
-                    <th>Quantity (kg)</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th>Note</th>
-                    <th>Lot info</th>
-                    <th>Verification</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let request of visibleRequests">
-                    <td>#{{ request.id }}</td>
-                    <td>{{ request.productName }}</td>
-                    <td *ngIf="isAdminUser">{{ displayNameForNutriflowKey(request.recyclerUserKey) }}</td>
-                    <td *ngIf="isAdminUser">{{ displayNameForNutriflowKey(request.donorUserKey) }}</td>
-                    <td>{{ request.quantityKg }}</td>
-                    <td>
-                      <span class="badge" [ngClass]="'badge-' + request.status">{{ request.status }}</span>
-                    </td>
-                    <td>{{ request.requestedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
-                    <td>{{ request.note || '-' }}</td>
-                    <td>
-                      <span *ngIf="request.lotCode; else noLot">
-                        {{ request.lotCode }}<br />
-                        <small>{{ request.treatmentPlan || 'No treatment plan' }}</small>
-                      </span>
-                      <ng-template #noLot>-</ng-template>
-                    </td>
-                    <td class="verify-cell">
-                      <ng-container *ngIf="request.status === 'pending_verification'">
-                        <small>Submitted {{ request.verificationSubmittedAt | date: 'short' }}</small>
-                      </ng-container>
-                      <ng-container *ngIf="request.status === 'verified'">
-                        <small class="text-success">+1 credit</small>
-                      </ng-container>
-                      <ng-container *ngIf="request.status === 'verification_rejected'">
-                        <small class="text-danger">{{ request.adminVerificationComment || 'Rejected' }}</small>
-                      </ng-container>
-                      <span *ngIf="!isVerificationRow(request.status)">—</span>
-                    </td>
-                    <td class="actions">
-                      <button
-                        type="button"
-                        class="secondary"
-                        *ngIf="canDeclareDoneForAdminReview(request)"
-                        (click)="submitOperationForVerification(request.id)"
-                      >
-                        Declare done (admin review)
-                      </button>
-                      <button
-                        type="button"
-                        class="danger"
-                        *ngIf="request.status === 'pending' || request.status === 'awaiting_donor'"
-                        (click)="cancelRequest(request.id)"
-                      >
-                        Cancel
-                      </button>
-                    </td>
-                  </tr>
-                  <tr *ngIf="visibleRequests.length === 0">
-                    <td [attr.colspan]="isAdminUser ? 11 : 9" class="empty">No requests to display.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          <article class="card" *ngIf="isRecyclerCreditsUser">
+        <article class="card recycler-credit-history" *ngIf="isRecyclerCreditsUser">
             <h3>Credit history</h3>
-            <p class="hint">Credits after an administrator validates a completed recycling operation.</p>
             <div class="table-wrap" *ngIf="creditsService.getLedgerForUser().length > 0; else noCredits">
               <table>
                 <thead>
                   <tr>
                     <th>Date</th>
-                    <th>Request</th>
                     <th>Amount</th>
                     <th>Note</th>
                   </tr>
@@ -293,8 +297,7 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
                 <tbody>
                   <tr *ngFor="let row of creditsService.getLedgerForUser()">
                     <td>{{ row.createdAt | date: 'short' }}</td>
-                    <td>#{{ row.requestId }}</td>
-                    <td>+{{ row.amount }}</td>
+                    <td>{{ row.amount > 0 ? '+' : '' }}{{ row.amount }}</td>
                     <td>{{ row.note || '—' }}</td>
                   </tr>
                 </tbody>
@@ -303,44 +306,7 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
             <ng-template #noCredits>
               <p class="empty">No credits yet.</p>
             </ng-template>
-          </article>
-        </div>
-
-        <aside class="workspace-aside" aria-label="Résumé NutriFlow">
-          <header class="hero hero--aside">
-            <div class="hero-intro">
-              <p class="eyebrow">{{ isAdminUser ? 'Admin — inventaire NutriFlow' : 'Recycler Front Office' }}</p>
-              <h2>Demandes de recyclage — lots donateurs</h2>
-              <p class="subtitle" *ngIf="isRecyclerCreditsUser">
-                Produits proposés par les <strong>donateurs</strong> (lots publiés). Les demandes sur lot donateur restent
-                <strong>en attente donateur</strong> jusqu’à acceptation, puis validation admin et vos
-                <strong>crédits fidélité</strong>.
-              </p>
-              <p class="subtitle" *ngIf="!isRecyclerCreditsUser">
-                Vue administrateur : lots donateurs et demandes. Les <strong>crédits NutriFlow</strong> sont réservés aux
-                comptes recycleur (pas au back-office).
-              </p>
-            </div>
-            <div class="hero-metrics">
-              <article>
-                <span>Available inventory</span>
-                <strong>{{ totalAvailableKg | number: '1.0-0' }} kg</strong>
-              </article>
-              <article>
-                <span>Open requests</span>
-                <strong>{{ openRequestsCount }}</strong>
-              </article>
-              <article>
-                <span>Completed</span>
-                <strong>{{ doneRequestsCount }}</strong>
-              </article>
-              <article *ngIf="isRecyclerCreditsUser">
-                <span>Mes crédits</span>
-                <strong>{{ creditsService.getBalance() }}</strong>
-              </article>
-            </div>
-          </header>
-        </aside>
+        </article>
       </div>
     </section>
   `,
@@ -348,6 +314,11 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
     .page-shell {
       display: grid;
       gap: 1rem;
+      max-width: 76rem;
+      margin-inline: auto;
+      padding-inline: clamp(0.75rem, 2.5vw, 1.5rem);
+      padding-block-end: 1.5rem;
+      box-sizing: border-box;
     }
 
     .donor-lot-ai-preview {
@@ -370,22 +341,118 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
       padding-left: 1.1rem;
     }
 
-    .workspace-with-aside {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(220px, 18.5rem);
-      gap: 1rem;
-      align-items: start;
-    }
-
-    .workspace-main {
+    .workspace-main-column {
       display: grid;
       gap: 1rem;
       min-width: 0;
+      max-width: min(42rem, 100%);
     }
 
-    .workspace-aside {
-      position: sticky;
-      top: 0.75rem;
+    .workspace-main-column--recycler-split {
+      max-width: none;
+      width: 100%;
+      grid-template-columns: minmax(260px, 1fr) minmax(300px, 1.12fr);
+      align-items: stretch;
+    }
+
+    .workspace-main-column--recycler-split .workspace-col--game {
+      min-width: 0;
+    }
+
+    .workspace-main-column--recycler-split .workspace-col--form {
+      min-width: 0;
+    }
+
+    .workspace-main-column--recycler-split .recycler-credit-history {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 991px) {
+      .workspace-main-column--recycler-split {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .hero.hero--top {
+      align-items: flex-start;
+    }
+
+    .hero.hero--top .subtitle {
+      max-width: 42rem;
+      font-size: 0.88rem;
+    }
+
+    .admin-requests-panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 1rem 1.1rem;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.04);
+      margin-bottom: 0;
+    }
+
+    .admin-requests-title {
+      margin: 0 0 0.35rem;
+      font-size: 1rem;
+      color: #111827;
+    }
+
+    .admin-requests-hint {
+      margin: 0 0 0.75rem;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .admin-requests-table-wrap {
+      max-height: min(55vh, 480px);
+      overflow: auto;
+    }
+
+    .admin-requests-table-wrap th.numeric,
+    .admin-requests-table-wrap td.numeric {
+      text-align: right;
+    }
+
+    .admin-request-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.35rem;
+      min-width: 8.5rem;
+    }
+
+    .admin-request-actions .reject-note {
+      width: 100%;
+      font-size: 0.8rem;
+      padding: 0.35rem 0.45rem;
+    }
+
+    .req-status-badge {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 0.14rem 0.45rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+
+    .req-status--awaiting_donor { background: #e7e5e4; color: #44403c; }
+    .req-status--pending { background: #fef9c3; color: #854d0e; }
+    .req-status--approved { background: #dbeafe; color: #1e40af; }
+    .req-status--available { background: #d1fae5; color: #065f46; }
+    .req-status--pending_verification { background: #fef3c7; color: #92400e; }
+    .req-status--verified { background: #d1fae5; color: #047857; }
+    .req-status--verification_rejected { background: #ffe4e6; color: #9f1239; }
+    .req-status--done { background: #e5e7eb; color: #374151; }
+    .req-status--rejected { background: #fee2e2; color: #991b1b; }
+
+    button.success {
+      background: #059669;
+      border-color: #059669;
+      color: #fff;
+    }
+
+    button.success:hover:not(:disabled) {
+      background: #047857;
     }
 
     .admin-donor-lots-panel {
@@ -394,19 +461,13 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
       border-radius: 14px;
       padding: 1rem 1.1rem;
       box-shadow: 0 6px 24px rgba(0, 0, 0, 0.04);
-      margin-bottom: 1rem;
+      margin-bottom: 0;
     }
 
     .admin-donor-title {
       margin: 0 0 0.35rem;
       font-size: 1rem;
       color: #92400e;
-    }
-
-    .admin-donor-hint {
-      margin: 0 0 0.75rem;
-      color: #78716c;
-      font-size: 0.85rem;
     }
 
     .admin-donor-table-wrap {
@@ -450,28 +511,9 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
       flex-wrap: wrap;
     }
 
-    .hero.hero--aside {
-      flex-direction: column;
-      flex-wrap: nowrap;
-      align-items: stretch;
-    }
-
-    .hero.hero--aside h2 {
-      font-size: 1.05rem;
-      line-height: 1.3;
-    }
-
-    .hero.hero--aside .subtitle {
-      max-width: none;
-      font-size: 0.82rem;
-    }
-
-    .hero.hero--aside .hero-metrics {
-      grid-template-columns: 1fr;
-    }
-
-    .hero.hero--aside .hero-metrics article {
-      min-width: 0;
+    .hero.hero--top .hero-metrics {
+      flex: 1;
+      min-width: min(100%, 320px);
     }
 
     .eyebrow {
@@ -485,6 +527,11 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
     h2 {
       margin: 0.3rem 0;
       font-size: 1.35rem;
+    }
+
+    .hero .hero-intro h2 {
+      font-size: 1.15rem;
+      line-height: 1.35;
     }
 
     .subtitle {
@@ -529,15 +576,7 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
 
     .layout-grid-single {
       grid-template-columns: 1fr;
-      max-width: 40rem;
-    }
-
-    .workspace-main .layout-grid-single {
-      max-width: none;
-    }
-
-    .workspace-main .card-request {
-      max-width: 36rem;
+      max-width: 100%;
     }
 
     .card {
@@ -649,65 +688,6 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
       border: 1px solid transparent;
     }
 
-    .badge-available {
-      background: #ecfdf5;
-      color: #065f46;
-      border-color: #a7f3d0;
-    }
-
-    .badge-approved {
-      background: #eff6ff;
-      color: #1d4ed8;
-      border-color: #bfdbfe;
-    }
-
-    .badge-done {
-      background: #f3f4f6;
-      color: #374151;
-      border-color: #d1d5db;
-    }
-
-    .badge-pending {
-      background: #fffbeb;
-      color: #92400e;
-      border-color: #fde68a;
-    }
-
-    .badge-rejected {
-      background: #fef2f2;
-      color: #991b1b;
-      border-color: #fecaca;
-    }
-
-    .badge-awaiting_donor {
-      background: #fdf4ff;
-      color: #86198f;
-      border-color: #e879f9;
-    }
-
-    .badge-pending_verification {
-      background: #eef2ff;
-      color: #3730a3;
-      border-color: #c7d2fe;
-    }
-
-    .badge-verified {
-      background: #ecfdf5;
-      color: #047857;
-      border-color: #6ee7b7;
-    }
-
-    .badge-verification_rejected {
-      background: #fff7ed;
-      color: #9a3412;
-      border-color: #fed7aa;
-    }
-
-    .verify-cell small {
-      display: block;
-      line-height: 1.3;
-    }
-
     .text-success { color: #047857; }
     .text-danger { color: #b91c1c; }
 
@@ -723,31 +703,6 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
       color: #374151;
     }
 
-    .hint {
-      margin: 0.8rem 0 0;
-      color: #6b7280;
-      font-size: 0.8rem;
-    }
-
-    .field-hint {
-      margin: -0.35rem 0 0;
-      color: #6b7280;
-      font-size: 0.78rem;
-      line-height: 1.35;
-    }
-
-    .requests-card {
-      margin-bottom: 0.2rem;
-    }
-
-    .requests-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.7rem;
-      margin-bottom: 0.75rem;
-    }
-
     .actions {
       display: flex;
       gap: 0.45rem;
@@ -756,19 +711,6 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
     @media (max-width: 1024px) {
       .layout-grid {
         grid-template-columns: 1fr;
-      }
-
-      .workspace-with-aside {
-        grid-template-columns: 1fr;
-      }
-
-      .workspace-aside {
-        position: static;
-        order: 1;
-      }
-
-      .workspace-main {
-        order: 0;
       }
     }
 
@@ -781,6 +723,9 @@ import { RecyclerRequestsStatsPanelComponent } from './recycler-requests-stats-p
   `]
 })
 export class RecyclerRequestsComponent implements OnInit, OnDestroy {
+  /** Exposé au template pour les actions admin (crédit). */
+  protected readonly isNutriflowAdminCreditVerifiableStatus = isNutriflowAdminCreditVerifiableStatus;
+
   protected products: RecyclableProduct[] = [];
   protected requests: RecyclerRequest[] = loadRecyclerRequests();
 
@@ -803,8 +748,9 @@ export class RecyclerRequestsComponent implements OnInit, OnDestroy {
     filterDonorUserId: null
   };
 
-  protected showOnlyOpen = false;
   protected requestSubmitError = '';
+  /** Motif rejet admin (clé = id demande). */
+  protected adminRejectNotes: Record<number, string> = {};
   /** Tous les lots donateurs (admin) — édition locale. */
   protected allDonorLotsAdmin: DonorLotRecord[] = [];
   private nextRequestId = this.requests.length > 0
@@ -816,6 +762,10 @@ export class RecyclerRequestsComponent implements OnInit, OnDestroy {
   };
 
   private readonly onDonorLotsMutated = (): void => {
+    this.ngZone.run(() => this.refreshFromStorage());
+  };
+
+  private readonly onRecyclerRequestsExternalChange = (): void => {
     this.ngZone.run(() => this.refreshFromStorage());
   };
 
@@ -846,6 +796,7 @@ export class RecyclerRequestsComponent implements OnInit, OnDestroy {
     if (typeof window !== 'undefined') {
       window.addEventListener(NUTRIFLOW_HUB_PULLED_EVENT, this.onHubPulled);
       window.addEventListener(DONOR_LOTS_MUTATED_EVENT, this.onDonorLotsMutated);
+      window.addEventListener(RECYCLER_REQUESTS_CHANGED_EVENT, this.onRecyclerRequestsExternalChange);
     }
   }
 
@@ -853,6 +804,7 @@ export class RecyclerRequestsComponent implements OnInit, OnDestroy {
     if (typeof window !== 'undefined') {
       window.removeEventListener(NUTRIFLOW_HUB_PULLED_EVENT, this.onHubPulled);
       window.removeEventListener(DONOR_LOTS_MUTATED_EVENT, this.onDonorLotsMutated);
+      window.removeEventListener(RECYCLER_REQUESTS_CHANGED_EVENT, this.onRecyclerRequestsExternalChange);
     }
   }
 
@@ -862,6 +814,77 @@ export class RecyclerRequestsComponent implements OnInit, OnDestroy {
     this.allDonorLotsAdmin = [...loadAllDonorLots()].sort((a, b) => b.id - a.id);
     this.nextRequestId =
       this.requests.length > 0 ? Math.max(...this.requests.map((entry) => entry.id)) + 1 : 1001;
+  }
+
+  /** Liste admin : demandes les plus récentes d’abord. */
+  protected get adminRequestsSorted(): RecyclerRequest[] {
+    return [...this.requests].sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
+  }
+
+  protected trackByRequestId(_: number, r: RecyclerRequest): number {
+    return r.id;
+  }
+
+  protected adminRequestStatusLabel(status: RequestStatus): string {
+    const labels: Partial<Record<RequestStatus, string>> = {
+      awaiting_donor: 'Att. donateur',
+      pending: 'En attente',
+      approved: 'Approuvé',
+      available: 'Dispo.',
+      pending_verification: 'Vérif. admin',
+      verified: 'Vérifié',
+      verification_rejected: 'Rejet vérif.',
+      done: 'Terminé',
+      rejected: 'Refusé'
+    };
+    return labels[status] ?? status;
+  }
+
+  protected adminRequestStatusClass(status: RequestStatus): string {
+    return `req-status--${status}`;
+  }
+
+  /** Aligné sur <code>AdminRecyclerVerificationComponent.approve</code>. */
+  protected adminApproveRequest(r: RecyclerRequest): void {
+    if (!isNutriflowAdminCreditVerifiableStatus(r.status)) {
+      return;
+    }
+    this.refreshFromStorage();
+    const userKey = r.recyclerUserKey ?? 'local:anonymous';
+    this.requests = this.requests.map((x) =>
+      x.id === r.id && isNutriflowAdminCreditVerifiableStatus(x.status)
+        ? {
+            ...x,
+            status: 'verified',
+            verifiedAt: new Date().toISOString(),
+            adminVerificationComment: undefined
+          }
+        : x
+    );
+    this.creditsService.grantForVerifiedRequest(userKey, r.id);
+    this.persistRequests();
+    this.refreshFromStorage();
+  }
+
+  protected adminRejectRequest(r: RecyclerRequest): void {
+    if (!isNutriflowAdminCreditVerifiableStatus(r.status)) {
+      return;
+    }
+    this.refreshFromStorage();
+    const note = (this.adminRejectNotes[r.id] ?? '').trim() || 'Rejet administrateur';
+    this.requests = this.requests.map((x) =>
+      x.id === r.id && isNutriflowAdminCreditVerifiableStatus(x.status)
+        ? {
+            ...x,
+            status: 'verification_rejected',
+            adminVerificationComment: note,
+            verifiedAt: undefined
+          }
+        : x
+    );
+    delete this.adminRejectNotes[r.id];
+    this.persistRequests();
+    this.refreshFromStorage();
   }
 
   protected get recyclersForAssign(): any[] {
@@ -1020,19 +1043,6 @@ export class RecyclerRequestsComponent implements OnInit, OnDestroy {
       }
     }
     return 'local:anonymous';
-  }
-
-  protected get visibleRequests(): RecyclerRequest[] {
-    const key = this.creditsService.getCurrentRecyclerKey();
-    const scope = this.isAdminUser
-      ? this.requests
-      : this.requests.filter((r) => !r.recyclerUserKey || r.recyclerUserKey === key);
-    const data = this.showOnlyOpen
-      ? scope.filter((r) =>
-          ['awaiting_donor', 'pending', 'approved', 'available', 'pending_verification'].includes(r.status)
-        )
-      : scope;
-    return [...data].sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
   }
 
   trackByProductRow(_: number, p: RecyclableProduct): string {
@@ -1199,58 +1209,6 @@ export class RecyclerRequestsComponent implements OnInit, OnDestroy {
       assignRecyclerUserId: null,
       filterDonorUserId: null
     };
-  }
-
-  /**
-   * Catalogue admin : seulement <code>available</code>.
-   * Lots donateur : avant correctif, acceptation donateur → <code>pending</code> (avec <code>donorLotId</code>) — on permet encore « Declare done ».
-   */
-  protected canDeclareDoneForAdminReview(request: RecyclerRequest): boolean {
-    if (request.status === 'available') {
-      return true;
-    }
-    return request.status === 'pending' && request.donorLotId != null;
-  }
-
-  protected submitOperationForVerification(requestId: number): void {
-    const key = this.creditsService.getCurrentRecyclerKey();
-    this.requests = this.requests.map((request) => {
-      if (request.id !== requestId || !this.canDeclareDoneForAdminReview(request)) {
-        return request;
-      }
-      return {
-        ...request,
-        status: 'pending_verification',
-        recyclerUserKey: request.recyclerUserKey ?? key,
-        verificationSubmittedAt: new Date().toISOString()
-      };
-    });
-    this.persistRequests();
-  }
-
-  protected cancelRequest(requestId: number): void {
-    const request = this.requests.find((entry) => entry.id === requestId);
-    if (!request) {
-      return;
-    }
-
-    this.requests = this.requests.filter((entry) => entry.id !== requestId);
-    this.persistRequests();
-    if (request.status === 'awaiting_donor') {
-      return;
-    }
-    const product = this.products.find((p) => p.id === request.productId);
-    if (product) {
-      product.availableKg += request.quantityKg;
-      if (product.status === 'done') {
-        product.status = 'available';
-      }
-      this.persistProducts();
-    }
-  }
-
-  protected isVerificationRow(status: RequestStatus): boolean {
-    return status === 'pending_verification' || status === 'verified' || status === 'verification_rejected';
   }
 
   private getProductsFromAdmin(): RecyclableProduct[] {

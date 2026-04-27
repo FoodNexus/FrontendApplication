@@ -10,5 +10,10 @@ export const environment = {
   /** Hub NutriFlow (optionnel) : synchro lots / demandes / crédits entre navigateurs. Laisser vide pour désactiver. */
   nutriflowHubBaseUrl: 'http://localhost:8095',
   /** Service inférence ONNX (nutriflow-onnx-api). Laisser vide pour désactiver les appels. */
-  nutriflowInferenceUrl: 'http://localhost:8096'
+  nutriflowInferenceUrl: 'http://localhost:8096',
+  /**
+   * Dev local : crédits fidélité initiaux par utilisateur Keycloak (preferred_username → nombre de +1).
+   * Mettre à null en prod via environment.prod.
+   */
+  nutriflowDevSeedCreditsByUsername: { recycler: 5, recycler1: 5 } as Record<string, number>
 };

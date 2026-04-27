@@ -6,14 +6,6 @@
     </span>
     <div class="d-flex align-items-center flex-wrap justify-content-end gap-2">
       <span class="me-2 fw-bold text-dark">Bienvenue, {{ username }} !</span>
-      <a
-        *ngIf="hasRole('ADMIN')"
-        routerLink="/valorisation/nutriflow"
-        class="btn btn-success btn-sm"
-        title="Back-office NutriFlow : catalogue recyclables et inventaire"
-      >
-        <i class="bi bi-recycle me-1"></i> Recyclables (admin)
-      </a>
       <button class="btn btn-outline-success btn-sm" (click)="switchTab('dashboard')" [class.active]="activeTab === 'dashboard'">
         <i class="bi bi-speedometer2"></i> Dashboard
       </button>
@@ -29,18 +21,158 @@
   <div class="row" *ngIf="activeTab === 'dashboard'">
     <!-- Admin Dashboard -->
     <div class="col-12" *ngIf="hasRole('ADMIN')">
-      <div class="card border-danger shadow-sm mb-4">
-        <div class="card-header bg-danger text-white">ADMIN - Panneau de Contrôle</div>
+      <div class="card border-secondary shadow-sm mb-4 admin-control-card">
+        <div class="card-header bg-secondary text-white">Panneau de contrôle</div>
         <div class="card-body">
-          <p>Vous avez accès aux statistiques globales et à la gestion des utilisateurs.</p>
+          <p class="mb-3 text-muted small">
+            Gestion des utilisateurs, audit et validation NutriFlow.
+          </p>
           <div class="d-flex flex-wrap gap-2">
-            <button class="btn btn-danger" (click)="switchTab('admin')">Gérer les Utilisateurs</button>
-            <a routerLink="/audit/contracts" class="btn btn-outline-danger">Contrats Numériques</a>
-            <a routerLink="/user/admin/recycler-verification" class="btn btn-outline-warning">Validation NutriFlow</a>
-            <a routerLink="/audit/nutriflow-dossier-summary" class="btn btn-outline-danger">Synthèse NutriFlow (audit)</a>
+            <button type="button" class="btn btn-secondary" (click)="switchTab('admin')">
+              Gérer les utilisateurs
+            </button>
+            <a routerLink="/audit/contracts" class="btn btn-outline-secondary">Contrats numériques</a>
+            <a routerLink="/user/admin/recycler-verification" class="btn btn-outline-secondary">Validation NutriFlow</a>
           </div>
         </div>
       </div>
+
+      <section class="admin-dash-hero rounded-4 p-4 p-lg-5 mb-4 text-white shadow">
+        <div class="row align-items-center g-4">
+          <div class="col-lg-7">
+            <p class="admin-dash-kicker text-uppercase small fw-semibold mb-2 opacity-90">
+              <i class="bi bi-recycle me-2"></i>Pilotage NutriFlow
+            </p>
+            <h2 class="h3 fw-bold mb-3">Admin — inventaire NutriFlow</h2>
+            <p class="admin-dash-lead mb-4 opacity-90">
+              Visualisez la répartition des demandes, les lots donateurs et l’activité des comptes en un coup d’œil.
+              Les indicateurs ci-dessous reflètent la <strong>session navigateur</strong> (stockage local).
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+              <a routerLink="/valorisation/nutriflow/requests" class="btn btn-light btn-sm text-success fw-semibold">
+                <i class="bi bi-box-arrow-up-right me-1"></i> Ouvrir NutriFlow
+              </a>
+              <a routerLink="/user/admin/recycler-verification" class="btn btn-outline-light btn-sm">
+                Validation &amp; crédits
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-5 text-center">
+            <div class="admin-dash-hero-visual rounded-4 p-3 bg-white bg-opacity-10">
+              <img
+                class="img-fluid rounded-3 shadow"
+                src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?auto=format&fit=crop&w=560&q=80"
+                alt="Flux valorisation et économie circulaire"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+              />
+              <p class="small mt-3 mb-0 opacity-75">Économie circulaire — de la collecte à la valorisation.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="row g-4 mb-4 align-items-start">
+        <div class="col-xl-7">
+          <app-recycler-requests-stats-panel
+            panelTitle="Répartition des demandes — NutriFlow"
+            panelSubtitle="Graphique conique et légende par statut ; volumes et lots donateurs (session navigateur)."
+          />
+        </div>
+        <div class="col-xl-5">
+          <div class="card admin-metric-card border-0 shadow-sm mb-3">
+            <div class="card-body">
+              <h3 class="h6 text-success text-uppercase fw-bold mb-3">
+                <i class="bi bi-lightning-charge me-1"></i> Flux &amp; fidélité
+              </h3>
+              <div class="row g-2 admin-mini-kpis">
+                <div class="col-6">
+                  <div class="admin-kpi-tile">
+                    <span>Attente vérif. admin</span>
+                    <strong>{{ adminNutriSnap.pendingVerification }}</strong>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="admin-kpi-tile">
+                    <span>Vérifiées (crédit)</span>
+                    <strong>{{ adminNutriSnap.verified }}</strong>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="admin-kpi-tile">
+                    <span>Attente donateur</span>
+                    <strong>{{ adminNutriSnap.awaitingDonor }}</strong>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="admin-kpi-tile">
+                    <span>Crédits attribués</span>
+                    <strong>{{ adminNutriSnap.totalCredits | number : '1.0-0' }}</strong>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="admin-kpi-tile admin-kpi-tile--wide">
+                    <span>Écritures journal crédits</span>
+                    <strong>{{ adminNutriSnap.creditEvents }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card admin-metric-card border-0 shadow-sm">
+            <div class="card-body">
+              <h3 class="h6 text-secondary text-uppercase fw-bold mb-3">
+                <i class="bi bi-people me-1"></i> Annuaire
+              </h3>
+              <div class="d-flex flex-wrap gap-3 mb-3 admin-summary-chips">
+                <span class="badge rounded-pill bg-light text-success border border-success px-3 py-2">
+                  Actifs : <strong>{{ adminUserOverview.active }}</strong>
+                </span>
+                <span class="badge rounded-pill bg-light text-danger border border-danger px-3 py-2">
+                  Bloqués : <strong>{{ adminUserOverview.blocked }}</strong>
+                </span>
+                <span class="badge rounded-pill bg-light text-dark border px-3 py-2">
+                  Total : <strong>{{ adminUserOverview.total }}</strong>
+                </span>
+              </div>
+              <p class="small text-muted mb-2">Répartition par rôle</p>
+              <ul class="list-unstyled mb-0 admin-role-bars">
+                <li *ngFor="let row of adminRoleBarRows" class="admin-role-bar-item">
+                  <div class="d-flex justify-content-between small mb-1">
+                    <span class="fw-semibold">{{ row.label }}</span>
+                    <span class="text-muted"
+                      >{{ row.count }} · {{ adminRolePercent(row.label, row.count) }}&nbsp;%</span
+                    >
+                  </div>
+                  <div class="admin-role-track rounded-pill">
+                    <div class="admin-role-fill rounded-pill" [style.width.%]="row.pct"></div>
+                  </div>
+                </li>
+              </ul>
+              <p *ngIf="adminRoleBarRows.length === 0" class="small text-muted mb-0">Chargement de l’annuaire…</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4 admin-spotlight-row admin-spotlight-row--below-metrics">
+        <div class="col-md-4" *ngFor="let img of adminSpotlightImages">
+          <figure class="admin-spotlight-fig mb-0 h-100">
+            <div class="admin-spotlight-img-wrap rounded-3 shadow-sm overflow-hidden">
+              <img
+                [src]="img.src"
+                [alt]="img.alt"
+                class="w-100 admin-spotlight-img"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+              />
+            </div>
+            <figcaption class="small text-muted mt-2 px-1">{{ img.caption }}</figcaption>
+          </figure>
+        </div>
+      </div>
+
     </div>
 
     <!-- Donor Dashboard -->
@@ -91,8 +223,7 @@
         <div class="card-body">
           <p>Suivez les demandes, crédits et flux NutriFlow (offres publiées par les donateurs).</p>
           <div class="d-flex flex-wrap gap-2">
-            <a routerLink="/valorisation/nutriflow" class="btn btn-secondary">Espace NutriFlow recycleur</a>
-            <a routerLink="/valorisation/nutriflow/requests" class="btn btn-outline-secondary">Mes demandes</a>
+            <a routerLink="/valorisation/nutriflow/requests" class="btn btn-secondary">Espace NutriFlow recycleur</a>
           </div>
         </div>
       </div>

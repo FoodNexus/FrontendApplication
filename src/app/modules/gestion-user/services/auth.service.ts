@@ -150,6 +150,12 @@ export class AuthService {
     }
   }
 
+  public getKeycloakPreferredUsername(): string | null {
+    const token: any = this.keycloak.getKeycloakInstance()?.tokenParsed;
+    const u = token?.preferred_username;
+    return typeof u === 'string' && u.trim().length > 0 ? u.trim() : null;
+  }
+
   public getUsername(): string {
     if (this.currentUser) {
       return `${this.currentUser.prenom} ${this.currentUser.nom}`;
