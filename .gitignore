@@ -41,6 +41,14 @@ yarn-error.log
 **/ai-model/notebooks/archive/**/*.png
 **/ai-model/notebooks/archive/**/*.webp
 
+# Maven (Spring module under valorisation-organique-economie-circulaire)
+**/target/
+**/.tools/
+
+# Python (nutriflow-onnx-api local runs)
+**/__pycache__/
+*.py[cod]
+
 # Miscellaneous
 /.angular/cache
 .sass-cache/

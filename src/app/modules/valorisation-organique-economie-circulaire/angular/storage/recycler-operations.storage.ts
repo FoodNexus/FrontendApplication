@@ -1,0 +1,113 @@
+/**
+ * Shared persistence for recycler requests (recycler UI + admin verification).
+ * Replace with API calls when the backend exposes these endpoints.
+ */
+
+export type {
+  ProductStatus,
+  RequestStatus,
+  RecyclableProduct,
+  RecyclerRequest
+} from '../models/recycler-operations.model';
+
+import type { RecyclerRequest, RequestStatus } from '../models/recycler-operations.model';
+
+export const RECYCLER_REQUESTS_STORAGE_KEY = 'gestion-receveur-requests';
+
+/** Même onglet / même document (l’événement <code>storage</code> ne se déclenche pas en interne). */
+export const RECYCLER_REQUESTS_CHANGED_EVENT = 'nutriflow-recycler-requests-changed';
+
+/** preferred_username Keycloak par clé NutriFlow (affichage mini-jeu, même navigateur). */
+export const NUTRIFLOW_KEY_DISPLAY_NAMES_STORAGE_KEY = 'nutriflow-key-display-names:v1';
+
+/**
+ * Statuts pour lesquels l’admin peut valider l’opération et attribuer le crédit recycleur.
+ * Le flux donateur met la demande en <code>available</code> après acceptation ; la file
+ * <code>pending_verification</code> reste prise en charge si elle est utilisée ailleurs.
+ */
+export function isNutriflowAdminCreditVerifiableStatus(status: RequestStatus): boolean {
+  return status === 'pending_verification' || status === 'available' || status === 'approved';
+}
+
+type SerializedRequest = Omit<RecyclerRequest, 'requestedAt'> & { requestedAt: string };
+
+export function loadRecyclerRequests(): RecyclerRequest[] {
+  const cached = localStorage.getItem(RECYCLER_REQUESTS_STORAGE_KEY);
+  if (!cached) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(cached) as SerializedRequest[];
+    return parsed.map((entry) => ({
+      ...entry,
+      requestedAt: new Date(entry.requestedAt)
+    }));
+  } catch {
+    localStorage.removeItem(RECYCLER_REQUESTS_STORAGE_KEY);
+    return [];
+  }
+}
+
+export function saveRecyclerRequests(requests: RecyclerRequest[]): void {
+  const serialized = requests.map((entry) => ({
+    ...entry,
+    requestedAt: entry.requestedAt.toISOString()
+  }));
+  localStorage.setItem(RECYCLER_REQUESTS_STORAGE_KEY, JSON.stringify(serialized));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(RECYCLER_REQUESTS_CHANGED_EVENT));
+  }
+}
+
+/** Avancement métier (plus grand = plus loin dans le flux NutriFlow). */
+function requestProgressRank(status: RequestStatus): number {
+  switch (status) {
+    case 'awaiting_donor':
+      return 10;
+    case 'rejected':
+      return 15;
+    case 'pending':
+      return 20;
+    case 'approved':
+      return 30;
+    case 'available':
+      return 40;
+    case 'pending_verification':
+      return 50;
+    case 'verification_rejected':
+      return 55;
+    case 'verified':
+      return 60;
+    case 'done':
+      return 60;
+    default:
+      return 0;
+  }
+}
+
+/**
+ * Fusionne local + copie distante (hub) sans perdre la version la plus avancée.
+ */
+export function mergeRecyclerRequestsLocalWithRemote(
+  local: RecyclerRequest[],
+  remote: RecyclerRequest[]
+): RecyclerRequest[] {
+  const byId = new Map<number, RecyclerRequest>();
+  const mergeTwo = (a: RecyclerRequest, b: RecyclerRequest): RecyclerRequest => {
+    const ra = requestProgressRank(a.status);
+    const rb = requestProgressRank(b.status);
+    if (ra !== rb) {
+      return ra > rb ? a : b;
+    }
+    return a.requestedAt.getTime() >= b.requestedAt.getTime() ? a : b;
+  };
+  for (const r of remote) {
+    const cur = byId.get(r.id);
+    byId.set(r.id, cur ? mergeTwo(cur, r) : r);
+  }
+  for (const r of local) {
+    const cur = byId.get(r.id);
+    byId.set(r.id, cur ? mergeTwo(cur, r) : r);
+  }
+  return [...byId.values()].sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
+}

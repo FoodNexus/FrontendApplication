@@ -1,0 +1,13 @@
+server:
+  port: 8095
+
+spring:
+  application:
+    name: ms-valorisation-economie-circulaire
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+logging:
+  level:
+    tn.esprit: INFO

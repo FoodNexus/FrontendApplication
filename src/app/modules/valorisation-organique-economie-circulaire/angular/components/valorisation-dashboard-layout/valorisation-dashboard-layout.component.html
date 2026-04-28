@@ -1,0 +1,39 @@
+<div class="dashboard-shell">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <p class="eyebrow">FoodNexus · Valorisation</p>
+        <h1>Économie circulaire</h1>
+        <p class="subtitle">Espace recyclage et flux organiques</p>
+      </div>
+
+      <div class="metrics">
+        <article>
+          <span>Outils</span>
+          <strong>2</strong>
+        </article>
+      </div>
+    </div>
+  </header>
+
+  <main class="workspace-layout">
+    <aside class="module-sidebar">
+      <h2>Navigation</h2>
+      <p>Choisissez un écran</p>
+      <nav class="sidebar-links" aria-label="Navigation valorisation">
+        <a
+          *ngFor="let item of navItems"
+          [routerLink]="[valorisationBase, item.path]"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+        >
+          {{ item.label }}
+        </a>
+      </nav>
+    </aside>
+
+    <section class="content">
+      <router-outlet></router-outlet>
+    </section>
+  </main>
+</div>

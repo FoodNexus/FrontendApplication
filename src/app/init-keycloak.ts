@@ -16,6 +16,11 @@ export function initializeKeycloak(keycloak: KeycloakService) {
       },
       enableBearerInterceptor: true,
       bearerPrefix: 'Bearer',
-      bearerExcludedUrls: ['/assets']
+      bearerExcludedUrls: [
+        '/assets',
+        // Inférence locale : pas de JWT ; évite un préflight CORS inutile avec Authorization.
+        'localhost:8096',
+        '127\\.0\\.0\\.1:8096'
+      ]
     });
 }

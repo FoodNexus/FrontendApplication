@@ -3,16 +3,12 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
-import {
-  isNutriflowAdminCreditVerifiableStatus,
-  loadRecyclerRequests,
-  RECYCLER_REQUESTS_CHANGED_EVENT
-} from '../../../valorisation-organique-economie-circulaire/storage/recycler-operations.storage';
-import { DONOR_LOTS_MUTATED_EVENT } from '../../../valorisation-organique-economie-circulaire/storage/donor-lots.storage';
+import { DonorLotsService } from '../../../valorisation-organique-economie-circulaire/angular/services/donor-lots.service';
+import { NutriflowRecyclerRequestsService } from '../../../valorisation-organique-economie-circulaire/angular/services/nutriflow-recycler-requests.service';
 import {
   RecyclerCreditsService,
   NUTRIFLOW_CREDITS_MUTATED_EVENT
-} from '../../../valorisation-organique-economie-circulaire/services/recycler-credits.service';
+} from '../../../valorisation-organique-economie-circulaire/angular/services/recycler-credits.service';
 import { InspectionCaseService } from '../../../audit-conformite-contrat-numerique/services/inspection-case.service';
 import { RecyclingProductsService } from '../../../audit-conformite-contrat-numerique/services/recycling-products.service';
 import { InspectionCase } from '../../../audit-conformite-contrat-numerique/models/inspection-case.model';
@@ -120,7 +116,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private router: Router,
     sanitizer: DomSanitizer,
-    private creditsService: RecyclerCreditsService
+    private creditsService: RecyclerCreditsService,
+    private nfRecyclerRequests: NutriflowRecyclerRequestsService
   ) {
     this.nutriflowRecyclerVideoUrl = sanitizer.bypassSecurityTrustResourceUrl(
       'https://www.youtube.com/embed/xpAnLXc_bIU?autoplay=1&mute=0&rel=0&modestbranding=1&playsinline=1'
@@ -154,8 +151,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
       this.initPasswordForm();
       if (typeof window !== 'undefined') {
-        window.addEventListener(RECYCLER_REQUESTS_CHANGED_EVENT, this.boundNutriRefresh);
-        window.addEventListener(DONOR_LOTS_MUTATED_EVENT, this.boundNutriRefresh);
+        window.addEventListener(NutriflowRecyclerRequestsService.CHANGED_EVENT, this.boundNutriRefresh);
+        window.addEventListener(DonorLotsService.MUTATED_EVENT, this.boundNutriRefresh);
         window.addEventListener(NUTRIFLOW_CREDITS_MUTATED_EVENT, this.boundNutriRefresh);
       }
     }
@@ -163,8 +160,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (typeof window !== 'undefined') {
-      window.removeEventListener(RECYCLER_REQUESTS_CHANGED_EVENT, this.boundNutriRefresh);
-      window.removeEventListener(DONOR_LOTS_MUTATED_EVENT, this.boundNutriRefresh);
+      window.removeEventListener(NutriflowRecyclerRequestsService.CHANGED_EVENT, this.boundNutriRefresh);
+      window.removeEventListener(DonorLotsService.MUTATED_EVENT, this.boundNutriRefresh);
       window.removeEventListener(NUTRIFLOW_CREDITS_MUTATED_EVENT, this.boundNutriRefresh);
     }
   }
@@ -212,9 +209,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private refreshAdminNutriSnapshot(): void {
-    const req = loadRecyclerRequests();
+    const req = this.nfRecyclerRequests.getAll();
     this.adminNutriSnap.pendingVerification = req.filter((r) =>
-      isNutriflowAdminCreditVerifiableStatus(r.status)
+      this.nfRecyclerRequests.isAdminCreditVerifiable(r.status)
     ).length;
     this.adminNutriSnap.verified = req.filter((r) => r.status === 'verified').length;
     this.adminNutriSnap.awaitingDonor = req.filter((r) => r.status === 'awaiting_donor').length;

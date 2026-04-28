@@ -1,0 +1,98 @@
+<section class="planet-stairs" aria-label="Objectif annuel et arrière-plan compétitif">
+  <div class="planet-stairs__intro">
+    <h3 class="planet-stairs__title">
+      Objectif {{ yearlyGoal }} opérations ({{ currentYear }}) — ascension collective
+    </h3>
+    <p class="planet-stairs__sub">
+      La jauge <strong>{{ yearlyGoal }} opérations / an</strong> cumule vos recyclages
+      <strong>validés cette année</strong> et les <strong>sauts mini-jeu</strong> (1 crédit par saut). Les marches suivent cette progression.
+    </p>
+  </div>
+
+  <div class="planet-stairs__meter" aria-label="Progression annuelle">
+    <div class="planet-stairs__meter-row">
+      <span class="planet-stairs__meter-label"
+        >Année en cours : <strong>{{ meterYearOps }} / {{ yearlyGoal }}</strong>
+        (validations + jeu)</span
+      >
+      <span class="planet-stairs__meter-pct">{{ yearProgressPct | number: '1.0-0' }}&nbsp;%</span>
+    </div>
+    <div class="planet-stairs__meter-track">
+      <div class="planet-stairs__meter-fill" [style.width.%]="yearProgressPct"></div>
+    </div>
+    <p class="planet-stairs__meter-hint">
+      Solde crédits fidélité : <strong>{{ creditBalance }}</strong>
+      <span *ngIf="playBonusSteps > 0"> · Sauts payés dans le jeu : {{ playBonusSteps }}</span>
+    </p>
+  </div>
+
+  <div class="planet-stairs__scene">
+    <div class="planet-stairs__bush planet-stairs__bush--left" aria-hidden="true"></div>
+    <div class="planet-stairs__bush planet-stairs__bush--right" aria-hidden="true"></div>
+    <div class="planet-stairs__decor-trees">
+      <div class="planet-stairs__tree planet-stairs__tree--left" aria-hidden="true">
+        <div class="planet-stairs__tree-foliage"></div>
+        <div class="planet-stairs__tree-trunk"></div>
+      </div>
+      <div class="planet-stairs__tree planet-stairs__tree--right" aria-hidden="true">
+        <div class="planet-stairs__tree-foliage planet-stairs__tree-foliage--small"></div>
+        <div class="planet-stairs__tree-trunk"></div>
+      </div>
+    </div>
+
+    <div class="planet-stairs__sky">
+      <div class="planet-stairs__planet" [class.planet-stairs__planet--glow]="goalReached">
+        <div class="planet-stairs__planet-globe" aria-hidden="true"></div>
+        <span class="planet-stairs__planet-label">Objectif planète</span>
+      </div>
+    </div>
+
+    <div class="planet-stairs__stairs-wrap" aria-hidden="true">
+      <div class="planet-stairs__stringer"></div>
+      <div class="planet-stairs__steps">
+        <div
+          class="planet-stairs__flight-step"
+          *ngFor="let i of stepIndices"
+          [class.planet-stairs__flight-step--past]="combinedSelfStepIndex >= 0 && i < combinedSelfStepIndex"
+          [class.planet-stairs__flight-step--current]="combinedSelfStepIndex >= 0 && i === combinedSelfStepIndex"
+        >
+          <div class="planet-stairs__tread">
+            <div class="planet-stairs__tread-edge"></div>
+          </div>
+          <div class="planet-stairs__riser"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="planet-stairs__players">
+      <div
+        class="planet-stairs__player"
+        *ngFor="let p of roster; trackBy: trackPlayer"
+        [class.planet-stairs__player--self]="p.isSelf"
+        [class.planet-stairs__player--jump]="jumpingPlay && p.isSelf"
+        [style.left.%]="p.lanePct"
+        [style.bottom.px]="p.bottomPx"
+      >
+        <span class="planet-stairs__nametag">{{ p.label }}</span>
+        <span class="planet-stairs__character-fig"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="planet-stairs__actions">
+    <button
+      type="button"
+      class="planet-stairs__btn"
+      (click)="onPlayStepClick()"
+      [disabled]="creditBalance <= 0 || jumpingPlay"
+    >
+      Saut (+1 progression, 1&nbsp;crédit)
+    </button>
+    <p class="planet-stairs__hint">
+      Les crédits proviennent des opérations validées ; chaque saut consomme 1 crédit pour montrer votre impact dans le jeu.
+    </p>
+    <p *ngIf="goalReached" class="planet-stairs__celebrate">
+      Bravo — vous avez atteint ou dépassé l’objectif annuel sur ce suivi&nbsp;!
+    </p>
+  </div>
+</section>

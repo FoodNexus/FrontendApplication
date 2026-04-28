@@ -5,12 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { RecyclingProducts, Destination } from '../../../models/recycling-products.model';
 import { RecyclingProductsService } from '../../../services/recycling-products.service';
 import { AuthService } from '../../../../gestion-user/services/auth.service';
-import {
-  loadRecyclerRequests,
-  RECYCLER_REQUESTS_CHANGED_EVENT,
-  RecyclerRequest
-} from '../../../../valorisation-organique-economie-circulaire/storage/recycler-operations.storage';
-import { NUTRIFLOW_HUB_PULLED_EVENT } from '../../../../valorisation-organique-economie-circulaire/services/nutriflow-hub-sync.service';
+import type { RecyclerRequest } from '../../../../valorisation-organique-economie-circulaire/angular/models/recycler-operations.model';
+import { NutriflowRecyclerRequestsService } from '../../../../valorisation-organique-economie-circulaire/angular/services/nutriflow-recycler-requests.service';
+import { NUTRIFLOW_HUB_PULLED_EVENT } from '../../../../valorisation-organique-economie-circulaire/angular/services/nutriflow-hub-sync.service';
 import { NotificationBellComponent } from '../../notification-bell/notification-bell.component';
 
 @Component({
@@ -45,13 +42,14 @@ export class RecyclingProductsListComponent implements OnInit, OnDestroy {
   constructor(
     private service: RecyclingProductsService,
     private authService: AuthService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private nfRecyclerRequests: NutriflowRecyclerRequestsService
   ) {}
 
   ngOnInit(): void {
     if (typeof window !== 'undefined') {
       window.addEventListener(NUTRIFLOW_HUB_PULLED_EVENT, this.onNutriFlowStorageChanged);
-      window.addEventListener(RECYCLER_REQUESTS_CHANGED_EVENT, this.onNutriFlowStorageChanged);
+      window.addEventListener(NutriflowRecyclerRequestsService.CHANGED_EVENT, this.onNutriFlowStorageChanged);
     }
     if (!this.authService.getCurrentUser()) {
       this.authService.fetchUserProfile().subscribe(() => this.loadAll());
@@ -63,7 +61,7 @@ export class RecyclingProductsListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (typeof window !== 'undefined') {
       window.removeEventListener(NUTRIFLOW_HUB_PULLED_EVENT, this.onNutriFlowStorageChanged);
-      window.removeEventListener(RECYCLER_REQUESTS_CHANGED_EVENT, this.onNutriFlowStorageChanged);
+      window.removeEventListener(NutriflowRecyclerRequestsService.CHANGED_EVENT, this.onNutriFlowStorageChanged);
     }
   }
 
@@ -94,7 +92,8 @@ export class RecyclingProductsListComponent implements OnInit, OnDestroy {
   }
 
   private refreshNutriFlow(): void {
-    this.nutriFlowVerified = loadRecyclerRequests()
+    this.nutriFlowVerified = this.nfRecyclerRequests
+      .getAll()
       .filter((r) => r.status === 'verified')
       .sort(
         (a, b) =>

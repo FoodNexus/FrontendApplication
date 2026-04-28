@@ -1,0 +1,36 @@
+.hero {
+  background: linear-gradient(135deg, #14532d, #166534);
+}
+
+.publish-lot-card,
+.publish-card-body {
+  overflow: visible;
+}
+
+.lot-picker-menu {
+  z-index: 1080;
+  max-height: 280px;
+  background: #fff;
+}
+
+.lot-picker-wrap .form-select {
+  cursor: pointer;
+}
+
+.donor-video-wrap {
+  max-width: 340px;
+}
+
+@media (min-width: 992px) {
+  .donor-video-wrap {
+    max-width: 100%;
+  }
+}
+
+.donor-side-panel iframe {
+  border: 0;
+}
+
+.progress-micro {
+  height: 8px;
+}

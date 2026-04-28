@@ -1,0 +1,54 @@
+<section class="stats-panel" aria-label="Statistiques demandes NutriFlow">
+  <div class="stats-head">
+    <h2 class="stats-title">{{ panelTitle }}</h2>
+    <p class="stats-sub small mb-0">{{ panelSubtitle }}</p>
+  </div>
+
+  <div class="stats-grid">
+    <article class="stat-tile">
+      <span>Demandes</span>
+      <strong>{{ totalRequests }}</strong>
+    </article>
+    <article class="stat-tile">
+      <span>Volume demandé</span>
+      <strong>{{ totalKg | number: '1.0-0' }} kg</strong>
+    </article>
+    <article class="stat-tile">
+      <span>Lots donateur listés</span>
+      <strong>{{ listedLotsCount }}</strong>
+    </article>
+    <article class="stat-tile">
+      <span>Lots donateur (total)</span>
+      <strong>{{ allLotsCount }}</strong>
+    </article>
+  </div>
+
+  <div class="pie-row">
+    <div
+      class="pie-donut"
+      [style.background]="pieGradient"
+      role="img"
+      [attr.aria-label]="pieAriaLabel"
+    >
+      <div class="pie-hole">
+        <span class="pie-total">{{ totalRequests }}</span>
+        <span class="pie-total-label">demandes</span>
+      </div>
+    </div>
+
+    <ul class="legend" *ngIf="slices.length > 0">
+      <li *ngFor="let s of slices">
+        <span class="swatch" [style.background]="s.color"></span>
+        <span class="legend-label">{{ s.label }}</span>
+        <span class="legend-count">{{ s.count }}</span>
+        <span class="legend-pct text-muted" *ngIf="totalRequests > 0">
+          ({{ (s.count / totalRequests) * 100 | number: '1.0-0' }}&nbsp;%)
+        </span>
+      </li>
+    </ul>
+
+    <p *ngIf="slices.length === 0" class="empty-pie small mb-0">
+      Aucune demande enregistrée — la répartition apparaîtra dès les premières demandes.
+    </p>
+  </div>
+</section>

@@ -3,25 +3,15 @@ import { DatePipe, DecimalPipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import {
-  isNutriflowAdminCreditVerifiableStatus,
-  loadRecyclerRequests,
-  RECYCLER_REQUESTS_CHANGED_EVENT,
-  RECYCLER_REQUESTS_STORAGE_KEY,
-  RecyclerRequest,
-  RequestStatus,
-  saveRecyclerRequests
-} from '../../../valorisation-organique-economie-circulaire/storage/recycler-operations.storage';
+import type { RecyclerRequest, RequestStatus } from '../../../valorisation-organique-economie-circulaire/angular/models/recycler-operations.model';
+import type { DonorLotRecord } from '../../../valorisation-organique-economie-circulaire/angular/models/donor-lots.model';
+import { DonorLotsService } from '../../../valorisation-organique-economie-circulaire/angular/services/donor-lots.service';
+import { NutriflowRecyclerRequestsService } from '../../../valorisation-organique-economie-circulaire/angular/services/nutriflow-recycler-requests.service';
 import {
   RecyclerCreditsService,
   NUTRIFLOW_CREDITS_MUTATED_EVENT
-} from '../../../valorisation-organique-economie-circulaire/services/recycler-credits.service';
-import { NUTRIFLOW_HUB_PULLED_EVENT } from '../../../valorisation-organique-economie-circulaire/services/nutriflow-hub-sync.service';
-import {
-  DONOR_LOTS_MUTATED_EVENT,
-  DonorLotRecord,
-  loadAllDonorLots
-} from '../../../valorisation-organique-economie-circulaire/storage/donor-lots.storage';
+} from '../../../valorisation-organique-economie-circulaire/angular/services/recycler-credits.service';
+import { NUTRIFLOW_HUB_PULLED_EVENT } from '../../../valorisation-organique-economie-circulaire/angular/services/nutriflow-hub-sync.service';
 
 const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
   'awaiting_donor',
@@ -295,7 +285,8 @@ const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
   ]
 })
 export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
-  protected readonly isNutriflowAdminCreditVerifiableStatus = isNutriflowAdminCreditVerifiableStatus;
+  protected readonly isNutriflowAdminCreditVerifiableStatus = (status: RequestStatus): boolean =>
+    this.nfRecyclerRequests.isAdminCreditVerifiable(status);
   protected rejectNotes: Record<number, string> = {};
   protected all: RecyclerRequest[] = [];
   protected pendingList: RecyclerRequest[] = [];
@@ -322,7 +313,7 @@ export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
   };
 
   private readonly onStorage = (ev: StorageEvent): void => {
-    if (ev.key !== RECYCLER_REQUESTS_STORAGE_KEY && ev.key != null) {
+    if (ev.key !== NutriflowRecyclerRequestsService.STORAGE_KEY && ev.key != null) {
       return;
     }
     this.ngZone.run(() => this.reloadFromStorage());
@@ -332,7 +323,9 @@ export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
     private creditsService: RecyclerCreditsService,
     private authService: AuthService,
     private ngZone: NgZone,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private nfDonorLots: DonorLotsService,
+    private nfRecyclerRequests: NutriflowRecyclerRequestsService
   ) {}
 
   protected get overview(): {
@@ -365,7 +358,7 @@ export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
     const sorted = [...this.all].sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
     switch (this.requestFilter) {
       case 'action':
-        return sorted.filter((r) => isNutriflowAdminCreditVerifiableStatus(r.status));
+        return sorted.filter((r) => this.nfRecyclerRequests.isAdminCreditVerifiable(r.status));
       case 'active':
         return sorted.filter((r) => ACTIVE_REQUEST_STATUSES.includes(r.status));
       case 'closed':
@@ -522,8 +515,8 @@ export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (typeof window !== 'undefined') {
       window.addEventListener(NUTRIFLOW_HUB_PULLED_EVENT, this.onHubPulled);
-      window.addEventListener(RECYCLER_REQUESTS_CHANGED_EVENT, this.onRecyclerRequestsChanged);
-      window.addEventListener(DONOR_LOTS_MUTATED_EVENT, this.onDonorLots);
+      window.addEventListener(NutriflowRecyclerRequestsService.CHANGED_EVENT, this.onRecyclerRequestsChanged);
+      window.addEventListener(DonorLotsService.MUTATED_EVENT, this.onDonorLots);
       window.addEventListener(NUTRIFLOW_CREDITS_MUTATED_EVENT, this.onCredits);
       window.addEventListener('storage', this.onStorage);
     }
@@ -534,8 +527,8 @@ export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (typeof window !== 'undefined') {
       window.removeEventListener(NUTRIFLOW_HUB_PULLED_EVENT, this.onHubPulled);
-      window.removeEventListener(RECYCLER_REQUESTS_CHANGED_EVENT, this.onRecyclerRequestsChanged);
-      window.removeEventListener(DONOR_LOTS_MUTATED_EVENT, this.onDonorLots);
+      window.removeEventListener(NutriflowRecyclerRequestsService.CHANGED_EVENT, this.onRecyclerRequestsChanged);
+      window.removeEventListener(DonorLotsService.MUTATED_EVENT, this.onDonorLots);
       window.removeEventListener(NUTRIFLOW_CREDITS_MUTATED_EVENT, this.onCredits);
       window.removeEventListener('storage', this.onStorage);
     }
@@ -558,12 +551,12 @@ export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
 
   approve(r: RecyclerRequest): void {
     this.reloadFromStorage();
-    if (!isNutriflowAdminCreditVerifiableStatus(r.status)) {
+    if (!this.nfRecyclerRequests.isAdminCreditVerifiable(r.status)) {
       return;
     }
     const userKey = r.recyclerUserKey ?? 'local:anonymous';
     this.all = this.all.map((x) =>
-      x.id === r.id && isNutriflowAdminCreditVerifiableStatus(x.status)
+      x.id === r.id && this.nfRecyclerRequests.isAdminCreditVerifiable(x.status)
         ? {
             ...x,
             status: 'verified',
@@ -573,18 +566,18 @@ export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
         : x
     );
     this.creditsService.grantForVerifiedRequest(userKey, r.id);
-    saveRecyclerRequests(this.all);
+    this.nfRecyclerRequests.saveAll(this.all);
     this.reloadFromStorage();
   }
 
   reject(r: RecyclerRequest): void {
     this.reloadFromStorage();
-    if (!isNutriflowAdminCreditVerifiableStatus(r.status)) {
+    if (!this.nfRecyclerRequests.isAdminCreditVerifiable(r.status)) {
       return;
     }
     const note = (this.rejectNotes[r.id] ?? '').trim() || 'Rejected by administrator';
     this.all = this.all.map((x) =>
-      x.id === r.id && isNutriflowAdminCreditVerifiableStatus(x.status)
+      x.id === r.id && this.nfRecyclerRequests.isAdminCreditVerifiable(x.status)
         ? {
             ...x,
             status: 'verification_rejected',
@@ -593,16 +586,16 @@ export class AdminRecyclerVerificationComponent implements OnInit, OnDestroy {
           }
         : x
     );
-    saveRecyclerRequests(this.all);
+    this.nfRecyclerRequests.saveAll(this.all);
     delete this.rejectNotes[r.id];
     this.reloadFromStorage();
   }
 
   private reloadFromStorage(): void {
-    this.all = loadRecyclerRequests();
-    this.donorLots = [...loadAllDonorLots()].sort((a, b) => b.id - a.id);
+    this.all = this.nfRecyclerRequests.getAll();
+    this.donorLots = [...this.nfDonorLots.getAll()].sort((a, b) => b.id - a.id);
     this.pendingList = this.all
-      .filter((r) => isNutriflowAdminCreditVerifiableStatus(r.status))
+      .filter((r) => this.nfRecyclerRequests.isAdminCreditVerifiable(r.status))
       .sort(
         (a, b) =>
           (b.verificationSubmittedAt ?? '').localeCompare(a.verificationSubmittedAt ?? '')

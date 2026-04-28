@@ -18,7 +18,7 @@ export const routes: Routes = [
   },
   {
     path: 'valorisation',
-    loadChildren: () => import('./modules/valorisation-organique-economie-circulaire/valorisation-organique-economie-circulaire.module')
+    loadChildren: () => import('./modules/valorisation-organique-economie-circulaire/angular/valorisation-organique-economie-circulaire.module')
       .then(m => m.ValorisationOrganiqueEconomieCirculaireModule)
   },
   { path: '', redirectTo: 'user/home', pathMatch: 'full' }

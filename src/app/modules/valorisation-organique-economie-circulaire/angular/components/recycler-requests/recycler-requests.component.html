@@ -1,0 +1,312 @@
+<section class="page-shell">
+  <header class="hero hero--top" aria-label="Résumé NutriFlow">
+    <div class="hero-intro">
+      <p class="eyebrow">{{ isAdminUser ? 'Admin — inventaire NutriFlow' : 'Recycler Front Office' }}</p>
+      <h2>Demandes de recyclage — lots donateurs</h2>
+      <p class="subtitle" *ngIf="isRecyclerCreditsUser">
+        Produits proposés par les <strong>donateurs</strong> (lots publiés). Les demandes sur lot donateur restent
+        <strong>en attente donateur</strong> jusqu’à acceptation, puis validation admin et vos
+        <strong>crédits fidélité</strong>.
+      </p>
+      <p class="subtitle" *ngIf="!isRecyclerCreditsUser">
+        Vue administrateur : lots donateurs et demandes. Les <strong>crédits NutriFlow</strong> sont réservés aux
+        comptes recycleur (pas au back-office).
+      </p>
+    </div>
+    <div class="hero-metrics">
+      <article>
+        <span>Stock affiché</span>
+        <strong>{{ totalAvailableKg | number: '1.0-0' }} kg</strong>
+      </article>
+      <article>
+        <span>Demandes ouvertes</span>
+        <strong>{{ openRequestsCount }}</strong>
+      </article>
+      <article>
+        <span>Complétées / vérifiées</span>
+        <strong>{{ doneRequestsCount }}</strong>
+      </article>
+      <article *ngIf="isRecyclerCreditsUser">
+        <span>Mes crédits</span>
+        <strong>{{ creditsService.getBalance() }}</strong>
+      </article>
+    </div>
+  </header>
+
+  <app-recycler-requests-stats-panel *ngIf="isAdminUser" />
+
+  <section *ngIf="isAdminUser" class="admin-requests-panel">
+    <h3 class="admin-requests-title">Toutes les demandes (priorité aux plus récentes)</h3>
+    <p class="admin-requests-hint small">
+      Validez les opérations en attente de vérification — aligné sur « Vérification recycleur » dans l’admin utilisateur.
+    </p>
+    <div class="muted" *ngIf="assigneeDirectoryError">
+      Annuaire indisponible — les étiquettes de clés limitées peuvent s’afficher.
+    </div>
+    <div class="admin-requests-table-wrap">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Produit</th>
+              <th>Recycleur</th>
+              <th>Donateur</th>
+              <th class="numeric">Qté (kg)</th>
+              <th>Statut</th>
+              <th>Demandé</th>
+              <th>Note</th>
+              <th>Actions admin</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of adminRequestsSorted; trackBy: trackByRequestId">
+              <td>{{ r.id }}</td>
+              <td>{{ r.productName }}</td>
+              <td>{{ displayNameForNutriflowKey(r.recyclerUserKey) }}</td>
+              <td>{{ displayNameForNutriflowKey(r.donorUserKey) }}</td>
+              <td class="numeric">{{ r.quantityKg }}</td>
+              <td>
+                <span [ngClass]="[adminRequestStatusClass(r.status), 'req-status-badge']">{{
+                  adminRequestStatusLabel(r.status)
+                }}</span>
+              </td>
+              <td>{{ r.requestedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td class="muted">{{ r.note || '—' }}</td>
+              <td class="admin-request-actions d-flex">
+                <ng-container *ngIf="isNutriflowAdminCreditVerifiableStatus(r.status); else adminNoCredAct">
+                  <button type="button" class="success" (click)="adminApproveRequest(r)">Créditer (vérifier)</button>
+                  <textarea
+                    class="reject-note"
+                    rows="2"
+                    placeholder="Motif si rejet…"
+                    [(ngModel)]="adminRejectNotes[r.id]"
+                  ></textarea>
+                  <button type="button" class="danger" (click)="adminRejectRequest(r)">Rejeter vérif.</button>
+                </ng-container>
+                <ng-template #adminNoCredAct><span class="muted">—</span></ng-template>
+              </td>
+            </tr>
+            <tr *ngIf="adminRequestsSorted.length === 0">
+              <td colspan="9" class="empty">Aucune demande.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section *ngIf="isAdminUser" class="admin-donor-lots-panel">
+    <h3 class="admin-donor-title">Lots donateurs — stock NutriFlow (local)</h3>
+    <p class="admin-requests-hint small">Ajustez le stock, la liste ou supprimez un lot périmé.</p>
+    <div class="admin-donor-table-wrap">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nom</th>
+              <th>Catég.</th>
+              <th>Matching</th>
+              <th class="numeric">Kg</th>
+              <th>Lieu</th>
+              <th>Visibilité</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let lot of allDonorLotsAdmin; trackBy: trackByDonorLotId">
+              <td>{{ lot.id }}</td>
+              <td>{{ lot.name }}</td>
+              <td class="muted">{{ lot.category }}</td>
+              <td>
+                <span *ngIf="lot.matchingLotId != null" class="badge-listed">matching #{{ lot.matchingLotId }}</span>
+                <span *ngIf="lot.matchingLotId == null" class="muted">—</span>
+              </td>
+              <td class="numeric">
+                <input
+                  class="kg-input"
+                  type="number"
+                  min="0"
+                  [(ngModel)]="lot.quantityKg"
+                  (blur)="adminPersistDonorLotRow(lot)"
+                />
+              </td>
+              <td>{{ lot.location }}</td>
+              <td>
+                <span [ngClass]="lot.listingStatus === 'listed' ? 'badge-listed' : 'badge-paused'">{{
+                  lot.listingStatus === 'listed' ? 'Listé' : 'Pausé'
+                }}</span>
+              </td>
+              <td class="actions">
+                <button type="button" class="secondary small" (click)="adminToggleDonorLotListing(lot)">
+                  {{ lot.listingStatus === 'listed' ? 'Pause' : 'Lister' }}
+                </button>
+                <button type="button" class="danger small" [disabled]="lot.quantityKg > 0" (click)="adminDeleteDonorLot(lot)">
+                  Supprimer
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="allDonorLotsAdmin.length === 0">
+              <td colspan="8" class="empty">Aucun lot.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div
+    class="workspace-main-column"
+    [class.workspace-main-column--recycler-split]="isRecyclerCreditsUser"
+  >
+    <div *ngIf="isRecyclerCreditsUser" class="workspace-col workspace-col--game">
+      <app-nutriflow-recycler-planet-stairs />
+    </div>
+
+    <div class="workspace-col workspace-col--form">
+      <article class="card card-request">
+        <h3>Nouvelle demande</h3>
+        <div *ngIf="requestSubmitError" class="muted">{{ requestSubmitError }}</div>
+
+        <form class="request-form" (ngSubmit)="createRequest()">
+          <label *ngIf="isAdminUser">
+            Donateur filtré (optionnel)
+            <select
+              name="filtDon"
+              [(ngModel)]="draft.filterDonorUserId"
+              (ngModelChange)="onAdminDonorFilterChange()"
+            >
+              <option [ngValue]="null">— Tous —</option>
+              <option *ngFor="let u of donorsForAssign" [ngValue]="u.idUser">
+                {{ userDirectoryLabel(u) }}
+              </option>
+            </select>
+          </label>
+
+          <label *ngIf="isAdminUser">
+            Recycleur assigné *
+            <select name="assiRec" [(ngModel)]="draft.assignRecyclerUserId">
+              <option [ngValue]="null">—</option>
+              <option *ngFor="let u of recyclersForAssign" [ngValue]="u.idUser">
+                {{ userDirectoryLabel(u) }}
+              </option>
+            </select>
+          </label>
+
+          <label>
+            Produit donateur (&lt;= stock)
+            <select name="prod" [(ngModel)]="draft.productId">
+              <option [ngValue]="null">—</option>
+              <option *ngFor="let p of requestableProducts; trackBy: trackByProductRow" [ngValue]="p.id">
+                {{ productOptionLabel(p) }}
+              </option>
+            </select>
+          </label>
+
+          <div *ngIf="selectedProductWithAi() as sp" class="donor-lot-ai-preview">
+            <p class="donor-lot-ai-preview__title">Indicateurs analyse (lot donateur)</p>
+            <div *ngIf="sp.donorAiRecyclablePercent != null">
+              Recyclable (est.) : {{ sp.donorAiRecyclablePercent }}&nbsp;%
+            </div>
+            <div *ngIf="sp.donorAiOrganicPercent != null">Organique (est.) : {{ sp.donorAiOrganicPercent }}&nbsp;%</div>
+            <p *ngIf="sp.donorAiDescription" class="small">{{ sp.donorAiDescription }}</p>
+            <ul *ngIf="sp.donorAiFilieres?.length" class="donor-lot-ai-preview__fil small">
+              <li *ngFor="let code of sp.donorAiFilieres">{{ code }}</li>
+            </ul>
+          </div>
+
+          <label>
+            Quantité (kg)
+            <input type="number" min="1" name="q" [(ngModel)]="draft.quantityKg" />
+          </label>
+
+          <label>
+            Note
+            <textarea name="n" [(ngModel)]="draft.note" rows="2"></textarea>
+          </label>
+
+          <div class="actions">
+            <button type="submit">Créer la demande</button>
+          </div>
+        </form>
+      </article>
+
+      <article class="card">
+        <h3>Lots disponibles (aperçu)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Vignette</th>
+                <th>Produit</th>
+                <th>Lieu</th>
+                <th class="numeric">Dispo kg</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of products; trackBy: trackByProductRow">
+                <td>
+                  <img *ngIf="p.imageUrl" [src]="p.imageUrl" alt="" class="thumb" />
+                  <span *ngIf="!p.imageUrl" class="muted">—</span>
+                </td>
+                <td>
+                  {{ p.name }}
+                  <div class="muted small">{{ displayNameForNutriflowKey(p.donorUserKey) }}</div>
+                </td>
+                <td>{{ p.location }}</td>
+                <td class="numeric">{{ p.availableKg }}</td>
+              </tr>
+              <tr *ngIf="products.length === 0">
+                <td colspan="4" class="empty">Pas de stocks listés ou hub non synchronisé.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card" *ngIf="!isAdminUser">
+        <h3>Mes demandes</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th class="numeric">Qté</th>
+                <th>Statut</th>
+                <th>Date</th>
+                <th>Note</th>
+                <th>Vérif.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of recyclerRequestsSorted; trackBy: trackByRequestId">
+                <td>{{ r.productName }}</td>
+                <td class="numeric">{{ r.quantityKg }}</td>
+              <td>
+                <span [ngClass]="[adminRequestStatusClass(r.status), 'req-status-badge']">{{
+                  adminRequestStatusLabel(r.status)
+                }}</span>
+              </td>
+              <td>{{ r.requestedAt | date: 'short' }}</td>
+                <td class="small">{{ r.note || '—' }}</td>
+                <td class="small">
+                  <span *ngIf="r.status === 'verification_rejected'">{{ r.adminVerificationComment }}</span>
+                  <span *ngIf="r.status === 'verified'" class="text-success">Crédité</span>
+                  <span
+                    *ngIf="r.status !== 'verification_rejected' && r.status !== 'verified'"
+                    class="muted"
+                    >—</span
+                  >
+                </td>
+              </tr>
+              <tr *ngIf="recyclerRequestsSorted.length === 0">
+                <td colspan="6" class="empty">Aucune demande.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>

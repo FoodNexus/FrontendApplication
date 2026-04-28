@@ -5,7 +5,7 @@ import { APP_INITIALIZER } from '@angular/core';
 import { KeycloakService, KeycloakBearerInterceptor } from 'keycloak-angular';
 import { initializeKeycloak } from './init-keycloak';
 import { routes } from './app.routes';
-import { NutriflowHubSyncService } from './modules/valorisation-organique-economie-circulaire/services/nutriflow-hub-sync.service';
+import { NutriflowHubSyncService } from './modules/valorisation-organique-economie-circulaire/angular/services/nutriflow-hub-sync.service';
 
 /** Instancie le service une fois au démarrage pour activer pull/push si `environment.nutriflowHubBaseUrl` est défini. */
 function initNutriflowHubSync(_sync: NutriflowHubSyncService): () => Promise<void> {

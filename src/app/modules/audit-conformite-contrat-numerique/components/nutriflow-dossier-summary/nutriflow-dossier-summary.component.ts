@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { DatePipe, NgFor, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { loadAllDonorLots, DonorLotRecord } from '../../../valorisation-organique-economie-circulaire/storage/donor-lots.storage';
-import {
-  loadRecyclerRequests,
-  RecyclerRequest
-} from '../../../valorisation-organique-economie-circulaire/storage/recycler-operations.storage';
+import type { DonorLotRecord } from '../../../valorisation-organique-economie-circulaire/angular/models/donor-lots.model';
+import type { RecyclerRequest } from '../../../valorisation-organique-economie-circulaire/angular/models/recycler-operations.model';
+import { DonorLotsService } from '../../../valorisation-organique-economie-circulaire/angular/services/donor-lots.service';
+import { NutriflowRecyclerRequestsService } from '../../../valorisation-organique-economie-circulaire/angular/services/nutriflow-recycler-requests.service';
 import { AuthService } from '../../../gestion-user/services/auth.service';
 
 /**
@@ -142,7 +141,11 @@ export class NutriflowDossierSummaryComponent implements OnInit {
   reportBusy = false;
   reportError = '';
 
-  constructor(private auth: AuthService) {}
+  constructor(
+    private auth: AuthService,
+    private donorLots: DonorLotsService,
+    private recyclerRequests: NutriflowRecyclerRequestsService
+  ) {}
 
   ngOnInit(): void {
     if (!this.auth.getCurrentUser()) {
@@ -156,8 +159,8 @@ export class NutriflowDossierSummaryComponent implements OnInit {
   }
 
   private load(): void {
-    this.lots = [...loadAllDonorLots()].sort((a, b) => b.id - a.id);
-    this.requests = [...loadRecyclerRequests()].sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
+    this.lots = [...this.donorLots.getAll()].sort((a, b) => b.id - a.id);
+    this.requests = [...this.recyclerRequests.getAll()].sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
     this.buildNarrative();
   }
 
