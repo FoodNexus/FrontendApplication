@@ -1,0 +1,95 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="form-header">
+    <button class="btn-header-back" routerLink="/receveur/dashboard">
+      <i class="bi bi-arrow-left"></i> Dashboard
+    </button>
+    <h1>Détail de la notation</h1>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Chargement...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="error-card">
+    <div class="error-icon"><i class="bi bi-exclamation-triangle"></i></div>
+    <p>{{ errorMessage }}</p>
+    <button class="btn-retry" (click)="loadNotation()">Réessayer</button>
+  </div>
+
+  <!-- Contenu -->
+  <div *ngIf="!isLoading && !errorMessage && notation" class="form-card">
+    <!-- Header avec note -->
+    <div class="card-header">
+      <div class="don-title">
+        <span class="don-icon"><i class="bi bi-gift"></i></span>
+        <span class="don-id">Don #{{ notation.donId }}</span>
+      </div>
+      <div class="score-badge" [class]="getScoreClass(notation.note)">
+        {{ notation.note }}/5
+      </div>
+    </div>
+
+    <!-- Corps -->
+    <div class="card-body">
+      <!-- Note avec étoiles -->
+      <div class="info-row">
+        <div class="info-icon"><i class="bi bi-star"></i></div>
+        <div class="info-content">
+          <span class="label">Note</span>
+          <div class="stars-container">
+            <span *ngFor="let star of getNoteStars(notation.note)" class="star" [class.filled]="star === '★'">
+              <i class="bi" [class.bi-star-fill]="star === '★'" [class.bi-star]="star !== '★'"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commentaire -->
+      <div class="info-row" *ngIf="notation.commentaire">
+        <div class="info-icon"><i class="bi bi-chat-left-text"></i></div>
+        <div class="info-content">
+          <span class="label">Commentaire</span>
+          <span class="value commentaire">"{{ notation.commentaire }}"</span>
+        </div>
+      </div>
+
+      <div class="info-row" *ngIf="!notation.commentaire">
+        <div class="info-icon"><i class="bi bi-chat-left-text"></i></div>
+        <div class="info-content">
+          <span class="label">Commentaire</span>
+          <span class="value text-muted">Aucun commentaire</span>
+        </div>
+      </div>
+
+      <!-- Date de notation -->
+      <div class="info-row">
+        <div class="info-icon"><i class="bi bi-calendar-check"></i></div>
+        <div class="info-content">
+          <span class="label">Date de notation</span>
+          <span class="value">{{ notation.dateNotation | date:'dd/MM/yyyy à HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card-actions">
+      <button class="btn-back-list" (click)="goBack()">
+        ← Retour à la liste
+      </button>
+    </div>
+  </div>
+
+  <!-- Non trouvé -->
+  <div *ngIf="!isLoading && !errorMessage && !notation" class="empty-card">
+    <div class="empty-icon"><i class="bi bi-star"></i></div>
+    <h3>Notation non trouvée</h3>
+    <p>La notation que vous recherchez n'existe pas ou a été supprimée.</p>
+    <button class="btn-primary" routerLink="/receveur/notations">
+      Retour à la liste
+    </button>
+  </div>
+</div>

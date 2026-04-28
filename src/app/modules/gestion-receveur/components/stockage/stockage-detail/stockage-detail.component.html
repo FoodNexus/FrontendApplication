@@ -1,0 +1,79 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="title-icon"><i class="bi bi-pencil-square"></i></div>
+      <div class="title-text">
+        <h2>Modifier mon stockage</h2>
+        <p>Mettez à jour vos capacités de stockage</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/receveur/dashboard" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Retour
+      </a>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Chargement de vos informations...</p>
+  </div>
+
+  <!-- Formulaire -->
+  <div *ngIf="!isLoading && stockage" class="form-card">
+    <div class="form-group">
+      <label>Capacité maximale (kg)</label>
+      <input type="number" class="form-control" [(ngModel)]="stockage.capaciteMaxKg" min="0" placeholder="Ex: 500">
+      <small class="form-text">Capacité totale de votre local (étagères, placards, etc.)</small>
+    </div>
+
+    <div class="form-group">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="stockage.aFrigorifique">
+        J'ai un frigo / une chambre froide
+      </label>
+    </div>
+
+    <div class="form-group" *ngIf="stockage.aFrigorifique">
+      <label>Capacité du frigo (kg)</label>
+      <input type="number" class="form-control" [(ngModel)]="stockage.capaciteFrigoKg" min="0" placeholder="Ex: 200">
+      <small class="form-text">Capacité pour les produits frais (lait, légumes, viande...)</small>
+    </div>
+
+    <div class="info-box">
+      <div class="info-icon">i</div>
+      <div class="info-text">
+        <strong>Information :</strong> L'espace disponible sera automatiquement recalculé après modification.
+      </div>
+    </div>
+
+    <!-- Boutons -->
+    <div class="buttons">
+      <button type="button" class="btn-cancel" routerLink="/receveur/stockage">Annuler</button>
+      <button type="button" class="btn-save" (click)="save()" [disabled]="isSaving">
+        {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Aucune donnée -->
+  <div *ngIf="!isLoading && !stockage && !errorMessage" class="empty-card">
+    <div class="empty-icon"><i class="bi bi-box-seam"></i></div>
+    <h3>Aucun stockage trouvé</h3>
+    <p>Vous n'avez pas encore configuré votre espace de stockage.</p>
+    <button class="btn-primary" routerLink="/receveur/stockage/ajout">
+      Configurer mon stockage
+    </button>
+  </div>
+</div>

@@ -4,6 +4,8 @@ import { environment } from '../../../../environments/environment';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { KeycloakService } from 'keycloak-angular';
 
+import { APP_CONFIG } from '../../../app.constants';
+
 @Injectable({
   providedIn: 'root'
 })

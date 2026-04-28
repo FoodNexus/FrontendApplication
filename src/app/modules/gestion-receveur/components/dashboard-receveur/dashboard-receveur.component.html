@@ -1,0 +1,245 @@
+<div class="page-container">
+  <!-- Header Section -->
+  <header class="dashboard-header" id="dashboard-header">
+    <div class="header-main">
+      <div class="logo-area" routerLink="/receveur/dashboard" style="cursor: pointer">
+        <h1>NutriFlow</h1>
+        <p>Espace Receveur</p>
+      </div>
+
+      <div class="header-actions">
+        <app-notification-bell id="dashboard-notifications"></app-notification-bell>
+        <div class="user-profile">
+          <div class="user-details text-right">
+            <span class="user-name">Association Aide Tunisienne</span>
+            <span class="user-role">Receveur</span>
+          </div>
+          <div class="user-avatar">
+            <i class="bi bi-person-circle"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation principale -->
+    <nav class="main-nav" id="dashboard-nav">
+      <a routerLink="/receveur/dashboard" class="nav-link active" title="Accueil">
+        <i class="bi bi-house-door"></i> Accueil
+      </a>
+      <a routerLink="/receveur/stockage" class="nav-link" title="Stockage">
+        <i class="bi bi-box-seam"></i> Stockage
+      </a>
+      <a routerLink="/receveur/besoins" class="nav-link" title="Besoins">
+        <i class="bi bi-clipboard-check"></i> Besoins
+      </a>
+      <a routerLink="/receveur/predictions" class="nav-link" title="Prédictions IA">
+        <i class="bi bi-lightning-charge"></i> IA
+      </a>
+      <a routerLink="/receveur/notations" class="nav-link" title="Notations">
+        <i class="bi bi-star"></i> Notations
+      </a>
+    </nav>
+  </header>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-overlay" id="loading-state">
+    <div class="spinner"></div>
+    <p>Initialisation de votre espace...</p>
+  </div>
+
+  <!-- Dashboard Main Content -->
+  <main *ngIf="!isLoading" class="dashboard-content animate-fade-in" id="dashboard-main">
+
+    <!-- Overview Stats -->
+    <section class="stats-grid" aria-label="Statistiques rapides">
+      <div class="stat-card glass-effect" routerLink="/receveur/stockage" id="stat-stockage">
+        <div class="stat-icon-wrapper icon-stockage">
+          <i class="bi bi-box-seam"></i>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Capacite libre</span>
+          <span class="stat-value">{{ stockage?.capaciteDisponibleKg || 0 }} kg</span>
+        </div>
+      </div>
+
+      <div class="stat-card glass-effect" routerLink="/receveur/besoins" id="stat-besoins">
+        <div class="stat-icon-wrapper icon-besoins">
+          <i class="bi bi-clipboard-check"></i>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Besoins actifs</span>
+          <span class="stat-value">{{ besoinsActifs.length }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card glass-effect" routerLink="/receveur/predictions" id="stat-predictions">
+        <div class="stat-icon-wrapper icon-predictions">
+          <i class="bi bi-stars"></i>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Analyses IA</span>
+          <span class="stat-value">Optimise</span>
+        </div>
+      </div>
+
+      <div class="stat-card glass-effect" routerLink="/receveur/notations" id="stat-notations">
+        <div class="stat-icon-wrapper icon-notations">
+          <i class="bi bi-award"></i>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Derniers avis</span>
+          <span class="stat-value">{{ recentNotations.length }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Detailed View Layout -->
+    <div class="dashboard-layout-grid">
+
+      <!-- Left Column: Vital Information -->
+      <section class="layout-column column-primary">
+        <!-- Stockage Details Card -->
+        <div class="premium-card" id="card-stockage">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="bi bi-box-seam"></i>
+              <h2>Etat du stockage</h2>
+            </div>
+            <a routerLink="/receveur/stockage" class="view-all-link">Gerer <i class="bi bi-arrow-right"></i></a>
+          </div>
+          <div class="card-body" *ngIf="stockage">
+            <div class="metrics-container">
+              <div class="metric-item">
+                <span class="metric-label">Capacite max</span>
+                <span class="metric-value">{{ stockage.capaciteMaxKg }} kg</span>
+              </div>
+              <div class="metric-divider"></div>
+              <div class="metric-item">
+                <span class="metric-label">Libre</span>
+                <span class="metric-value text-accent">{{ stockage.capaciteDisponibleKg }} kg</span>
+              </div>
+            </div>
+
+            <div class="utilization-section">
+              <div class="progress-info">
+                <span>Taux d'occupation</span>
+                <span>{{ occupationRate }}%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-bar-fill" [style.width.%]="occupationRate" [style.background]="progressColor">
+                </div>
+              </div>
+            </div>
+
+            <div class="features-list" *ngIf="stockage.aFrigorifique">
+              <div class="feature-tag">
+                <i class="bi bi-snow2"></i> Zone frigo: {{ stockage.capaciteFrigoKg }} kg
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-ghost" routerLink="/receveur/stockage/modifier">
+              <i class="bi bi-pencil-square"></i> Mettre a jour
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="premium-card accent-gradient" id="card-actions">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="bi bi-lightning-charge"></i>
+              <h2>Actions rapides</h2>
+            </div>
+          </div>
+          <div class="quick-actions-grid">
+            <button class="action-tile" routerLink="/receveur/besoins/add">
+              <div class="action-icon"><i class="bi bi-plus-lg"></i></div>
+              <span>Nouveau besoin</span>
+            </button>
+            <button class="action-tile" routerLink="/receveur/stockage/modifier">
+              <div class="action-icon"><i class="bi bi-sliders"></i></div>
+              <span>Configuration</span>
+            </button>
+            <button class="action-tile" routerLink="/receveur/notations/add/1">
+              <div class="action-icon"><i class="bi bi-star"></i></div>
+              <span>Noter un don</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Recent Activity & Logs -->
+      <section class="layout-column column-secondary">
+        <!-- Active Besoins Card -->
+        <div class="premium-card" id="card-besoins">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="bi bi-clipboard-check"></i>
+              <h2>Besoins en cours</h2>
+            </div>
+            <a routerLink="/receveur/besoins" class="view-all-link">Voir tout</a>
+          </div>
+          <div class="card-body">
+            <div *ngIf="besoinsActifs.length === 0" class="empty-state-container">
+              <p>Aucun besoin publie pour le moment.</p>
+              <button class="btn btn-primary btn-sm" routerLink="/receveur/besoins/add">Creer un besoin</button>
+            </div>
+            <div class="list-container" *ngIf="besoinsActifs.length > 0">
+              <div *ngFor="let besoin of besoinsActifs.slice(0, 3)" class="list-item">
+                <div class="item-icon"><i class="bi bi-basket3"></i></div>
+                <div class="item-details">
+                  <span class="item-name">{{ besoin.typeProduit }}</span>
+                  <span class="item-meta">{{ besoin.quantiteKg }} kg recommandes</span>
+                </div>
+                <div class="item-badge warning">En attente</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Latest Feedback Card -->
+        <div class="premium-card" id="card-notations">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="bi bi-chat-left-text"></i>
+              <h2>Dernieres notations</h2>
+            </div>
+            <a routerLink="/receveur/notations" class="view-all-link">Historique</a>
+          </div>
+          <div class="card-body">
+            <div *ngIf="recentNotations.length === 0" class="empty-state-container">
+              <p>Pas encore de notations.</p>
+            </div>
+            <div class="feedback-list" *ngIf="recentNotations.length > 0">
+              <div *ngFor="let notation of recentNotations.slice(0, 3)" class="feedback-item">
+                <div class="feedback-header">
+                  <span class="feedback-id">Don numero {{ notation.donId }}</span>
+                  <div class="feedback-stars">{{ getNoteStars(notation.note) }}</div>
+                </div>
+                <!-- LIGNE CORRIGÉE -->
+                <p class="feedback-comment">
+                  {{ (notation.commentaire || 'Sans commentaire') | slice:0:60 }}
+                  {{ (notation.commentaire && notation.commentaire.length > 60) ? '...' : '' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="dashboard-footer" id="dashboard-footer">
+    <div class="footer-content">
+      <div class="footer-brand">NutriFlow</div>
+      <p>© 2024 NutriFlow - Ensemble contre le gaspillage alimentaire</p>
+      <div class="social-links">
+        <i class="bi bi-github"></i>
+        <i class="bi bi-twitter-x"></i>
+        <i class="bi bi-linkedin"></i>
+      </div>
+    </div>
+  </footer>
+</div>

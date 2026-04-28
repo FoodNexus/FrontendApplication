@@ -27,15 +27,9 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               {
-    "glob": "**/*",
-    "input": "src/assets",
-    "output": "/assets"
-  },
-  {
-    "glob": "favicon.ico",
-    "input": "src",
-    "output": "/"
-  }
+                "glob": "**/*",
+                "input": "public"
+              }
             ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
@@ -62,7 +56,7 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "10kB",
+                  "maximumWarning": "20kB",
                   "maximumError": "50kB"
                 }
               ],

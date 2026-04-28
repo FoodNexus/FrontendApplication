@@ -10,12 +10,12 @@ export function initializeKeycloak(keycloak: KeycloakService) {
         clientId: environment.keycloakClientId
       },
       initOptions: {
-        onLoad: 'login-required',  // Plus de check-sso, plus besoin du fichier HTML
-        checkLoginIframe: false,
-        pkceMethod: 'S256'
+        onLoad: 'check-sso',
+        silentCheckSsoRedirectUri:
+          window.location.origin + '/silent-check-sso.html'
       },
+      // Habilite la capture du bearer token pour les appels API
       enableBearerInterceptor: true,
-      bearerPrefix: 'Bearer',
-      bearerExcludedUrls: ['/assets']
+      bearerExcludedUrls: ['/assets', '/clients/public'],
     });
 }

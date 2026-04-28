@@ -1,0 +1,105 @@
+<div class="page-container animate-fade-in">
+  <!-- Header -->
+  <div class="form-header no-bg mb-4">
+    <button class="btn btn-ghost" (click)="goBack()">
+      <i class="bi bi-arrow-left"></i> Retour
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loader-overlay-inline">
+    <div class="spinner-premium"></div>
+    <p>Récupération des détails...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="form-card glass-morphism text-center">
+    <div class="error-icon-circle mb-3"><i class="bi bi-exclamation-triangle"></i></div>
+    <h3>Oups !</h3>
+    <p class="text-muted mb-4">{{ errorMessage }}</p>
+    <button class="btn btn-primary" (click)="loadBesoin()">Réessayer</button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && !errorMessage && besoin" class="form-card glass-morphism animate-slide-up">
+    <!-- Header with status -->
+    <div class="card-top-status">
+      <div class="besoin-title-group">
+        <div class="header-icon-circle small">
+          <i class="bi bi-cart-check"></i>
+        </div>
+        <div>
+          <h3>{{ besoin.typeProduit }}</h3>
+          <p class="text-muted">Référence #{{ besoin.id }}</p>
+        </div>
+      </div>
+      <div class="badge-premium" [class]="getStatutClass(besoin.statut)">
+        {{ getStatutText(besoin.statut) }}
+      </div>
+    </div>
+
+    <!-- Body Information -->
+    <div class="detail-grid">
+      <!-- Quantity -->
+      <div class="detail-item">
+        <div class="item-icon"><i class="bi bi-speedometer2"></i></div>
+        <div class="item-info">
+          <span class="label">Quantité demandée</span>
+          <span class="value">{{ besoin.quantiteKg }} <small>kg</small></span>
+        </div>
+      </div>
+
+      <!-- Expiration -->
+      <div class="detail-item" *ngIf="besoin.dateExpiration">
+        <div class="item-icon"><i class="bi bi-calendar2-range"></i></div>
+        <div class="item-info">
+          <span class="label">Date limite</span>
+          <span class="value" [class.text-danger]="isExpired(besoin.dateExpiration)">
+            {{ besoin.dateExpiration | date:'dd MMMM yyyy' }}
+          </span>
+          <div class="item-badge-pill" *ngIf="!isExpired(besoin.dateExpiration) && getDaysLeft(besoin.dateExpiration) <= 7">
+             Moins de {{ getDaysLeft(besoin.dateExpiration) }} jours
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="detail-item full-width" *ngIf="besoin.description">
+        <div class="item-icon"><i class="bi bi-info-circle"></i></div>
+        <div class="item-info">
+          <span class="label">Description & Notes</span>
+          <p class="value-text">{{ besoin.description }}</p>
+        </div>
+      </div>
+
+      <!-- Creation Date -->
+      <div class="detail-item small-detail">
+        <div class="item-icon"><i class="bi bi-clock-history"></i></div>
+        <div class="item-info">
+          <span class="label">Publié le</span>
+          <span class="value-muted">{{ besoin.dateCreation | date:'dd/MM/yyyy à HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Matching Logic Simulator Note -->
+    <div class="scenario-info-box mini">
+      <div class="info-icon">
+        <i class="bi bi-search"></i>
+      </div>
+      <div class="info-content">
+        Notre système scanne les dons disponibles pour vous proposer un match optimal.
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions-premium" *ngIf="besoin.statut === 'EN_ATTENTE'">
+      <button class="btn btn-ghost danger-text" (click)="deleteBesoin()">
+        <i class="bi bi-trash"></i> Supprimer
+      </button>
+      <button class="btn btn-primary" (click)="edit()">
+        <i class="bi bi-pencil"></i> Modifier le besoin
+      </button>
+    </div>
+  </div>
+</div>

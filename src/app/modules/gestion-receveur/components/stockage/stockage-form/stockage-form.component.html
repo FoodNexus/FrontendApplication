@@ -1,0 +1,84 @@
+<div class="page-container animate-fade-in">
+  <div class="form-wrapper">
+    <div class="form-card glass-morphism animate-slide-up">
+      <div class="form-header">
+        <div class="header-icon-circle">
+          <i class="bi bi-box-seam"></i>
+        </div>
+        <div class="header-title-group">
+          <h3>Configuration du Stockage</h3>
+          <p>Indiquez vos capacités pour optimiser vos réceptions de dons.</p>
+        </div>
+      </div>
+
+      <form (ngSubmit)="saveStockage()" class="premium-form">
+        <!-- Capacité maximale -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-ruler"></i> Capacité totale de stockage <span class="required">*</span>
+          </label>
+          <div class="input-with-addon">
+            <input type="number" class="form-input" [(ngModel)]="stockage.capaciteMaxKg" name="capaciteMaxKg"
+              required min="1" placeholder="Ex: 500">
+            <span class="input-addon">kg</span>
+          </div>
+          <div class="input-hint">Capacité totale combinée (étagères, placards, zones sèches).</div>
+        </div>
+
+        <!-- Fridge Checkbox -->
+        <div class="form-group checkbox-group-premium">
+          <label class="custom-checkbox">
+            <input type="checkbox" [(ngModel)]="stockage.aFrigorifique" name="aFrigorifique">
+            <span class="checkmark"></span>
+            <span class="label-text">
+              <i class="bi bi-snow2"></i> Zone frigorifique disponible
+            </span>
+          </label>
+        </div>
+
+        <!-- Fridge Capacity (Conditional) -->
+        <div class="form-group animate-fade-in" *ngIf="stockage.aFrigorifique">
+          <label class="form-label">
+            <i class="bi bi-thermometer-snow"></i> Capacité frigorifique
+          </label>
+          <div class="input-with-addon">
+            <input type="number" class="form-input" [(ngModel)]="stockage.capaciteFrigoKg" name="capaciteFrigoKg"
+              min="0" [max]="stockage.capaciteMaxKg || 9999" placeholder="Ex: 200">
+            <span class="input-addon">kg</span>
+          </div>
+          <div class="input-hint">Capacité dédiée aux produits frais et périssables.</div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="scenario-info-box">
+          <div class="info-icon">
+            <i class="bi bi-lightbulb-fill"></i>
+          </div>
+          <div class="info-content">
+            <strong>Optimisation de la logistique :</strong> Ces données permettent aux donneurs de voir votre capacité d'accueil réelle avant de lancer un transfert.
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions-premium">
+          <button type="button" class="btn btn-ghost" (click)="cancel()">
+            Plus tard
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="!isFormValid">
+            <i class="bi bi-save"></i> Enregistrer la configuration
+          </button>
+        </div>
+      </form>
+
+      <!-- Feedback Messages -->
+      <div class="feedback-area" *ngIf="successMessage || errorMessage">
+        <div *ngIf="successMessage" class="success-banner animate-fade-in">
+          <i class="bi bi-check-circle-fill"></i> {{ successMessage }}
+        </div>
+        <div *ngIf="errorMessage" class="error-banner animate-fade-in">
+          <i class="bi bi-exclamation-octagon-fill"></i> {{ errorMessage }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

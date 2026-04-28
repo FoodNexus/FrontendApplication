@@ -1,0 +1,193 @@
+@import "../../../../../../styles.scss";
+
+:host {
+  display: block;
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+
+  .header-icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.1);
+  }
+
+  h3 {
+    margin-bottom: 0.25rem;
+    font-size: 1.5rem;
+  }
+
+  p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+}
+
+.premium-form {
+  .form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    i { color: var(--primary); }
+    .required { color: var(--danger); }
+  }
+
+  .input-with-addon {
+    display: flex;
+    .form-input { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+    .input-addon {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-left: none;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 0 1rem;
+      display: flex;
+      align-items: center;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+  }
+
+  .input-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+  }
+}
+
+/* Custom Checkbox Styling */
+.checkbox-group-premium {
+  margin: 2rem 0;
+  
+  .custom-checkbox {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-left: 3.5rem;
+    cursor: pointer;
+    user-select: none;
+    min-height: 2.5rem;
+
+    .label-text {
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      i { color: var(--info); font-size: 1.2rem; }
+    }
+
+    input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+      
+      &:checked ~ .checkmark {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        
+        &:after { display: block; }
+      }
+    }
+
+    .checkmark {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 2.5rem;
+      width: 2.5rem;
+      background-color: #fff;
+      border: 2px solid #e2e8f0;
+      border-radius: var(--radius-md);
+      transition: var(--transition-fast);
+
+      &:after {
+        content: "";
+        position: absolute;
+        display: none;
+        left: 0.85rem;
+        top: 0.45rem;
+        width: 0.6rem;
+        height: 1.1rem;
+        border: solid white;
+        border-width: 0 3px 3px 0;
+        transform: rotate(45deg);
+      }
+    }
+    
+    &:hover input ~ .checkmark {
+      border-color: var(--primary);
+      background-color: var(--primary-light);
+    }
+  }
+}
+
+.scenario-info-box {
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border-left: 4px solid var(--info);
+  border-radius: var(--radius-md);
+  margin: 2rem 0;
+
+  .info-icon {
+    font-size: 1.2rem;
+    color: var(--info);
+  }
+
+  .info-content {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--dark);
+    strong { font-weight: 700; color: var(--info); }
+  }
+}
+
+.form-actions-premium {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.feedback-area {
+  margin-top: 1.5rem;
+  
+  .success-banner {
+    background: var(--primary-light);
+    color: var(--primary-hover);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .error-banner {
+    background: #fee2e2;
+    color: var(--danger);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+  }
+}

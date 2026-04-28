@@ -1,0 +1,133 @@
+<div class="page-container animate-fade-in">
+  <header class="page-header" id="alerts-header">
+    <div class="header-main">
+      <div class="title-section">
+        <div class="icon-box">
+          <i class="bi bi-bell-fill"></i>
+        </div>
+        <div class="text-content">
+          <h1>Centre de notifications</h1>
+          <p>Gérez vos alertes de stock et besoins prioritaires</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-emerald" (click)="marquerToutLu()" *ngIf="alertes.length > 0">
+          <i class="bi bi-check2-all"></i> Tout marquer lu
+        </button>
+        <a routerLink="/receveur/dashboard" class="btn btn-ghost">
+          <i class="bi bi-arrow-left"></i> Retour au tableau de bord
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Statistics Row -->
+  <section class="stats-grid" *ngIf="stats" aria-label="Résumé des alertes">
+    <div class="stat-card glass-morphism" [class.active]="filterNiveau === 'TOUS'" (click)="filterNiveau = 'TOUS'">
+      <div class="stat-icon-wrapper grey">
+        <i class="bi bi-collection"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Total</span>
+        <span class="stat-value">{{ stats.total }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card glass-morphism" [class.active]="filterNiveau === 'CRITICAL'" (click)="filterNiveau = 'CRITICAL'">
+      <div class="stat-icon-wrapper red">
+        <i class="bi bi-x-circle"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Critiques</span>
+        <span class="stat-value">{{ stats.critical }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card glass-morphism" [class.active]="filterNiveau === 'URGENT'" (click)="filterNiveau = 'URGENT'">
+      <div class="stat-icon-wrapper orange">
+        <i class="bi bi-exclamation-triangle"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Urgentes</span>
+        <span class="stat-value">{{ stats.urgent }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card glass-morphism" [class.active]="filterNiveau === 'WARNING'" (click)="filterNiveau = 'WARNING'">
+      <div class="stat-icon-wrapper blue">
+        <i class="bi bi-info-circle"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Attention</span>
+        <span class="stat-value">{{ stats.warning }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter Navigation -->
+  <nav class="filter-navigation">
+    <div class="filter-pills">
+      <button class="pill" [class.active]="filterNiveau === 'TOUS'" (click)="filterNiveau = 'TOUS'">Toutes les alertes</button>
+      <button class="pill" [class.active]="filterNiveau === 'CRITICAL'" (click)="filterNiveau = 'CRITICAL'">Critiques</button>
+      <button class="pill" [class.active]="filterNiveau === 'URGENT'" (click)="filterNiveau = 'URGENT'">Urgentes</button>
+      <button class="pill" [class.active]="filterNiveau === 'WARNING'" (click)="filterNiveau = 'WARNING'">Information</button>
+    </div>
+  </nav>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loader-overlay">
+    <div class="spinner-premium"></div>
+    <p>Récupération de vos notifications...</p>
+  </div>
+
+  <!-- Alert List -->
+  <main *ngIf="!isLoading" class="alerts-main" id="alerts-main">
+    <div class="alerts-stack" *ngIf="filteredAlertes.length > 0">
+      <div *ngFor="let alerte of filteredAlertes" 
+           class="premium-alert-card" 
+           [class]="getNiveauClass(alerte.niveau)"
+           [class.unread]="!alerte.lue">
+        
+        <div class="alert-side-indicator"></div>
+        
+        <div class="alert-icon-section">
+          <div class="icon-circle">
+            <i [class]="getIcon(alerte.niveau)"></i>
+          </div>
+        </div>
+
+        <div class="alert-content-section">
+          <div class="alert-top">
+            <h3 class="alert-type">{{ alerte.typeProduit }}</h3>
+            <span class="alert-time">{{ getDateLabel(alerte.dateEnvoi) }}</span>
+          </div>
+          <p class="alert-message">{{ alerte.message }}</p>
+          <div class="alert-footer">
+            <span class="level-badge" [class]="getNiveauClass(alerte.niveau)">
+              {{ alerte.niveau }}
+            </span>
+            <span class="expiry-label" *ngIf="alerte.joursRestants > 0">
+              <i class="bi bi-clock-history"></i> {{ alerte.joursRestants }} jours restants
+            </span>
+            <span class="new-dot" *ngIf="!alerte.lue"></span>
+          </div>
+        </div>
+
+        <div class="alert-actions" *ngIf="!alerte.lue">
+          <button class="btn-circular" (click)="marquerLue(alerte.id)" title="Marquer comme lu">
+            <i class="bi bi-check2"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredAlertes.length === 0" class="empty-layout">
+      <div class="empty-graphic">
+        <i class="bi bi-bell-slash"></i>
+      </div>
+      <h3>Aucune notification à afficher</h3>
+      <p>Tout est sous contrôle pour le moment. Revenez plus tard pour de nouvelles alertes.</p>
+    </div>
+  </main>
+</div>

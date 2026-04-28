@@ -1,5 +1,5 @@
-<div class="container mt-4">
-  <!-- NAVBAR TOUJOURS VISIBLE -->
+<!-- ACCÈS BLOQUÉ : CONTENU CONDITIONNEL -->
+<div class="container mt-4" *ngIf="!isBlocked">
   <nav class="navbar navbar-light bg-light rounded shadow-sm p-3 mb-4 d-flex justify-content-between">
     <span class="navbar-brand mb-0 h1 text-success">
       <i class="bi bi-speedometer2 me-2"></i> NutriFlow Dashboard
@@ -20,9 +20,6 @@
       </button>
     </div>
   </nav>
-
-  <!-- CONTENU CONDITIONNEL : DASHBOARD NORMAL -->
-  <div *ngIf="!isBlocked">
 
   <div class="row" *ngIf="activeTab === 'dashboard'">
     <!-- Admin Dashboard -->
@@ -182,9 +179,14 @@
     </div>
 
     <!-- Donor Dashboard -->
-    <!-- ✅ col-12 = pleine largeur -->
-    <div class="col-12" *ngIf="hasRole('DONOR')">
-      <app-dashboard-donneur></app-dashboard-donneur>
+    <div class="col-md-6" *ngIf="hasRole('DONOR')">
+      <div class="card border-success shadow-sm mb-4">
+        <div class="card-header bg-success text-white">DONNEUR - Matching</div>
+        <div class="card-body">
+          <p>Gérez vos dons de nourriture et trouvez des receveurs.</p>
+          <button class="btn btn-success">Ajouter une Donation</button>
+        </div>
+      </div>
     </div>
 
     <!-- Receiver Dashboard -->
@@ -209,13 +211,12 @@
       </div>
     </div>
 
-    <!-- Auditor Dashboard Info Card -->
+    <!-- Auditor Dashboard -->
     <div class="col-md-6" *ngIf="hasRole('AUDITOR')">
       <div class="card border-primary shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
-          <i class="bi bi-shield-check me-2"></i> AUDIT - Conformité
-        </div>
+        <div class="card-header bg-primary text-white">AUDIT - Conformité</div>
         <div class="card-body">
+<<<<<<< HEAD
           <p>Gérez les dossiers d'inspection, le recyclage, les statistiques et la synthèse NutriFlow.</p>
           <div class="d-flex flex-wrap gap-2">
             <a routerLink="/audit/inspection-cases" class="btn btn-primary">
@@ -231,6 +232,11 @@
               <i class="bi bi-diagram-3 me-1"></i> Synthèse NutriFlow
             </a>
           </div>
+=======
+          <p>Vérifiez les dossiers d'inspection et le statut de recyclage.</p>
+          <a routerLink="/audit/inspection-cases" class="btn btn-primary me-2">Dossiers d'Inspection</a>
+          <a routerLink="/audit/recycling-products" class="btn btn-outline-primary">Produits Recyclés</a>
+>>>>>>> amine-receveur-frontend
         </div>
       </div>
     </div>
@@ -354,90 +360,6 @@
     <i class="bi bi-info-circle me-2"></i> Aucun rôle spécifique détecté.
   </div>
 
-  <!-- Auditor Recent Activity Section (Full Width) -->
-  <div class="row mt-2" *ngIf="hasRole('AUDITOR') && activeTab === 'dashboard'">
-    <div class="col-12">
-      <div class="activity-section">
-        <!-- Recent Inspections Table -->
-        <div class="activity-card">
-          <div class="activity-header">
-            <h3><i class="bi bi-file-earmark-text me-2"></i> Derniers Dossiers d'Inspection</h3>
-            <a routerLink="/audit/inspection-cases" class="btn-view-all">Voir Tout <i class="bi bi-arrow-right"></i></a>
-          </div>
-          <div class="table-responsive">
-            <table class="table dashboard-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Date</th>
-                  <th>Verdict</th>
-                  <th>Statut</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of recentInspections">
-                  <td><strong>#{{ item.caseId }}</strong></td>
-                  <td>{{ item.creationDate | date:'shortDate' }}</td>
-                  <td>
-                    <span class="badge" [ngClass]="getVerdictBadgeClass(item.sanitaryVerdict!)">
-                      <i class="bi" [ngClass]="getVerdictIcon(item.sanitaryVerdict!)"></i>
-                      {{ getVerdictLabel(item.sanitaryVerdict!) }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="badge" [ngClass]="getStatusBadgeClass(item.resolutionStatus!)">
-                      <i class="bi" [ngClass]="getStatusIcon(item.resolutionStatus!)"></i>
-                      {{ getStatusLabel(item.resolutionStatus!) }}
-                    </span>
-                  </td>
-                </tr>
-                <tr *ngIf="recentInspections.length === 0">
-                  <td colspan="4" class="text-center py-4 text-muted">Aucune activité récente.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Recent Recycling Table -->
-        <div class="activity-card">
-          <div class="activity-header">
-            <h3><i class="bi bi-recycle me-2"></i> Flux de Valorisation Récents</h3>
-            <a routerLink="/audit/recycling-products" class="btn-view-all">Voir Tout <i class="bi bi-arrow-right"></i></a>
-          </div>
-          <div class="table-responsive">
-            <table class="table dashboard-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Poids</th>
-                  <th>Destination</th>
-                  <th>Dossier</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of recentRecycling">
-                  <td>{{ item.transferDate | date:'shortDate' }}</td>
-                  <td><span class="fw-bold">{{ item.weight }} kg</span></td>
-                  <td>
-                    <span class="destination-tag">
-                      <i class="bi bi-geo-alt-fill me-1"></i>
-                      {{ getDestLabel(item.destination!) }}
-                    </span>
-                  </td>
-                  <td><a [routerLink]="['/audit/inspection-cases']" class="text-decoration-none">#{{ item.inspectionCase?.caseId }}</a></td>
-                </tr>
-                <tr *ngIf="recentRecycling.length === 0">
-                  <td colspan="4" class="text-center py-4 text-muted">Aucun flux récent enregistré.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- MON PROFIL SECTION -->
   <div class="row" *ngIf="activeTab === 'profile'">
     <div class="col-lg-8 mx-auto">
@@ -463,11 +385,7 @@
             <div class="row mb-3">
               <div class="col-md-6">
                 <label class="form-label">Téléphone</label>
-                <input type="text" class="form-control" formControlName="telephone"
-                       [class.is-invalid]="profileForm.get('telephone')?.invalid && profileForm.get('telephone')?.touched">
-                <div *ngIf="profileForm.get('telephone')?.invalid && profileForm.get('telephone')?.touched" class="text-danger small mt-1">
-                  Le numéro doit contenir uniquement des chiffres (8-15).
-                </div>
+                <input type="text" class="form-control" formControlName="telephone">
               </div>
               <div class="col-md-6">
                 <label class="form-label">Adresse</label>
@@ -476,11 +394,8 @@
             </div>
 
             <div class="d-flex justify-content-between align-items-center">
-              <div *ngIf="currentUser.deletionRequested" class="alert alert-warning d-inline-block py-2">
-                <i class="bi bi-hourglass-split me-2"></i>Demande de clôture en attente d'approbation par l'admin.
-              </div>
-              <button *ngIf="!currentUser.deletionRequested" type="button" class="btn btn-outline-danger" (click)="deleteAccount()">
-                <i class="bi bi-x-circle me-2"></i>Demander la clôture du compte
+              <button type="button" class="btn btn-outline-danger" (click)="deleteAccount()">
+                <i class="bi bi-trash me-2"></i>Supprimer mon compte
               </button>
               <button type="submit" class="btn btn-success" [disabled]="profileForm.invalid">
                 <i class="bi bi-save me-2"></i>Enregistrer les modifications
@@ -498,15 +413,20 @@
             <div class="row mb-3">
               <div class="col-md-6">
                 <label class="form-label">Nouveau mot de passe</label>
-                <input type="password" class="form-control" formControlName="newPassword" placeholder="Minimum 6 caractères">
-                <div *ngIf="passwordForm.get('newPassword')?.touched && passwordForm.get('newPassword')?.errors?.['minlength']" class="text-danger small">
+                <input type="password" class="form-control" formControlName="newPassword"
+                  placeholder="Minimum 6 caractères">
+                <div
+                  *ngIf="passwordForm.get('newPassword')?.touched && passwordForm.get('newPassword')?.errors?.['minlength']"
+                  class="text-danger small">
                   Le mot de passe doit faire au moins 6 caractères.
                 </div>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Confirmer le mot de passe</label>
-                <input type="password" class="form-control" formControlName="confirmPassword" placeholder="Répétez le mot de passe">
-                <div *ngIf="passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched" class="text-danger small">
+                <input type="password" class="form-control" formControlName="confirmPassword"
+                  placeholder="Répétez le mot de passe">
+                <div *ngIf="passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched"
+                  class="text-danger small">
                   Les mots de passe ne correspondent pas.
                 </div>
               </div>
@@ -554,21 +474,12 @@
                     <span class="badge" [ngClass]="user.actif ? 'bg-success' : 'bg-danger'">
                       {{ user.actif ? 'Actif' : 'Bloqué' }}
                     </span>
-                    <span *ngIf="user.deletionRequested" class="badge bg-warning text-dark ms-2">
-                      <i class="bi bi-clock-history me-1"></i>Demande Clôture
-                    </span>
                   </td>
                   <td>
-                    <div class="d-flex gap-2">
-                      <button class="btn btn-sm" [ngClass]="user.actif ? 'btn-outline-danger' : 'btn-outline-success'" 
-                              (click)="toggleUserStatus(user)"
-                              [disabled]="user.idUser === currentUser.idUser">
-                        {{ user.actif ? 'Bloquer' : 'Débloquer' }}
-                      </button>
-                      <button *ngIf="user.deletionRequested" class="btn btn-danger btn-sm" (click)="approveDeletion(user)">
-                        <i class="bi bi-check-circle me-1"></i>Approuver Clôture
-                      </button>
-                    </div>
+                    <button class="btn btn-sm" [ngClass]="user.actif ? 'btn-outline-danger' : 'btn-outline-success'"
+                      (click)="toggleUserStatus(user)" [disabled]="user.idUser === currentUser.idUser">
+                      {{ user.actif ? 'Bloquer' : 'Débloquer' }}
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -578,8 +489,7 @@
       </div>
     </div>
   </div>
-  </div><!-- Fin de !isBlocked -->
-</div> <!-- Fin du container principal -->
+</div>
 
 <!-- L'INTERFACE POUR COMPTE BLOQUÉ -->
 <div class="container mt-5" *ngIf="isBlocked">
