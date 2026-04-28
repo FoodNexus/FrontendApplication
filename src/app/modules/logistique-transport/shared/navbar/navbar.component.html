@@ -1,0 +1,136 @@
+<nav
+  class="navbar rounded-end shadow show navbar-vertical h-lg-screen navbar-expand-lg px-0 py-3 navbar-light border-bottom border-bottom-lg-0 border-end-lg"
+  id="navbarVertical"
+>
+  <div class="container-fluid">
+    <!-- Header -->
+    <a class="navbar-brand py-lg-2 mb-lg-5 px-lg-6 me-0">
+      <img
+        src="../../../assets/Images/logo-modified.png"
+        width="40"
+        class="logo"
+      />
+      <span class="title text-white">Transport</span>
+
+      <!-- Notifications -->
+      <button class="dropdown-icon" (click)="toggleDropdown()">
+        <i class="bell-color fa-solid fa-bell"></i>
+        <span *ngIf="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+      </button>
+
+      <div class="dropdown-menu" [class.show]="dropdownOpen">
+        <h3>Notifications</h3>
+
+        <div class="notifications-list">
+          <div
+            class="dropdown-item"
+            *ngFor="let notification of filteredNotifications"
+          >
+            <p class="text-gray-600 text-sm">
+              <span class="font-bold">
+                {{ notification.NotificationMessage }}
+              </span>
+              <br />
+              <span style="color: rgb(85, 160, 209)">
+                {{
+                  notification?.senderInformations?.creationDate
+                    | date: "dd MMM yyyy, HH:mm"
+                }}
+              </span>
+            </p>
+          </div>
+
+          <ng-template #noNotifications>
+            <p class="no-notifications-message">Aucune notification.</p>
+          </ng-template>
+        </div>
+
+        <div (click)="openNotifPopup()" class="fixed-footer">
+          <h3>Voir Tous</h3>
+        </div>
+      </div>
+    </a>
+
+    <!-- NAVIGATION -->
+    <div class="collapse navbar-collapse" id="sidebarCollapse">
+      <ul class="navbar-nav">
+        <li class="nav-item" *ngFor="let link of navLinks">
+          <a
+            class="nav-link"
+            [routerLink]="link.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="link.exact ? { exact: true } : { exact: false }"
+          >
+            <i [class]="link.icon"></i> {{ link.label }}
+          </a>
+        </li>
+      </ul>
+
+      <!-- Logout -->
+      <hr class="navbar-divider my-5 opacity-20" />
+
+      <ul class="navbar-nav">
+        <li class="nav-item" *ngIf="profileRoute">
+          <a class="nav-link" [routerLink]="profileRoute">
+            <i class="fa-solid fa-user"></i> Profil
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" (click)="showSweetAlert()">
+            <i class="bi bi-box-arrow-left"></i> Se déconnecter
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="category-popup" [class.open]="isNotifPopupOpen">
+  <div class="category-popup-content">
+    <button class="close close-button" (click)="closeNotifPopup()">
+      <i class="fa-solid fa-xmark fa-lg"></i>
+    </button>
+    <h2>Notifications</h2>
+    <!-- Scrollable notifications list -->
+    <div class="notifications-list">
+      <!-- Check if there are grouped notifications -->
+      <div
+        *ngIf="
+          groupedNotifications && notificationDates.length > 0;
+          else noNotifications
+        "
+      >
+        <!-- Iterate over grouped notifications by date -->
+        <div *ngFor="let dateKey of notificationDates">
+          <!-- Display the date header -->
+          <h4 style="color: rgb(85, 160, 209)" class="notification-date-header">
+            {{ dateKey }}
+          </h4>
+          <!-- Display notifications for that date -->
+          <div
+            *ngFor="let notification of groupedNotifications[dateKey]"
+            class="dropdown-item-popup"
+          >
+            <p class="text-gray-600 text-sm">
+              <span style="color: black" class="font-bold">{{
+                notification.NotificationMessage
+              }}</span>
+              <br />
+            </p>
+            <!-- Delete notification button -->
+            <button class="remove-item-btn">
+              <i class="fa-solid fa-circle-xmark fa-xl"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Template to display when there are no notifications -->
+      <ng-template #noNotifications>
+        <p class="no-notifications-message">Aucune notification.</p>
+      </ng-template>
+    </div>
+    <!-- Button to delete all notifications -->
+    <!-- <div class="category-popup-button"> <button *ngIf="restaurantData?.Notifications?.length > 0" type="submit" class="add-button" > Effacer tous </button> </div> -->
+  </div>
+</div>

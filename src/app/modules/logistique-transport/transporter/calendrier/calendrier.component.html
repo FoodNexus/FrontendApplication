@@ -1,0 +1,96 @@
+<div class="d-flex flex-column flex-lg-row h-lg-full bg-surface-secondary">
+  <app-navbar></app-navbar>
+
+  <div class="full-page-wrapper">
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h2>Calendrier des Missions</h2>
+          <p>Visualisez vos livraisons planifiées d'un coup d'œil.</p>
+        </div>
+      </div>
+
+      <div *ngIf="loading" class="status">Chargement du calendrier...</div>
+      <div *ngIf="error" class="status error">{{ error }}</div>
+
+      <div class="calendar-container" *ngIf="!loading && !error">
+        <div class="calendar-header">
+          <div class="month-selector">
+            <button class="btn nav-btn" (click)="prevMonth()">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h3>{{ currentMonth | date: 'MMMM yyyy' | uppercase }}</h3>
+            <button class="btn nav-btn" (click)="nextMonth()">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+          <button class="btn today-btn" (click)="todayMonth()">Aujourd'hui</button>
+        </div>
+
+        <div class="calendar-grid">
+          <!-- Weekdays Header -->
+          <div class="weekday-header" *ngFor="let day of weekDays">{{ day }}</div>
+
+          <!-- Calendar Days -->
+          <div 
+            class="calendar-day" 
+            *ngFor="let day of daysInView"
+            [ngClass]="{
+              'not-current-month': !day.isCurrentMonth,
+              'today': day.isToday
+            }"
+          >
+            <div class="day-number">{{ day.date.getDate() }}</div>
+            
+            <div class="day-events">
+              <div 
+                class="event-badge" 
+                *ngFor="let req of day.deliveries"
+                [ngClass]="getStatusClass(req.status)"
+                (click)="openDetails(req)"
+              >
+                <span class="event-time">{{ formatTime(req.plannedPickupTime) }}</span>
+                <span class="event-title">#{{ req.id }} - {{ req.title }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Details popup -->
+<div class="details-popup" [class.open]="isDetailsPopupOpen">
+  <div class="details-popup-content" *ngIf="selectedDelivery as req">
+    <button type="button" class="close-btn" (click)="closeDetails()">
+      <i class="fa-solid fa-xmark fa-lg"></i>
+    </button>
+
+    <h3>Mission #{{ req.id }}</h3>
+    <div class="details-grid">
+      <div><b>Titre:</b> {{ req.title }}</div>
+      <div>
+        <b>Statut:</b> 
+        <span class="status-pill" [ngClass]="getStatusClass(req.status)">
+          {{ getStatusLabel(req.status) }}
+        </span>
+      </div>
+      <div><b>Poids:</b> {{ req.weightKg ?? '-' }} kg</div>
+      <div><b>Pickup:</b> {{ req.pickupAddress ?? '-' }}</div>
+      <div><b>Delivery:</b> {{ req.deliveryAddress ?? '-' }}</div>
+      <div class="full">
+        <b>Heure d'enlèvement:</b> {{ (req.plannedPickupTime | date:'dd/MM/yyyy HH:mm') ?? '-' }}
+      </div>
+      <div class="full">
+        <b>Heure de livraison:</b> {{ (req.plannedDeliveryTime | date:'dd/MM/yyyy HH:mm') ?? '-' }}
+      </div>
+    </div>
+
+    <div class="popup-actions">
+      <button class="btn neutral" type="button" (click)="closeDetails()">
+        Fermer
+      </button>
+    </div>
+  </div>
+</div>

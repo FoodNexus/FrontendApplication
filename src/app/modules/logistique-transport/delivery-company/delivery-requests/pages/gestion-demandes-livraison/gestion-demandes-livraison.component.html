@@ -1,0 +1,179 @@
+<div class="d-flex flex-column flex-lg-row h-lg-full bg-surface-secondary">
+  <app-navbar></app-navbar>
+
+  <div class="full-page-wrapper">
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h2>Demandes de livraison</h2>
+          <p>Liste des demandes pour la societe de livraison courante.</p>
+        </div>
+        <div class="filter-box" style="display: flex; gap: 16px; align-items: center;">
+          <button class="btn accept" style="height: fit-content; text-decoration: none;" routerLink="/delivery-company/delivery-requests/create">
+            <i class="fas fa-plus"></i> Créer une demande
+          </button>
+          <div style="display: flex; flex-direction: column;">
+            <label for="statusFilter">Filtrer par statut</label>
+            <select
+              id="statusFilter"
+              [value]="selectedStatusFilter"
+              (change)="selectedStatusFilter = $any($event.target).value"
+            >
+              <option value="ALL">Tous</option>
+              <option value="PENDING_COMPANY_DECISION">Waiting</option>
+              <option value="ACCEPTED_BY_COMPANY">Accepted</option>
+              <option value="ASSIGNED_TO_TRANSPORTER">Accepted (Assigned)</option>
+              <option value="DECLINED_BY_COMPANY">Declined</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="loading" class="status">Chargement...</div>
+      <div *ngIf="error" class="status error">{{ error }}</div>
+
+      <div class="table-wrap" *ngIf="!loading && !error">
+        <table class="requests-table">
+          <thead>
+            <tr>
+              <th>Titre</th>
+              <th>Poids (kg)</th>
+              <th>Urgence</th>
+              <th>Pickup</th>
+              <th>Delivery</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let req of filteredRequests">
+              <td>{{ req.title }}</td>
+              <td>{{ req.weightKg ?? '-' }}</td>
+              <td>{{ req.urgency ?? '-' }}</td>
+              <td>{{ req.pickupAddress ?? '-' }}</td>
+              <td>{{ req.deliveryAddress ?? '-' }}</td>
+              <td>
+                <span class="status-pill" [ngClass]="getStatusClass(req.status)">
+                  {{ getStatusLabel(req.status) }}
+                </span>
+              </td>
+              <td class="actions">
+                <button class="btn details" type="button" (click)="openDetails(req)">
+                  Voir
+                </button>
+                <button
+                  *ngIf="isWaiting(req)"
+                  class="btn accept"
+                  type="button"
+                  (click)="acceptRequest(req)"
+                >
+                  Accepter
+                </button>
+                <button
+                  *ngIf="isWaiting(req)"
+                  class="btn decline"
+                  type="button"
+                  (click)="declineRequest(req)"
+                >
+                  Refuser
+                </button>
+
+                <button
+                  *ngIf="canAssignTransporter(req)"
+                  class="btn accept"
+                  type="button"
+                  [disabled]="!canAssignTransporter(req)"
+                  (click)="autoAssignTransporter(req)"
+                >
+                  {{ req.status === 'ASSIGNED_TO_TRANSPORTER' ? 'Réaffecter' : 'Affecter' }}
+                </button>
+
+                <button
+                  *ngIf="req.status === 'IN_TRANSIT'"
+                  class="btn accept"
+                  style="background-color: #8b5cf6;"
+                  type="button"
+                  (click)="trackDelivery(req)"
+                >
+                  Suivre
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredRequests.length === 0">
+              <td colspan="7" class="empty-row">Aucune demande pour le moment.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Details popup -->
+<div class="details-popup" [class.open]="isDetailsPopupOpen">
+  <div class="details-popup-content" *ngIf="selectedRequest as req">
+    <button type="button" class="close-btn" (click)="closeDetails()">
+      <i class="fa-solid fa-xmark fa-lg"></i>
+    </button>
+
+    <h3>Demande #{{ req.id }}</h3>
+    <div class="details-grid">
+      <div><b>Titre:</b> {{ req.title }}</div>
+      <div><b>Statut:</b> {{ req.status }}</div>
+      <div><b>Donor(name):</b> {{ req.donorId }}</div>
+      <div><b>Receiver:</b> {{ req.receiverId }}</div>
+      <div><b>Transporteur affecte:</b> {{ req.assignedTransporterId ?? '-' }}</div>
+      <div>
+        <b>Raison refus:</b>
+        {{ isDeclined(req) ? (req.companyDecisionReason ?? '-') : '-' }}
+      </div>
+      <div><b>Poids:</b> {{ req.weightKg ?? '-' }} kg</div>
+      <div><b>Urgence:</b> {{ req.urgency ?? '-' }}</div>
+      <div><b>Pickup:</b> {{ req.pickupAddress ?? '-' }}</div>
+      <div><b>Delivery:</b> {{ req.deliveryAddress ?? '-' }}</div>
+      <div class="full">
+        <b>Fenêtre enlèvement (donateur):</b> {{ req.requestedPickupStart ?? '-' }} →
+        {{ req.requestedPickupEnd ?? '-' }}
+      </div>
+      <div class="full">
+        <b>Fenêtre livraison (donateur):</b>
+        {{ req.requestedDeliveryStart ? req.requestedDeliveryStart + ' → ' : '' }}{{ req.requestedDeliveryEnd ?? '-' }}
+      </div>
+      <div class="full">
+        <b>Plan société:</b>
+        <ng-container *ngIf="req.plannedPickupTime && req.plannedDeliveryTime; else noPlan">
+          {{ req.plannedPickupTime }} → {{ req.plannedDeliveryTime }}
+        </ng-container>
+        <ng-template #noPlan>— (non planifié)</ng-template>
+      </div>
+      <div class="full"><b>Description:</b> {{ req.description ?? '-' }}</div>
+    </div>
+
+    <div class="popup-actions">
+      <button
+        *ngIf="isWaiting(req)"
+        class="btn accept"
+        type="button"
+        [disabled]="actionLoading"
+        (click)="acceptRequest(req)"
+      >
+        Accepter
+      </button>
+      <button
+        *ngIf="isWaiting(req)"
+        class="btn decline"
+        type="button"
+        [disabled]="actionLoading"
+        (click)="declineRequest(req)"
+      >
+        Refuser
+      </button>
+
+
+      <button class="btn neutral" type="button" [disabled]="actionLoading" (click)="closeDetails()">
+        Fermer
+      </button>
+    </div>
+  </div>
+</div>
+

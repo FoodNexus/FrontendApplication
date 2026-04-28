@@ -21,5 +21,10 @@ export const routes: Routes = [
     loadChildren: () => import('./modules/valorisation-organique-economie-circulaire/valorisation-organique-economie-circulaire.module')
       .then(m => m.ValorisationOrganiqueEconomieCirculaireModule)
   },
+  {
+    path: 'logistique',
+    loadChildren: () => import('./modules/logistique-transport/logistique-transport.module')
+      .then(m => m.LogistiqueTransportModule)
+  },
   { path: '', redirectTo: 'user/home', pathMatch: 'full' }
 ];

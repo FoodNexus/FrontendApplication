@@ -1,0 +1,85 @@
+body{
+  padding: 20px;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header h2 {
+  margin: 0;
+}
+
+.page-header p {
+  margin: 4px 0 0;
+  color: #64748b;
+}
+
+.status {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+
+.table-wrap {
+  overflow: auto;
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.requests-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 980px;
+}
+
+.requests-table th,
+.requests-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  text-align: left;
+  vertical-align: top;
+}
+
+.requests-table thead th {
+  background: #f8fafc;
+  font-weight: 800;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-pill.status-accepted {
+  background: rgba(16, 185, 129, 0.2);
+  color: #065f46;
+}
+
+.status-pill.status-declined {
+  background: rgba(239, 68, 68, 0.2);
+  color: #b91c1c;
+}
+
+.status-pill.status-default {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.empty-row {
+  text-align: center;
+  color: #64748b;
+}
+

@@ -15,5 +15,8 @@ export const environment = {
    * Dev local : crédits fidélité initiaux par utilisateur Keycloak (preferred_username → nombre de +1).
    * Mettre à null en prod via environment.prod.
    */
-  nutriflowDevSeedCreditsByUsername: { recycler: 5, recycler1: 5 } as Record<string, number>
+  nutriflowDevSeedCreditsByUsername: { recycler: 5, recycler1: 5 } as Record<string, number>,
+  apiBaseUrl: '',
+  companyDeliveryId: 1,
+  transporterId: 13
 };

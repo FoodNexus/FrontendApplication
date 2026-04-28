@@ -1,0 +1,164 @@
+<div class="d-flex flex-column flex-lg-row h-lg-full bg-surface-secondary">
+  <app-navbar></app-navbar>
+
+  <div class="full-page-wrapper">
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h2>Gestion transporteurs</h2>
+          <p>Vos transporteurs pour la société courante.</p>
+        </div>
+      </div>
+
+      <div *ngIf="loading" class="status">Chargement...</div>
+      <div *ngIf="error" class="status error">{{ error }}</div>
+
+      <div class="grid" *ngIf="!loading && !error">
+        <div class="card" *ngFor="let t of transporters">
+          <div class="card-main">
+            <div class="plate">{{ t.fullName }}</div>
+            <div class="meta">
+              <div><b>Téléphone</b>: {{ t.phone ?? '-' }}</div>
+              <div><b>Email</b>: {{ t.email ?? '-' }}</div>
+              <div><b>Notes</b>: {{ t.notes ?? '-' }}</div>
+              <div><b>Actif</b>: {{ t.active ? 'Oui' : 'Non' }}</div>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <button class="btn info" type="button" (click)="viewSchedule(t)">
+              Voir planning
+            </button>
+            <button class="btn edit" type="button" (click)="openEditPopup(t)">
+              Modifier
+            </button>
+            <button class="btn danger" type="button" (click)="deleteTransporter(t)">
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        *ngIf="transporters.length === 0 && !loading && !error"
+        class="empty"
+      >
+        Aucun transporteur pour le moment.
+      </div>
+
+      <div
+        class="fab-hint"
+        title="+ transporteur (manuel)"
+        role="button"
+        tabindex="0"
+        (click)="openCreatePopup()"
+        (keydown.enter)="openCreatePopup()"
+      >
+        + transporteur
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Transporter create/edit popup -->
+<div class="transporter-popup" [class.open]="isTransporterPopupOpen">
+  <div class="transporter-popup-content">
+    <button
+      type="button"
+      class="close close-button"
+      (click)="closeTransporterPopup()"
+    >
+      <i class="fa-solid fa-xmark fa-lg"></i>
+    </button>
+
+    <h2>
+      {{
+        transporterPopupMode === 'create'
+          ? 'Créer un transporteur'
+          : 'Modifier un transporteur'
+      }}
+    </h2>
+    <p>
+      {{
+        transporterPopupMode === 'create'
+          ? 'Ajoutez un nouveau transporteur.'
+          : 'Mettez à jour les informations.'
+      }}
+    </p>
+
+    <form class="transporter-form" (ngSubmit)="submitTransporterForm()">
+      <div class="form-group">
+        <label>Nom complet <span>*</span></label>
+        <input
+          class="form-control"
+          name="fullName"
+          required
+          type="text"
+          [(ngModel)]="transporterForm.fullName"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Téléphone</label>
+        <input
+          class="form-control"
+          name="phone"
+          type="text"
+          [(ngModel)]="transporterForm.phone"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input
+          class="form-control"
+          name="email"
+          type="email"
+          [(ngModel)]="transporterForm.email"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea
+          class="form-control"
+          name="notes"
+          rows="3"
+          [(ngModel)]="transporterForm.notes"
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="active-label">
+          <input
+            type="checkbox"
+            name="active"
+            [(ngModel)]="transporterForm.active"
+          />
+          <span>Actif</span>
+        </label>
+      </div>
+
+      <div class="transporter-actions">
+        <button type="submit" class="btn edit" [disabled]="savingTransporter">
+          {{
+            savingTransporter
+              ? 'En cours...'
+              : transporterPopupMode === 'create'
+                ? 'Créer'
+                : 'Enregistrer'
+          }}
+        </button>
+        <button
+          type="button"
+          class="btn secondary"
+          (click)="closeTransporterPopup()"
+          [disabled]="savingTransporter"
+        >
+          Annuler
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+

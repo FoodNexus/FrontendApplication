@@ -1,0 +1,101 @@
+<app-navbar></app-navbar>
+
+<div class="page-container">
+  <div class="glass-container form-wrapper">
+    <div class="header">
+      <h2>Créer une demande de livraison</h2>
+      <p class="subtitle">Utilisez la carte pour placer vos points exacts de ramassage et de livraison.</p>
+    </div>
+
+    <form [formGroup]="requestForm" (ngSubmit)="onSubmit()" class="delivery-form">
+      
+      <!-- Interactive Map Section -->
+      <div class="map-section">
+        <div class="map-controls">
+          <button type="button" 
+                  class="mode-btn pickup" 
+                  [class.active]="activeMode === 'pickup'"
+                  (click)="setMode('pickup')">
+            <i class="fas fa-map-marker-alt"></i> Point de Ramassage
+          </button>
+          <button type="button" 
+                  class="mode-btn delivery" 
+                  [class.active]="activeMode === 'delivery'"
+                  (click)="setMode('delivery')">
+            <i class="fas fa-map-marker-alt"></i> Point de Livraison
+          </button>
+        </div>
+        <div id="map" class="interactive-map"></div>
+        <p class="map-hint">
+          <i class="fas fa-info-circle"></i> 
+          Cliquez sur la carte pour définir l'adresse. Le champ texte se remplira automatiquement !
+        </p>
+      </div>
+
+      <!-- Address Inputs (auto-filled) -->
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label>Adresse de Ramassage</label>
+          <input type="text" formControlName="pickupAddress" class="glass-input" placeholder="Sélectionnez sur la carte..." readonly>
+        </div>
+        <div class="form-group flex-1">
+          <label>Adresse de Livraison</label>
+          <input type="text" formControlName="deliveryAddress" class="glass-input" placeholder="Sélectionnez sur la carte..." readonly>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="form-row">
+        <div class="form-group flex-2">
+          <label>Titre de la demande</label>
+          <input type="text" formControlName="title" class="glass-input" placeholder="Ex: Livraison urgente...">
+        </div>
+        <div class="form-group flex-1">
+          <label>Poids (Kg)</label>
+          <input type="number" formControlName="weightKg" class="glass-input" min="0.1" step="0.1">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea formControlName="description" class="glass-input" rows="2" placeholder="Informations additionnelles..."></textarea>
+      </div>
+
+      <!-- Dates -->
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label>Début Ramassage Souhaité</label>
+          <input type="datetime-local" formControlName="requestedPickupStart" class="glass-input">
+        </div>
+        <div class="form-group flex-1">
+          <label>Fin Ramassage Souhaité</label>
+          <input type="datetime-local" formControlName="requestedPickupEnd" class="glass-input">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label>Limite de Livraison</label>
+          <input type="datetime-local" formControlName="requestedDeliveryEnd" class="glass-input">
+        </div>
+        <div class="form-group flex-1">
+          <label>Urgence</label>
+          <select formControlName="urgency" class="glass-input">
+            <option value="LOW">Faible</option>
+            <option value="NORMAL">Normale</option>
+            <option value="HIGH">Élevée</option>
+            <option value="CRITICAL">Critique</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" routerLink="/delivery-company/delivery-requests">Annuler</button>
+        <button type="submit" class="btn-primary" [disabled]="requestForm.invalid || loading">
+          {{ loading ? 'Création en cours...' : 'Créer la demande' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

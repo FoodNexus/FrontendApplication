@@ -1,0 +1,51 @@
+<div class="d-flex flex-column flex-lg-row h-lg-full bg-surface-secondary">
+  <app-navbar></app-navbar>
+
+  <div class="full-page-wrapper">
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h2>Mes livraisons</h2>
+          <p>Livraisons qui vous sont affectées.</p>
+        </div>
+      </div>
+
+      <div *ngIf="loading" class="status">Chargement...</div>
+      <div *ngIf="error" class="status error">{{ error }}</div>
+
+      <div class="table-wrap" *ngIf="!loading && !error">
+        <table class="requests-table">
+          <thead>
+            <tr>
+              <th>Titre</th>
+              <th>Pickup</th>
+              <th>Delivery</th>
+              <th>Plan</th>
+              <th>Véhicule</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of deliveries">
+              <td>{{ d.title }}</td>
+              <td>{{ d.pickupAddress ?? '-' }}</td>
+              <td>{{ d.deliveryAddress ?? '-' }}</td>
+              <td>{{ scheduleSummary(d) }}</td>
+              <td>{{ d.assignedVehicleId ?? '-' }}</td>
+              <td>
+                <span class="status-pill" [ngClass]="getStatusClass(d.status)">
+                  {{ getStatusLabel(d.status) }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="deliveries.length === 0">
+              <td colspan="6" class="empty-row">
+                Aucune livraison assignée pour le moment.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
